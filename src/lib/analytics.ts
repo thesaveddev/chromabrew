@@ -21,7 +21,14 @@ export type AnalyticsEvent =
   | "bootstrap_exported"
   | "mui_exported"
   | "antd_exported"
-  | "chakra_exported";
+  | "chakra_exported"
+  | "figma_exported"
+  | "react_native_exported"
+  | "flutter_exported"
+  | "ios_exported"
+  | "android_exported"
+  | "feedback_submitted"
+  | "ai_palette_suggested";
 
 type Sink = (event: AnalyticsEvent, properties?: Record<string, string | number>) => void;
 

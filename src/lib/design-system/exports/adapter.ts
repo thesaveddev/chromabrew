@@ -3,7 +3,7 @@ import type { DesignSystem } from "../types";
 export interface ExportResult {
   /** Ready-to-use code/text output. */
   code: string;
-  language: "css" | "json" | "javascript" | "typescript";
+  language: "css" | "json" | "javascript" | "typescript" | "xml" | "kotlin" | "swift" | "dart";
   suggestedFilename: string;
 }
 

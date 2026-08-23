@@ -1,39 +1,31 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import {
-  cssAdapter,
-  jsonAdapter,
-  tailwindAdapter,
-  shadcnAdapter,
-  bootstrapAdapter,
-  muiAdapter,
-  antdAdapter,
-  chakraAdapter,
-} from "@/lib/design-system/exports/registry";
+import { EXPORT_ADAPTERS } from "@/lib/design-system/exports/registry";
 import type { ExportAdapter } from "@/lib/design-system/exports/adapter";
 import type { AnalyticsEvent } from "@/lib/analytics";
 import { track } from "@/lib/analytics";
 import { CopyButton, DownloadButton } from "@/components/ui/primitives";
 import type { DesignSystem } from "@/lib/design-system/types";
 
-type AdapterGroup = {
-  label: string;
-  adapters: ExportAdapter[];
-};
+type AdapterGroup = { label: string; adapters: ExportAdapter[] };
 
 const ADAPTER_GROUPS: AdapterGroup[] = [
   {
-    label: "Raw",
-    adapters: [cssAdapter, jsonAdapter],
+    label: "Web",
+    adapters: EXPORT_ADAPTERS.filter((a) =>
+      ["css", "json", "tailwind", "bootstrap", "shadcn", "mui", "antd", "chakra"].includes(a.id),
+    ),
   },
   {
-    label: "CSS",
-    adapters: [tailwindAdapter, bootstrapAdapter],
+    label: "Mobile / Desktop",
+    adapters: EXPORT_ADAPTERS.filter((a) =>
+      ["react-native", "flutter", "ios-swift", "android"].includes(a.id),
+    ),
   },
   {
-    label: "Framework",
-    adapters: [shadcnAdapter, muiAdapter, antdAdapter, chakraAdapter],
+    label: "Design Tools",
+    adapters: EXPORT_ADAPTERS.filter((a) => ["figma"].includes(a.id)),
   },
 ];
 
@@ -48,6 +40,11 @@ const ADAPTER_EVENT: Record<string, AnalyticsEvent> = {
   mui: "mui_exported",
   antd: "antd_exported",
   chakra: "chakra_exported",
+  figma: "figma_exported",
+  "react-native": "react_native_exported",
+  flutter: "flutter_exported",
+  "ios-swift": "ios_exported",
+  android: "android_exported",
 };
 
 export function ExportPanel({ system }: { system: DesignSystem }) {
@@ -76,7 +73,7 @@ export function ExportPanel({ system }: { system: DesignSystem }) {
         </div>
       </div>
 
-      <div className="space-y-1">
+      <div className="space-y-2">
         {ADAPTER_GROUPS.map((group) => (
           <div key={group.label}>
             <p className="mb-1 text-[10px] font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">

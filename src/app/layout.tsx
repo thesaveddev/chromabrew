@@ -4,6 +4,7 @@ import { Analytics } from "@vercel/analytics/react";
 import { SiteHeader } from "@/components/site/header";
 import { SiteFooter } from "@/components/site/footer";
 import { Providers } from "@/components/providers";
+import { FeedbackWidget } from "@/components/feedback/feedback-widget";
 import "./globals.css";
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -58,6 +59,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             {children}
           </main>
           <SiteFooter />
+          <FeedbackWidget />
         </Providers>
         {/* Analytics only load on Vercel deployments; local/dev stays silent. */}
         {process.env.VERCEL ? <Analytics /> : null}

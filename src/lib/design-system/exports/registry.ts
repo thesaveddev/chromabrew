@@ -7,11 +7,12 @@ import { bootstrapAdapter } from "./bootstrap";
 import { muiAdapter } from "./mui";
 import { antdAdapter } from "./antd";
 import { chakraAdapter } from "./chakra";
+import { figmaAdapter } from "./figma";
+import { reactNativeAdapter } from "./react-native";
+import { flutterAdapter } from "./flutter";
+import { iosAdapter } from "./ios";
+import { androidAdapter } from "./android";
 
-/**
- * Registry of export adapters. Additional formats (SCSS, Material, Flutter
- * …) plug in here without touching generation logic.
- */
 export const EXPORT_ADAPTERS: ExportAdapter[] = [
   cssAdapter,
   jsonAdapter,
@@ -21,6 +22,11 @@ export const EXPORT_ADAPTERS: ExportAdapter[] = [
   muiAdapter,
   antdAdapter,
   chakraAdapter,
+  figmaAdapter,
+  reactNativeAdapter,
+  flutterAdapter,
+  iosAdapter,
+  androidAdapter,
 ];
 
 export {
@@ -32,4 +38,9 @@ export {
   muiAdapter,
   antdAdapter,
   chakraAdapter,
+  figmaAdapter,
+  reactNativeAdapter,
+  flutterAdapter,
+  iosAdapter,
+  androidAdapter,
 };

@@ -28,6 +28,7 @@ import { PrimitivesPanel } from "./panels/primitives-panel";
 import { TokensPanel } from "./panels/tokens-panel";
 import { AccessibilityPanel } from "./panels/accessibility-panel";
 import { ExportPanel } from "./panels/export-panel";
+import { AiPaletteSuggestion } from "./ai-palette-suggestion";
 import { PreviewFrame } from "./previews/preview-frame";
 import { SaasPreview } from "./previews/saas-preview";
 import { MarketingPreview } from "./previews/marketing-preview";
@@ -130,6 +131,17 @@ export function GeneratorWorkspace() {
 
   const setPrimary = (hex: string) =>
     setConfig((prev) => ({ ...prev, primary: hex }));
+
+  const applyAiPalette = (hex: string) => {
+    setPrimary(hex);
+    setConfig((prev) => ({
+      ...prev,
+      paletteStrategy: "complementary",
+      lockedIndices: [],
+      paletteOverrides: {},
+    }));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const setStrategy = (strategy: PaletteStrategyId) => {
     track("palette_strategy_changed", { strategy });
@@ -322,6 +334,7 @@ export function GeneratorWorkspace() {
 
           <AccessibilityPanel report={system.accessibility} onApplyFix={applyFix} />
           <TokensPanel themes={system.themes} />
+          <AiPaletteSuggestion onApply={applyAiPalette} />
           <ExportPanel system={system} />
 
           {Object.keys(fixes.light).length + Object.keys(fixes.dark).length > 0 ? (

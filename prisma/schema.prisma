@@ -90,3 +90,36 @@ model ProjectVersion {
 
   @@index([projectId])
 }
+
+// ─── Feedback & Analytics ───────────────────────────────────────
+
+model Feedback {
+  id        String   @id @default(cuid())
+  type      FeedbackType @default(comment)
+  message   String   @db.Text
+  email     String?
+  page      String?
+  ip        String?  @db.Text
+  userId    String?
+  createdAt DateTime @default(now())
+}
+
+enum FeedbackType {
+  comment
+  bug
+  feature
+  praise
+}
+
+model PageView {
+  id        String   @id @default(cuid())
+  path      String
+  ip        String?  @db.Text
+  userAgent String?  @db.Text
+  referrer  String?  @db.Text
+  country   String?
+  createdAt DateTime @default(now())
+
+  @@index([path, createdAt])
+  @@index([createdAt])
+}
