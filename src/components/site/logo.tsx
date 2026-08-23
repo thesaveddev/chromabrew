@@ -5,7 +5,7 @@ export function Logo({ className = "" }: { className?: string }) {
     <Link
       href="/"
       className={`flex items-center gap-2.5 font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 ${className}`}
-      aria-label="Colorsmith home"
+      aria-label="ChromaBrew home"
     >
       <span
         aria-hidden
@@ -13,7 +13,7 @@ export function Logo({ className = "" }: { className?: string }) {
       >
         <span className="block h-2.5 w-2.5 rounded-full bg-[#c87cb3]" />
       </span>
-      <span className="text-[15px]">Colorsmith</span>
+      <span className="text-[15px]">ChromaBrew</span>
     </Link>
   );
 }

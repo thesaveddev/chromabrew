@@ -1,8 +1,8 @@
-# Colorsmith
+# ChromaBrew
 
 **Turn one colour into an entire design system.**
 
-Colorsmith is a free, account-free web tool that transforms a single colour
+ChromaBrew is a free, account-free web tool that transforms a single colour
 (HEX / RGB / HSL / colour picker / extracted from an image) into a complete,
 accessible, production-ready design system:
 
@@ -42,7 +42,7 @@ Requires Node 18.18+ (developed on Node 22). E2E tests need a one-time
 
 | Variable               | Required | Default                 | Purpose                          |
 | ---------------------- | -------- | ----------------------- | -------------------------------- |
-| `NEXT_PUBLIC_SITE_URL` | no       | `https://colorsmith.app`| Canonical URLs, sitemap, robots  |
+| `NEXT_PUBLIC_SITE_URL` | no       | `https://chromabrew.app`| Canonical URLs, sitemap, robots  |
 
 No secrets are required in Phase 1.
 

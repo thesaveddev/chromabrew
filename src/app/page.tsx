@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { HeroColourForm } from "@/components/home/hero-form";
 import { buildDesignSystem } from "@/lib/design-system";
@@ -9,7 +9,7 @@ import { LinkButton } from "@/components/ui/primitives";
 import { TOOLS } from "@/lib/tools";
 
 export const metadata: Metadata = {
-  title: "Colorsmith — Turn one colour into an entire design system",
+  title: "ChromaBrew — Turn one colour into an entire design system",
   description:
     "Generate accessible palettes, semantic tokens, light and dark themes, and production-ready code from a single colour. Free, no account required.",
   alternates: { canonical: "/" },

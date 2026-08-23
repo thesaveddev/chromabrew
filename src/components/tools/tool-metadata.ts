@@ -10,7 +10,7 @@ export function toolMetadata(href: string): Metadata {
     description: tool.description,
     alternates: { canonical: tool.href },
     openGraph: {
-      title: `${tool.metaTitle} · Colorsmith`,
+      title: `${tool.metaTitle} · ChromaBrew`,
       description: tool.description,
       url: tool.href,
       type: "website",

@@ -14,19 +14,19 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://colorsmith.app";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://chromabrew.app";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Colorsmith — Turn one colour into an entire design system",
-    template: "%s · Colorsmith",
+    default: "ChromaBrew — Turn one colour into an entire design system",
+    template: "%s · ChromaBrew",
   },
   description:
     "Generate accessible palettes, semantic tokens, light and dark themes, and production-ready code from a single colour. Free, no account required.",
   openGraph: {
     type: "website",
-    siteName: "Colorsmith",
+    siteName: "ChromaBrew",
     url: siteUrl,
   },
   alternates: { canonical: "/" },
