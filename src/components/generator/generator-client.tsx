@@ -180,6 +180,12 @@ export function GeneratorWorkspace() {
     try {
       const name = projectName || `Design system ${config.primary.toUpperCase()}`;
       if (projectId) {
+        // Create a version snapshot before updating
+        await fetch(`/api/projects/${projectId}/versions`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ label: name, config }),
+        });
         const res = await fetch(`/api/projects/${projectId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },

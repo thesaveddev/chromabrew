@@ -61,7 +61,7 @@ export default async function ProjectsPage() {
             {projects.map((project) => (
               <li key={project.id}>
                 <Link
-                  href={`/design-system?project=${project.id}`}
+                  href={`/projects/${project.id}`}
                   className="group block rounded-xl border border-zinc-200 bg-white p-5 transition-colors hover:border-zinc-400 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-600"
                 >
                   <div className="flex items-start justify-between gap-4">
