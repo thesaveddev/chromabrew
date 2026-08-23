@@ -27,12 +27,14 @@ export function buildDesignSystem(config: GeneratorConfig): DesignSystem {
 
   const scale = generateScale(primaryValue.hex);
 
-  // Seeds for secondary (muted, same hue) and accent (hue-rotated) roles.
-  const accentSeed = toColourValue(
-    // +30° analogous rotation in OKLCH space.
-    rotateHue(primaryValue.hex, 30),
-  );
-  const secondarySeed = primaryValue;
+  // Use user-supplied secondary/accent when provided, otherwise fall back
+  // to heuristic derivation from primary.
+  const secondaryValue = config.secondary
+    ? toColourValue(config.secondary)
+    : primaryValue;
+  const accentValue = config.accent
+    ? toColourValue(config.accent)
+    : toColourValue(rotateHue(primaryValue.hex, 30));
 
   const palette = generatePalette(primaryValue.hex, config.paletteStrategy, {
     overrides: config.paletteOverrides,
@@ -40,11 +42,11 @@ export function buildDesignSystem(config: GeneratorConfig): DesignSystem {
 
   const themes = {
     light: generateTheme(
-      { primaryHex: primaryValue.hex, scale, accentSeedHex: accentSeed.hex, secondarySeedHex: secondarySeed.hex },
+      { primaryHex: primaryValue.hex, scale, accentSeedHex: accentValue.hex, secondarySeedHex: secondaryValue.hex },
       "light",
     ),
     dark: generateTheme(
-      { primaryHex: primaryValue.hex, scale, accentSeedHex: accentSeed.hex, secondarySeedHex: secondarySeed.hex },
+      { primaryHex: primaryValue.hex, scale, accentSeedHex: accentValue.hex, secondarySeedHex: secondaryValue.hex },
       "dark",
     ),
   };
@@ -66,7 +68,7 @@ export function buildDesignSystem(config: GeneratorConfig): DesignSystem {
       colors: {
         scale,
         palette,
-        accentSeed: accentSeed,
+        accentSeed: accentValue,
       },
       typography: generateTypography(config.typeRatio),
       spacing: generateSpacing(),
