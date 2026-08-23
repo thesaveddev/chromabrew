@@ -3,6 +3,10 @@ import { cssAdapter } from "./css";
 import { jsonAdapter } from "./json";
 import { tailwindAdapter } from "./tailwind";
 import { shadcnAdapter } from "./shadcn";
+import { bootstrapAdapter } from "./bootstrap";
+import { muiAdapter } from "./mui";
+import { antdAdapter } from "./antd";
+import { chakraAdapter } from "./chakra";
 
 /**
  * Registry of export adapters. Additional formats (SCSS, Material, Flutter
@@ -13,6 +17,19 @@ export const EXPORT_ADAPTERS: ExportAdapter[] = [
   jsonAdapter,
   tailwindAdapter,
   shadcnAdapter,
+  bootstrapAdapter,
+  muiAdapter,
+  antdAdapter,
+  chakraAdapter,
 ];
 
-export { cssAdapter, jsonAdapter, tailwindAdapter, shadcnAdapter };
+export {
+  cssAdapter,
+  jsonAdapter,
+  tailwindAdapter,
+  shadcnAdapter,
+  bootstrapAdapter,
+  muiAdapter,
+  antdAdapter,
+  chakraAdapter,
+};

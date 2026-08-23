@@ -17,7 +17,11 @@ export type AnalyticsEvent =
   | "image_palette_generated"
   | "share_url_copied"
   | "project_created"
-  | "project_updated";
+  | "project_updated"
+  | "bootstrap_exported"
+  | "mui_exported"
+  | "antd_exported"
+  | "chakra_exported";
 
 type Sink = (event: AnalyticsEvent, properties?: Record<string, string | number>) => void;
 

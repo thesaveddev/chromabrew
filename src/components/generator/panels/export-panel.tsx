@@ -6,26 +6,53 @@ import {
   jsonAdapter,
   tailwindAdapter,
   shadcnAdapter,
+  bootstrapAdapter,
+  muiAdapter,
+  antdAdapter,
+  chakraAdapter,
 } from "@/lib/design-system/exports/registry";
+import type { ExportAdapter } from "@/lib/design-system/exports/adapter";
 import type { AnalyticsEvent } from "@/lib/analytics";
 import { track } from "@/lib/analytics";
-import { CopyButton, DownloadButton, TabList } from "@/components/ui/primitives";
+import { CopyButton, DownloadButton } from "@/components/ui/primitives";
 import type { DesignSystem } from "@/lib/design-system/types";
 
-const ADAPTERS = [cssAdapter, jsonAdapter, tailwindAdapter, shadcnAdapter];
+type AdapterGroup = {
+  label: string;
+  adapters: ExportAdapter[];
+};
+
+const ADAPTER_GROUPS: AdapterGroup[] = [
+  {
+    label: "Raw",
+    adapters: [cssAdapter, jsonAdapter],
+  },
+  {
+    label: "CSS",
+    adapters: [tailwindAdapter, bootstrapAdapter],
+  },
+  {
+    label: "Framework",
+    adapters: [shadcnAdapter, muiAdapter, antdAdapter, chakraAdapter],
+  },
+];
+
+const ALL_ADAPTERS = ADAPTER_GROUPS.flatMap((g) => g.adapters);
 
 const ADAPTER_EVENT: Record<string, AnalyticsEvent> = {
   css: "css_exported",
   json: "json_exported",
   tailwind: "tailwind_exported",
   shadcn: "shadcn_exported",
+  bootstrap: "bootstrap_exported",
+  mui: "mui_exported",
+  antd: "antd_exported",
+  chakra: "chakra_exported",
 };
 
-const EXPORT_EVENT = ADAPTER_EVENT;
-
 export function ExportPanel({ system }: { system: DesignSystem }) {
-  const [adapterId, setAdapterId] = useState(ADAPTERS[0].id);
-  const adapter = ADAPTERS.find((a) => a.id === adapterId) ?? ADAPTERS[0];
+  const [adapterId, setAdapterId] = useState(ALL_ADAPTERS[0].id);
+  const adapter = ALL_ADAPTERS.find((a) => a.id === adapterId) ?? ALL_ADAPTERS[0];
   const result = useMemo(() => adapter.generate(system), [adapter, system]);
 
   return (
@@ -38,7 +65,7 @@ export function ExportPanel({ system }: { system: DesignSystem }) {
           <CopyButton
             value={result.code}
             label={`Copy ${adapter.name}`}
-            onCopied={() => track(EXPORT_EVENT[adapter.id])}
+            onCopied={() => track(ADAPTER_EVENT[adapter.id])}
             className="px-2.5 py-1 text-xs"
           />
           <DownloadButton
@@ -49,16 +76,35 @@ export function ExportPanel({ system }: { system: DesignSystem }) {
         </div>
       </div>
 
-      <TabList
-        label="Export format"
-        size="sm"
-        options={ADAPTERS.map((a) => ({ id: a.id, label: a.name }))}
-        value={adapterId}
-        onChange={(id) => {
-          setAdapterId(id);
-          track(EXPORT_EVENT[id]);
-        }}
-      />
+      <div className="space-y-1">
+        {ADAPTER_GROUPS.map((group) => (
+          <div key={group.label}>
+            <p className="mb-1 text-[10px] font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+              {group.label}
+            </p>
+            <div className="flex flex-wrap gap-1">
+              {group.adapters.map((a) => (
+                <button
+                  key={a.id}
+                  type="button"
+                  onClick={() => {
+                    setAdapterId(a.id);
+                    track(ADAPTER_EVENT[a.id]);
+                  }}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                    adapterId === a.id
+                      ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+                      : "border border-zinc-200 text-zinc-600 hover:border-zinc-400 hover:text-zinc-900 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-500 dark:hover:text-zinc-100"
+                  }`}
+                >
+                  {a.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
       <p className="text-xs text-zinc-500">{adapter.description}</p>
 
       <pre className="max-h-96 overflow-auto rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-950 p-4 text-[11px] leading-5 text-zinc-100">
