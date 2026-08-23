@@ -1,6 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { buildDesignSystem } from "@/lib/design-system";
 import {
   configFromParams,
@@ -51,15 +53,45 @@ function initialConfig(): GeneratorConfig {
   return configFromParams(new URLSearchParams(window.location.search));
 }
 
+function getProjectId(): string | null {
+  if (typeof window === "undefined") return null;
+  return new URLSearchParams(window.location.search).get("project");
+}
+
 export function GeneratorWorkspace() {
+  const { data: session } = useSession();
+  const router = useRouter();
   const [config, setConfig] = useState<GeneratorConfig>(initialConfig);
   const [mode, setMode] = useState<ThemeMode>("light");
   const [preview, setPreview] = useState<PreviewId>("saas");
+  const [projectId, setProjectId] = useState<string | null>(getProjectId);
+  const [projectName, setProjectName] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState("");
+  const loadedProject = useRef(false);
   /** Per-mode manual fixes applied after generation (from Fix contrast). */
   const [fixes, setFixes] = useState<Record<ThemeMode, Partial<Record<SemanticTokenId, string>>>>({
     light: {},
     dark: {},
   });
+
+  /* ---- load project on mount ----------------------------------------- */
+  useEffect(() => {
+    if (loadedProject.current) return;
+    const pid = new URLSearchParams(window.location.search).get("project");
+    if (!pid) return;
+    loadedProject.current = true;
+    setProjectId(pid); // eslint-disable-line react-hooks/set-state-in-effect -- initial project load from URL
+    void fetch(`/api/projects/${pid}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data?.config) {
+          setConfig(data.config as unknown as GeneratorConfig);
+          setProjectName(data.name ?? "");
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   /* ---- derived system ------------------------------------------------ */
   const baseSystem = useMemo(() => buildDesignSystem(config), [config]);
@@ -137,6 +169,48 @@ export function GeneratorWorkspace() {
       [fixMode]: { ...prev[fixMode], [token]: hex },
     }));
 
+  /* ---- save / update project ----------------------------------------- */
+  const saveProject = useCallback(async () => {
+    if (!session?.user?.id) {
+      router.push("/sign-in");
+      return;
+    }
+    setSaving(true);
+    setSaveMessage("");
+    try {
+      const name = projectName || `Design system ${config.primary.toUpperCase()}`;
+      if (projectId) {
+        const res = await fetch(`/api/projects/${projectId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, config }),
+        });
+        if (res.ok) {
+          setSaveMessage("Saved");
+          track("project_updated");
+        }
+      } else {
+        const res = await fetch("/api/projects", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, config }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setProjectId(data.id);
+          window.history.replaceState(null, "", `?project=${data.id}`);
+          setSaveMessage("Saved");
+          track("project_created");
+        }
+      }
+    } catch {
+      setSaveMessage("Error saving");
+    } finally {
+      setSaving(false);
+      window.setTimeout(() => setSaveMessage(""), 2000);
+    }
+  }, [session, projectId, projectName, config, router]);
+
   /* ---- palette with lock/edit state merged ---------------------------- */
   const palette = useMemo(() => {
     const seeded = system.primitives.colors.palette.map((swatch) => ({
@@ -185,6 +259,17 @@ export function GeneratorWorkspace() {
                 if (next === "dark") track("dark_mode_previewed");
               }}
             />
+            {session?.user && (
+              <Button
+                type="button"
+                variant="secondary"
+                className="px-2.5 py-1 text-xs"
+                onClick={saveProject}
+                disabled={saving}
+              >
+                {saving ? "Saving…" : saveMessage || "Save"}
+              </Button>
+            )}
             <Button type="button" variant="secondary" className="px-2.5 py-1 text-xs" onClick={copyShareLink}>
               {shareCopied ? "Link copied" : "Share link"}
             </Button>

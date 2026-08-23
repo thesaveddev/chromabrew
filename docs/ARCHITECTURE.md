@@ -155,7 +155,41 @@ is hydrated client-side in `useEffect`, so the route stays fully static.
 `generator-client.tsx` owns `GeneratorConfig`, the preview mode and optional
 per-mode "contrast fix" overrides. It derives the whole UI from
 `useMemo(() => buildDesignSystem(config))` and syncs the config into the URL
-via `history.replaceState`.
+via `history.replaceState`. When a `?project=` param is present, the config
+is loaded from the API on mount and a Save button appears in the toolbar.
+
+## Authentication (Phase 2)
+
+Auth.js (NextAuth) with GitHub and Google OAuth providers. JWT-based sessions
+with a Prisma adapter storing users, accounts, sessions and verification
+tokens in PostgreSQL. The `SiteHeader` is a server component that reads the
+session; `UserMenu` is a client component managing the dropdown.
+
+## Database (Phase 2)
+
+PostgreSQL on the user's VPS, accessed via Prisma ORM with the
+`@prisma/adapter-pg` driver adapter. Schema is in `prisma/schema.prisma`;
+connection URL is in `prisma.config.ts` (reads `DATABASE_URL` from env).
+
+Key models:
+
+| Model              | Purpose                                             |
+| ------------------ | --------------------------------------------------- |
+| `User`             | Auth.js user record (name, email, image)            |
+| `Account`          | OAuth provider links (GitHub, Google)               |
+| `Session`          | Active sessions (JWT strategy)                      |
+| `VerificationToken`| Email verification (for future email auth)          |
+| `Project`          | Saved design system config with visibility          |
+| `ProjectVersion`   | Snapshot of config at a point in time               |
+
+## Project API (Phase 2)
+
+| Route                       | Methods          | Auth | Purpose                     |
+| --------------------------- | ---------------- | ---- | --------------------------- |
+| `/api/projects`             | GET, POST        | Yes  | List / create projects      |
+| `/api/projects/[id]`        | GET, PATCH, DELETE| Owner| View / update / delete      |
+| `/api/projects/[id]/versions`| GET, POST       | Owner| List / create versions      |
+| `/p/[id]`                   | (page)           | Public if visible | Public project view |
 
 ## Testing
 
@@ -178,16 +212,19 @@ Chromium, Firefox and WebKit against the production build — homepage input,
 URL round-trip, dark mode, all four previews, Tailwind/shadcn exports,
 share-link restore — and fails on any browser console error.
 
-## Security & privacy posture (Phase 1)
+## Security & privacy posture
 
-- No database, no accounts, no secrets, no server-side state.
-- All computation happens in the browser; uploads never leave the device.
-- File validation: type allow-list and 8 MB size cap before processing.
+- Database-hosted on user's VPS; no third-party database SaaS.
+- Auth.js handles OAuth token exchange; no passwords stored.
+- Project visibility enforced at API level: private projects return 404 to
+  non-owners; public projects are viewable by anyone with the link.
+- All colour computation still happens client-side; the database only stores
+  the `GeneratorConfig` JSON.
 - Vercel Analytics (`@vercel/analytics`) is wired and gated to `process.env.VERCEL`:
   the script only loads on Vercel deployments; local/dev stays silent.
-  Typed custom events ready for Plausible/GA4/PostHog swap if needed.
 
-## Deliberate limitations (Phase 1)
+## Deliberate limitations
 
 - Vercel Analytics only loads on Vercel deployments (gated by `process.env.VERCEL`).
 - E2E runs in Chromium, Firefox and WebKit; clipboard is stubbed for headless engines.
+- Database migrations must be run manually (`npx prisma migrate deploy`) on the VPS.

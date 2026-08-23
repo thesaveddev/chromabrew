@@ -15,7 +15,9 @@ export type AnalyticsEvent =
   | "shadcn_exported"
   | "json_exported"
   | "image_palette_generated"
-  | "share_url_copied";
+  | "share_url_copied"
+  | "project_created"
+  | "project_updated";
 
 type Sink = (event: AnalyticsEvent, properties?: Record<string, string | number>) => void;
 

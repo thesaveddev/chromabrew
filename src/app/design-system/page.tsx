@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 /**
  * Statically prerendered shell. Shareable-URL state (?primary=…&strategy=…)
- * is hydrated client-side after mount, so the route stays fully static.
+ * and project loading (?project=…) are hydrated client-side after mount.
  */
 export default function DesignSystemPage() {
   return <GeneratorWorkspace />;

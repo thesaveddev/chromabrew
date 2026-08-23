@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import { SiteHeader } from "@/components/site/header";
 import { SiteFooter } from "@/components/site/footer";
+import { Providers } from "@/components/providers";
 import "./globals.css";
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -51,11 +52,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         >
           Skip to content
         </a>
-        <SiteHeader />
-        <main id="main" className="flex flex-1 flex-col">
-          {children}
-        </main>
-        <SiteFooter />
+        <Providers>
+          <SiteHeader />
+          <main id="main" className="flex flex-1 flex-col">
+            {children}
+          </main>
+          <SiteFooter />
+        </Providers>
         {/* Analytics only load on Vercel deployments; local/dev stays silent. */}
         {process.env.VERCEL ? <Analytics /> : null}
       </body>
