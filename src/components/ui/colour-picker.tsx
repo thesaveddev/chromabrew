@@ -7,10 +7,6 @@ import {
   toColourValue,
 } from "@/lib/design-system/colour/convert";
 
-/* ------------------------------------------------------------------ */
-/* Custom colour picker: saturation canvas + hue slider + hex input    */
-/* ------------------------------------------------------------------ */
-
 export function ColourPicker({
   value,
   onChange,
@@ -36,8 +32,10 @@ export function ColourPicker({
         <div className="flex flex-col gap-2">
           <HueSlider h={hsl.h} s={hsl.s} l={hsl.l} onChange={onChange} />
           <HexInput value={value} onChange={onChange} />
-          <div className="hidden sm:grid grid-cols-2 gap-1">
+          <div className="hidden sm:flex gap-1">
             <RgbInput value={value} onChange={onChange} />
+          </div>
+          <div className="hidden sm:flex gap-1">
             <HslInput value={value} onChange={onChange} />
           </div>
         </div>
@@ -47,7 +45,7 @@ export function ColourPicker({
 }
 
 /* ------------------------------------------------------------------ */
-/* Saturation / Brightness 2D canvas                                   */
+/* Saturation Canvas                                                   */
 /* ------------------------------------------------------------------ */
 
 function hslToRgb(h: number, s: number, l: number): { r: number; g: number; b: number } {
@@ -73,22 +71,15 @@ function hslToRgb(h: number, s: number, l: number): { r: number; g: number; b: n
 }
 
 function SaturationCanvas({
-  h,
-  s,
-  l,
-  onChange,
-  size,
+  h, s, l, onChange, size,
 }: {
-  h: number;
-  s: number;
-  l: number;
+  h: number; s: number; l: number;
   onChange: (hex: string) => void;
   size: "md" | "lg";
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const dragging = useRef(false);
-
   const w = size === "lg" ? 220 : 180;
   const hgt = size === "lg" ? 160 : 120;
 
@@ -97,17 +88,14 @@ function SaturationCanvas({
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-
     const base = hslToRgb(h, 100, 50);
     ctx.fillStyle = `rgb(${base.r},${base.g},${base.b})`;
     ctx.fillRect(0, 0, w, hgt);
-
     const white = ctx.createLinearGradient(0, 0, w, 0);
     white.addColorStop(0, "rgba(255,255,255,1)");
     white.addColorStop(1, "rgba(255,255,255,0)");
     ctx.fillStyle = white;
     ctx.fillRect(0, 0, w, hgt);
-
     const black = ctx.createLinearGradient(0, 0, 0, hgt);
     black.addColorStop(0, "rgba(0,0,0,0)");
     black.addColorStop(1, "rgba(0,0,0,1)");
@@ -128,18 +116,11 @@ function SaturationCanvas({
   );
 
   useEffect(() => {
-    const onMove = (e: MouseEvent) => {
-      if (!dragging.current) return;
-      e.preventDefault();
-      pick(e.clientX, e.clientY);
-    };
+    const onMove = (e: MouseEvent) => { if (!dragging.current) return; e.preventDefault(); pick(e.clientX, e.clientY); };
     const onUp = () => { dragging.current = false; };
     window.addEventListener("mousemove", onMove);
     window.addEventListener("mouseup", onUp);
-    return () => {
-      window.removeEventListener("mousemove", onMove);
-      window.removeEventListener("mouseup", onUp);
-    };
+    return () => { window.removeEventListener("mousemove", onMove); window.removeEventListener("mouseup", onUp); };
   }, [pick]);
 
   return (
@@ -163,17 +144,7 @@ function SaturationCanvas({
 /* Hue slider                                                          */
 /* ------------------------------------------------------------------ */
 
-function HueSlider({
-  h,
-  s,
-  l,
-  onChange,
-}: {
-  h: number;
-  s: number;
-  l: number;
-  onChange: (hex: string) => void;
-}) {
+function HueSlider({ h, s, l, onChange }: { h: number; s: number; l: number; onChange: (hex: string) => void }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const dragging = useRef(false);
 
@@ -189,18 +160,11 @@ function HueSlider({
   );
 
   useEffect(() => {
-    const onMove = (e: MouseEvent) => {
-      if (!dragging.current) return;
-      e.preventDefault();
-      pick(e.clientX);
-    };
+    const onMove = (e: MouseEvent) => { if (!dragging.current) return; e.preventDefault(); pick(e.clientX); };
     const onUp = () => { dragging.current = false; };
     window.addEventListener("mousemove", onMove);
     window.addEventListener("mouseup", onUp);
-    return () => {
-      window.removeEventListener("mousemove", onMove);
-      window.removeEventListener("mouseup", onUp);
-    };
+    return () => { window.removeEventListener("mousemove", onMove); window.removeEventListener("mouseup", onUp); };
   }, [pick]);
 
   return (
@@ -224,21 +188,20 @@ function HueSlider({
 /* ------------------------------------------------------------------ */
 
 function HexInput({ value, onChange }: { value: string; onChange: (hex: string) => void }) {
-  const [editing, setEditing] = useState<string | null>(null);
-  const display = editing ?? value.toUpperCase();
+  const [draft, setDraft] = useState<string | null>(null);
 
   const submit = () => {
-    if (editing === null) return;
-    const match = editing.match(/^#?([0-9a-f]{6})$/i);
+    if (draft === null) return;
+    const match = draft.match(/^#?([0-9a-f]{6})$/i);
     if (match) onChange(`#${match[1].toLowerCase()}`);
-    setEditing(null);
+    setDraft(null);
   };
 
   return (
     <input
       type="text"
-      value={display}
-      onChange={(e) => setEditing(e.target.value.toUpperCase())}
+      value={(draft ?? value).toUpperCase()}
+      onChange={(e) => setDraft(e.target.value.toUpperCase())}
       onBlur={submit}
       onKeyDown={(e) => e.key === "Enter" && submit()}
       maxLength={7}
@@ -249,97 +212,106 @@ function HexInput({ value, onChange }: { value: string; onChange: (hex: string) 
 }
 
 /* ------------------------------------------------------------------ */
-/* RGB input — derived from prop, local state only while editing       */
+/* RGB input — always shows current value, submits on blur             */
 /* ------------------------------------------------------------------ */
 
 function RgbInput({ value, onChange }: { value: string; onChange: (hex: string) => void }) {
-  const cv = toColourValue(value);
-  const [r, setR] = useState<string | null>(null);
-  const [g, setG] = useState<string | null>(null);
-  const [b, setB] = useState<string | null>(null);
+  const [draft, setDraft] = useState<string | null>(null);
+
+  let r: number, g: number, b: number;
+  try {
+    const cv = toColourValue(value);
+    r = cv.rgb.r;
+    g = cv.rgb.g;
+    b = cv.rgb.b;
+  } catch {
+    r = 0; g = 0; b = 0;
+  }
 
   const submit = () => {
-    const ri = Math.max(0, Math.min(255, parseInt(r ?? String(cv.rgb.r)) || 0));
-    const gi = Math.max(0, Math.min(255, parseInt(g ?? String(cv.rgb.g)) || 0));
-    const bi = Math.max(0, Math.min(255, parseInt(b ?? String(cv.rgb.b)) || 0));
-    onChange(`#${ri.toString(16).padStart(2, "0")}${gi.toString(16).padStart(2, "0")}${bi.toString(16).padStart(2, "0")}`);
-    setR(null);
-    setG(null);
-    setB(null);
+    if (draft === null) return;
+    const parts = draft.split(",").map((s) => parseInt(s.trim(), 10));
+    if (parts.length === 3 && parts.every((n) => !isNaN(n) && n >= 0 && n <= 255)) {
+      const hex = `#${parts.map((n) => n.toString(16).padStart(2, "0")).join("")}`;
+      onChange(hex);
+    }
+    setDraft(null);
   };
+
+  const display = draft !== null ? draft.split(",") : [String(r), String(g), String(b)];
 
   return (
     <div className="flex items-center gap-0.5">
       <span className="text-[9px] font-medium text-zinc-400">RGB</span>
-      <input
-        type="number" min={0} max={255}
-        value={r ?? cv.rgb.r}
-        onChange={(e) => setR(e.target.value)}
-        onBlur={submit}
-        className="w-8 rounded border border-zinc-200 bg-white px-0.5 py-0.5 text-center font-mono text-[10px] text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
-      />
-      <input
-        type="number" min={0} max={255}
-        value={g ?? cv.rgb.g}
-        onChange={(e) => setG(e.target.value)}
-        onBlur={submit}
-        className="w-8 rounded border border-zinc-200 bg-white px-0.5 py-0.5 text-center font-mono text-[10px] text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
-      />
-      <input
-        type="number" min={0} max={255}
-        value={b ?? cv.rgb.b}
-        onChange={(e) => setB(e.target.value)}
-        onBlur={submit}
-        className="w-8 rounded border border-zinc-200 bg-white px-0.5 py-0.5 text-center font-mono text-[10px] text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
-      />
+      {[0, 1, 2].map((i) => (
+        <input
+          key={i}
+          type="text"
+          inputMode="numeric"
+          value={display[i] ?? ""}
+          onChange={(e) => {
+            const current = draft ?? `${r},${g},${b}`;
+            const parts = current.split(",");
+            parts[i] = e.target.value;
+            setDraft(parts.join(","));
+          }}
+          onBlur={submit}
+          onKeyDown={(e) => e.key === "Enter" && submit()}
+          className="w-8 rounded border border-zinc-200 bg-white px-0.5 py-0.5 text-center font-mono text-[10px] text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+        />
+      ))}
     </div>
   );
 }
 
 /* ------------------------------------------------------------------ */
-/* HSL input — derived from prop, local state only while editing       */
+/* HSL input — always shows current value, submits on blur             */
 /* ------------------------------------------------------------------ */
 
 function HslInput({ value, onChange }: { value: string; onChange: (hex: string) => void }) {
+  const [draft, setDraft] = useState<string | null>(null);
+
   const hsl = hexToHsl(value);
-  const [h, setH] = useState<string | null>(null);
-  const [s, setS] = useState<string | null>(null);
-  const [l, setL] = useState<string | null>(null);
+  const h = Math.round(hsl.h);
+  const s = Math.round(hsl.s);
+  const l = Math.round(hsl.l);
 
   const submit = () => {
-    const hi = Math.max(0, Math.min(360, parseInt(h ?? String(Math.round(hsl.h))) || 0));
-    const si = Math.max(0, Math.min(100, parseInt(s ?? String(Math.round(hsl.s))) || 0));
-    const li = Math.max(0, Math.min(100, parseInt(l ?? String(Math.round(hsl.l))) || 0));
-    onChange(hslToHex(hi, si, li));
-    setH(null);
-    setS(null);
-    setL(null);
+    if (draft === null) return;
+    const parts = draft.split(",").map((s) => parseInt(s.trim(), 10));
+    if (parts.length === 3 && parts.every((n) => !isNaN(n))) {
+      const [hh, ss, ll] = parts;
+      onChange(hslToHex(
+        Math.max(0, Math.min(360, hh)),
+        Math.max(0, Math.min(100, ss)),
+        Math.max(0, Math.min(100, ll)),
+      ));
+    }
+    setDraft(null);
   };
+
+  const display = draft !== null ? draft.split(",") : [String(h), String(s), String(l)];
 
   return (
     <div className="flex items-center gap-0.5">
       <span className="text-[9px] font-medium text-zinc-400">HSL</span>
-      <input
-        type="number" min={0} max={360}
-        value={h ?? Math.round(hsl.h)}
-        onChange={(e) => setH(e.target.value)}
-        onBlur={submit}
-        className="w-8 rounded border border-zinc-200 bg-white px-0.5 py-0.5 text-center font-mono text-[10px] text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
-      />
-      <input
-        type="number" min={0} max={100}
-        value={s ?? Math.round(hsl.s)}
-        onChange={(e) => setS(e.target.value)}
-        onBlur={submit}
-        className="w-8 rounded border border-zinc-200 bg-white px-0.5 py-0.5 text-center font-mono text-[10px] text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
-      />
-      <input
-        type="number" min={0} max={100}
-        value={l ?? Math.round(hsl.l)}
-        onChange={(e) => setL(e.target.value)}
-        onBlur={submit}
-        className="w-8 rounded border border-zinc-200 bg-white px-0.5 py-0.5 text-center font-mono text-[10px] text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
-      />
+      {[0, 1, 2].map((i) => (
+        <input
+          key={i}
+          type="text"
+          inputMode="numeric"
+          value={display[i] ?? ""}
+          onChange={(e) => {
+            const current = draft ?? `${h},${s},${l}`;
+            const parts = current.split(",");
+            parts[i] = e.target.value;
+            setDraft(parts.join(","));
+          }}
+          onBlur={submit}
+          onKeyDown={(e) => e.key === "Enter" && submit()}
+          className="w-8 rounded border border-zinc-200 bg-white px-0.5 py-0.5 text-center font-mono text-[10px] text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+        />
+      ))}
     </div>
   );
 }
