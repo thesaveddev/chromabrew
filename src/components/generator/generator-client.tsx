@@ -266,12 +266,31 @@ export function GeneratorWorkspace() {
       {/* Toolbar */}
       <div className="sticky top-14 z-30 -mx-4 mb-6 border-b border-zinc-200 bg-white/90 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 dark:border-zinc-800 dark:bg-zinc-950/90">
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-            Design system{" "}
-            <span className="font-mono font-normal text-zinc-500">
-              {system.source.primary.hex.toUpperCase()}
-            </span>
-          </h1>
+          {/* Live identity strip — mirrors the three source colours */}
+          <div className="flex items-center gap-2.5">
+            <div className="flex -space-x-1" aria-hidden>
+              {(
+                [
+                  ["Primary", config.primary],
+                  ["Secondary", config.secondary],
+                  ["Accent", config.accent],
+                ] as const
+              ).map(([name, hex]) => (
+                <span
+                  key={name}
+                  title={`${name} ${hex.toUpperCase()}`}
+                  className="h-[18px] w-[18px] rounded-full ring-2 ring-white transition-colors duration-150 dark:ring-zinc-950"
+                  style={{ backgroundColor: hex }}
+                />
+              ))}
+            </div>
+            <h1 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              Design system{" "}
+              <span className="font-mono text-xs font-normal text-zinc-500 dark:text-zinc-400">
+                {system.source.primary.hex.toUpperCase()}
+              </span>
+            </h1>
+          </div>
           <div className="ml-auto flex items-center gap-2">
             <TabList
               label="Theme mode"
@@ -302,8 +321,8 @@ export function GeneratorWorkspace() {
       </div>
 
       <div className="grid gap-8 lg:grid-cols-[330px_minmax(0,1fr)]">
-        {/* Configuration rail */}
-        <div className="space-y-8">
+        {/* Configuration rail — stays visible while previews scroll */}
+        <div className="space-y-8 lg:sticky lg:top-[7.75rem] lg:max-h-[calc(100vh-9rem)] lg:self-start lg:overflow-y-auto lg:pr-1.5">
           <SourcePanel
             primary={config.primary}
             secondary={config.secondary}

@@ -190,10 +190,10 @@ function ColourSlot({
 
   return (
     <div
-      className={`rounded-lg border p-3 transition-colors ${
+      className={`rounded-xl border p-3 transition-all ${
         isActive
-          ? "border-zinc-400 dark:border-zinc-500 bg-zinc-50 dark:bg-zinc-800/50"
-          : "border-zinc-200 dark:border-zinc-800"
+          ? "border-zinc-300 bg-zinc-50 shadow-sm dark:border-zinc-600 dark:bg-zinc-800/60"
+          : "border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50/60 dark:border-zinc-800 dark:hover:border-zinc-700 dark:hover:bg-zinc-800/30"
       }`}
     >
       <button
@@ -202,17 +202,36 @@ function ColourSlot({
           onSelect();
           setExpanded(!expanded);
         }}
+        aria-expanded={expanded}
         className="flex w-full items-center gap-3"
       >
-        <div
-          className="h-8 w-8 shrink-0 rounded-lg border border-zinc-200 dark:border-zinc-700"
-          style={{ backgroundColor: value }}
-        />
-        <div className="flex-1 text-left">
-          <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{label}</p>
-          <p className="text-[11px] text-zinc-500 dark:text-zinc-400">{description}</p>
-        </div>
-        <span className="font-mono text-xs text-zinc-500 dark:text-zinc-400">{value.toUpperCase()}</span>
+        <span className="relative shrink-0">
+          <span
+            className="block h-9 w-9 rounded-lg border border-black/10 dark:border-white/15"
+            style={{ backgroundColor: value }}
+          />
+          {isActive ? (
+            <span
+              className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full border-2 border-white dark:border-zinc-900"
+              style={{ backgroundColor: value }}
+              title="Extracted colours fill this slot"
+            />
+          ) : null}
+        </span>
+        <span className="flex-1 text-left">
+          <span className="flex items-center gap-1.5">
+            <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{label}</span>
+            {isActive ? (
+              <span className="rounded-full bg-zinc-900 px-1.5 py-px text-[9px] font-semibold uppercase tracking-wide text-white dark:bg-zinc-100 dark:text-zinc-900">
+                target
+              </span>
+            ) : null}
+          </span>
+          <span className="block text-[11px] text-zinc-500 dark:text-zinc-400">{description}</span>
+        </span>
+        <span className="rounded-md bg-zinc-100 px-1.5 py-0.5 font-mono text-[11px] text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+          {value.toUpperCase()}
+        </span>
         <svg
           width="16"
           height="16"
@@ -221,13 +240,14 @@ function ColourSlot({
           stroke="currentColor"
           strokeWidth="2"
           className={`shrink-0 text-zinc-400 transition-transform ${expanded ? "rotate-180" : ""}`}
+          aria-hidden
         >
           <path d="M6 9l6 6 6-6" />
         </svg>
       </button>
 
       {expanded && (
-        <div className="mt-3">
+        <div className="mt-3 border-t border-zinc-200 pt-3 dark:border-zinc-700">
           <ColourPicker value={value} onChange={onChange} label={label} size="lg" />
         </div>
       )}

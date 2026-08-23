@@ -23,22 +23,24 @@ export function ColourPicker({
   return (
     <div className="space-y-2">
       <label className="sr-only">{label}</label>
-      <div
-        className={`grid gap-2 ${
-          size === "lg" ? "grid-cols-[1fr_auto]" : "grid-cols-[1fr_auto]"
-        }`}
-      >
-        <SaturationCanvas h={hsl.h} s={hsl.s} l={hsl.l} onChange={onChange} size={size} />
-        <div className="flex flex-col gap-2">
-          <HueSlider h={hsl.h} s={hsl.s} l={hsl.l} onChange={onChange} />
-          <HexInput value={value} onChange={onChange} />
-          <div className="hidden sm:flex gap-1">
-            <RgbInput value={value} onChange={onChange} />
-          </div>
-          <div className="hidden sm:flex gap-1">
-            <HslInput value={value} onChange={onChange} />
-          </div>
-        </div>
+      {/* Canvas + vertical hue strip */}
+      <div className="flex gap-2">
+        <SaturationCanvas
+          h={hsl.h}
+          s={hsl.s}
+          l={hsl.l}
+          onChange={onChange}
+          size={size}
+          className="min-w-0 flex-1"
+        />
+        <HueSlider h={hsl.h} s={hsl.s} l={hsl.l} onChange={onChange} />
+      </div>
+      {/* Hex */}
+      <HexInput value={value} onChange={onChange} />
+      {/* RGB / HSL side by side */}
+      <div className="grid grid-cols-2 gap-2">
+        <RgbInput value={value} onChange={onChange} />
+        <HslInput value={value} onChange={onChange} />
       </div>
     </div>
   );
@@ -71,37 +73,49 @@ function hslToRgb(h: number, s: number, l: number): { r: number; g: number; b: n
 }
 
 function SaturationCanvas({
-  h, s, l, onChange, size,
+  h, s, l, onChange, size, className = "",
 }: {
   h: number; s: number; l: number;
   onChange: (hex: string) => void;
   size: "md" | "lg";
+  className?: string;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const dragging = useRef(false);
-  const w = size === "lg" ? 220 : 180;
-  const hgt = size === "lg" ? 160 : 120;
+  const height = size === "lg" ? 150 : 110;
 
+  /* Redraw on hue change and whenever the element resizes */
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-    const base = hslToRgb(h, 100, 50);
-    ctx.fillStyle = `rgb(${base.r},${base.g},${base.b})`;
-    ctx.fillRect(0, 0, w, hgt);
-    const white = ctx.createLinearGradient(0, 0, w, 0);
-    white.addColorStop(0, "rgba(255,255,255,1)");
-    white.addColorStop(1, "rgba(255,255,255,0)");
-    ctx.fillStyle = white;
-    ctx.fillRect(0, 0, w, hgt);
-    const black = ctx.createLinearGradient(0, 0, 0, hgt);
-    black.addColorStop(0, "rgba(0,0,0,0)");
-    black.addColorStop(1, "rgba(0,0,0,1)");
-    ctx.fillStyle = black;
-    ctx.fillRect(0, 0, w, hgt);
-  }, [h, w, hgt]);
+    const draw = () => {
+      const parent = canvas.parentElement;
+      if (!parent) return;
+      const w = Math.max(1, Math.round(parent.clientWidth));
+      canvas.width = w;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      const base = hslToRgb(h, 100, 50);
+      ctx.fillStyle = `rgb(${base.r},${base.g},${base.b})`;
+      ctx.fillRect(0, 0, w, height);
+      const white = ctx.createLinearGradient(0, 0, w, 0);
+      white.addColorStop(0, "rgba(255,255,255,1)");
+      white.addColorStop(1, "rgba(255,255,255,0)");
+      ctx.fillStyle = white;
+      ctx.fillRect(0, 0, w, height);
+      const black = ctx.createLinearGradient(0, 0, 0, height);
+      black.addColorStop(0, "rgba(0,0,0,0)");
+      black.addColorStop(1, "rgba(0,0,0,1)");
+      ctx.fillStyle = black;
+      ctx.fillRect(0, 0, w, height);
+    };
+    draw();
+    const observer = new ResizeObserver(draw);
+    if (canvas.parentElement) observer.observe(canvas.parentElement);
+    return () => observer.disconnect();
+  }, [h, height]);
 
   const pick = useCallback(
     (clientX: number, clientY: number) => {
@@ -126,12 +140,12 @@ function SaturationCanvas({
   return (
     <div
       ref={containerRef}
-      className="relative cursor-crosshair overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-700 select-none"
-      style={{ width: w, height: hgt }}
+      className={`relative cursor-crosshair overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-700 select-none ${className}`}
+      style={{ height }}
       onMouseDown={(e) => { dragging.current = true; pick(e.clientX, e.clientY); }}
       onTouchStart={(e) => { dragging.current = true; const t = e.touches[0]; pick(t.clientX, t.clientY); }}
     >
-      <canvas ref={canvasRef} width={w} height={hgt} className="block" />
+      <canvas ref={canvasRef} className="block h-full w-full" />
       <div
         className="pointer-events-none absolute h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-[0_0_0_1px_rgba(0,0,0,0.3)]"
         style={{ left: `${s}%`, top: `${100 - l}%` }}
@@ -141,7 +155,7 @@ function SaturationCanvas({
 }
 
 /* ------------------------------------------------------------------ */
-/* Hue slider                                                          */
+/* Hue slider — vertical strip                                         */
 /* ------------------------------------------------------------------ */
 
 function HueSlider({ h, s, l, onChange }: { h: number; s: number; l: number; onChange: (hex: string) => void }) {
@@ -149,18 +163,18 @@ function HueSlider({ h, s, l, onChange }: { h: number; s: number; l: number; onC
   const dragging = useRef(false);
 
   const pick = useCallback(
-    (clientX: number) => {
+    (clientY: number) => {
       const track = trackRef.current;
       if (!track) return;
       const rect = track.getBoundingClientRect();
-      const x = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-      onChange(hslToHex(Math.round(x * 360), s, l));
+      const y = Math.max(0, Math.min(1, (clientY - rect.top) / rect.height));
+      onChange(hslToHex(Math.round((1 - y) * 360) % 360, s, l));
     },
     [s, l, onChange],
   );
 
   useEffect(() => {
-    const onMove = (e: MouseEvent) => { if (!dragging.current) return; e.preventDefault(); pick(e.clientX); };
+    const onMove = (e: MouseEvent) => { if (!dragging.current) return; e.preventDefault(); pick(e.clientY); };
     const onUp = () => { dragging.current = false; };
     window.addEventListener("mousemove", onMove);
     window.addEventListener("mouseup", onUp);
@@ -170,14 +184,24 @@ function HueSlider({ h, s, l, onChange }: { h: number; s: number; l: number; onC
   return (
     <div
       ref={trackRef}
-      className="relative h-4 cursor-pointer overflow-hidden rounded-full border border-zinc-200 dark:border-zinc-700 select-none"
-      style={{ background: "linear-gradient(to right, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)" }}
-      onMouseDown={(e) => { dragging.current = true; pick(e.clientX); }}
-      onTouchStart={(e) => { dragging.current = true; pick(e.touches[0].clientX); }}
+      role="slider"
+      aria-label="Hue"
+      aria-valuemin={0}
+      aria-valuemax={360}
+      aria-valuenow={Math.round(h)}
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "ArrowUp" || e.key === "ArrowRight") onChange(hslToHex((h + 3) % 360, s, l));
+        if (e.key === "ArrowDown" || e.key === "ArrowLeft") onChange(hslToHex((h + 357) % 360, s, l));
+      }}
+      className="relative w-4 cursor-pointer overflow-hidden rounded-full border border-zinc-200 dark:border-zinc-700 select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 dark:focus-visible:outline-zinc-100"
+      style={{ background: "linear-gradient(to bottom, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)" }}
+      onMouseDown={(e) => { dragging.current = true; pick(e.clientY); }}
+      onTouchStart={(e) => { dragging.current = true; pick(e.touches[0].clientY); }}
     >
       <div
-        className="pointer-events-none absolute top-0 h-full w-1 -translate-x-1/2 rounded-full border border-white shadow-[0_0_2px_rgba(0,0,0,0.5)]"
-        style={{ left: `${(h / 360) * 100}%`, backgroundColor: hslToHex(h, 100, 50) }}
+        className="pointer-events-none absolute left-0 h-1 w-full -translate-y-1/2 rounded-full border border-white shadow-[0_0_2px_rgba(0,0,0,0.5)]"
+        style={{ top: `${100 - (h / 360) * 100}%`, backgroundColor: hslToHex(h, 100, 50) }}
       />
     </div>
   );
@@ -205,7 +229,7 @@ function HexInput({ value, onChange }: { value: string; onChange: (hex: string) 
       onBlur={submit}
       onKeyDown={(e) => e.key === "Enter" && submit()}
       maxLength={7}
-      className="w-full rounded-md border border-zinc-200 bg-white px-2 py-1 text-center font-mono text-xs tracking-wider text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+      className="w-full rounded-md border border-zinc-200 bg-white px-2 py-1 text-center font-mono text-xs tracking-wider text-zinc-900 focus:border-zinc-400 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:focus:border-zinc-500"
       placeholder="#000000"
     />
   );
@@ -241,23 +265,26 @@ function RgbInput({ value, onChange }: { value: string; onChange: (hex: string) 
   const display = draft !== null ? draft.split(",") : [String(r), String(g), String(b)];
 
   return (
-    <div className="flex items-center gap-0.5">
-      <span className="text-[9px] font-medium text-zinc-400">RGB</span>
+    <div className="flex w-full items-center gap-1">
+      <span className="text-[9px] font-semibold uppercase tracking-wide text-zinc-400">RGB</span>
       {[0, 1, 2].map((i) => (
         <input
           key={i}
           type="text"
           inputMode="numeric"
+          aria-label={["Red", "Green", "Blue"][i]}
           value={display[i] ?? ""}
           onChange={(e) => {
-            const current = draft ?? `${r},${g},${b}`;
-            const parts = current.split(",");
-            parts[i] = e.target.value;
-            setDraft(parts.join(","));
+            setDraft((prev) => {
+              const current = prev ?? `${r},${g},${b}`;
+              const parts = current.split(",");
+              parts[i] = e.target.value;
+              return parts.join(",");
+            });
           }}
           onBlur={submit}
           onKeyDown={(e) => e.key === "Enter" && submit()}
-          className="w-8 rounded border border-zinc-200 bg-white px-0.5 py-0.5 text-center font-mono text-[10px] text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+          className="w-full min-w-0 rounded-md border border-zinc-200 bg-white px-1 py-1 text-center font-mono text-[11px] text-zinc-700 focus:border-zinc-400 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:focus:border-zinc-500"
         />
       ))}
     </div>
@@ -293,23 +320,26 @@ function HslInput({ value, onChange }: { value: string; onChange: (hex: string) 
   const display = draft !== null ? draft.split(",") : [String(h), String(s), String(l)];
 
   return (
-    <div className="flex items-center gap-0.5">
-      <span className="text-[9px] font-medium text-zinc-400">HSL</span>
+    <div className="flex w-full items-center gap-1">
+      <span className="text-[9px] font-semibold uppercase tracking-wide text-zinc-400">HSL</span>
       {[0, 1, 2].map((i) => (
         <input
           key={i}
           type="text"
           inputMode="numeric"
+          aria-label={["Hue", "Saturation", "Lightness"][i]}
           value={display[i] ?? ""}
           onChange={(e) => {
-            const current = draft ?? `${h},${s},${l}`;
-            const parts = current.split(",");
-            parts[i] = e.target.value;
-            setDraft(parts.join(","));
+            setDraft((prev) => {
+              const current = prev ?? `${h},${s},${l}`;
+              const parts = current.split(",");
+              parts[i] = e.target.value;
+              return parts.join(",");
+            });
           }}
           onBlur={submit}
           onKeyDown={(e) => e.key === "Enter" && submit()}
-          className="w-8 rounded border border-zinc-200 bg-white px-0.5 py-0.5 text-center font-mono text-[10px] text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+          className="w-full min-w-0 rounded-md border border-zinc-200 bg-white px-1 py-1 text-center font-mono text-[11px] text-zinc-700 focus:border-zinc-400 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:focus:border-zinc-500"
         />
       ))}
     </div>

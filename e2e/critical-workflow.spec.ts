@@ -51,10 +51,10 @@ test("one colour becomes a full design system", async ({ page, context }) => {
     await page.getByRole("tab", { name: label }).click();
   }
 
-  // Export tabs produce code and the share button copies a URL.
-  await page.getByRole("tab", { name: "Tailwind CSS v4" }).click();
+  // Export adapters produce code and the share button copies a URL.
+  await page.getByRole("button", { name: "Tailwind CSS v4" }).click();
   await expect(page.getByText("@theme inline {")).toBeVisible();
-  await page.getByRole("tab", { name: "shadcn/ui" }).click();
+  await page.getByRole("button", { name: "shadcn/ui" }).click();
   await expect(page.getByText("--card: oklch(", { exact: false }).first()).toBeVisible();
 
   await page.getByRole("button", { name: "Share link" }).click();

@@ -196,33 +196,38 @@ export function generateTheme(
   const primaryForeground = pickForeground(fgCandidates, primaryBase);
 
   /* --- secondary ------------------------------------------------------ */
+  // Respect the user's chosen hue AND chroma so picking a vibrant colour
+  // visibly changes the theme; only the lightness is normalised into a
+  // button-friendly band.
   const secondarySeed = rgbToOklch(hexToRgb(secondarySeedHex));
   const secondaryHue = secondarySeed.c < 0.008 ? h : secondarySeed.h;
-  const secondaryChromaCap = mode === "light" ? 0.12 : 0.14;
-  const secondary = oklch(
-    mode === "light" ? 0.95 : 0.25,
-    Math.min(secondaryChromaCap, secondarySeed.c * 0.8),
-    secondaryHue,
+  const secondaryChromaCap = mode === "light" ? 0.13 : 0.15;
+  const secondaryChroma = Math.min(
+    secondaryChromaCap,
+    Math.max(0.02, secondarySeed.c),
   );
+  const secondary = oklch(mode === "light" ? 0.9 : 0.3, secondaryChroma, secondaryHue);
   const secondaryHover = oklch(
-    mode === "light" ? 0.91 : 0.30,
-    Math.min(secondaryChromaCap + 0.01, secondarySeed.c * 0.9),
+    mode === "light" ? 0.855 : 0.35,
+    secondaryChroma,
     secondaryHue,
   );
   const secondaryForeground =
-    mode === "light" ? foreground : oklch(0.94, 0.012, secondaryHue);
+    mode === "light" ? foreground : oklch(0.94, 0.02, secondaryHue);
 
   /* --- accent --------------------------------------------------------- */
+  // Anchor the accent near its own seed lightness so a bright pick stays
+  // bright; contrast is guaranteed by usableAsRole + pickForeground.
   const accentSeed = rgbToOklch(hexToRgb(accentSeedHex));
   const accentPool: string[] = [];
-  for (let i = 0; i <= 10; i++) {
-    const l = mode === "light" ? 0.28 + i * 0.062 : 0.42 + i * 0.052;
+  for (let i = 0; i <= 14; i++) {
+    const l = mode === "light" ? 0.25 + i * 0.047 : 0.38 + i * 0.038;
     accentPool.push(oklch(clampL(l), accentSeed.c, accentSeed.h));
   }
   const accentReferenceL =
     mode === "light"
-      ? Math.min(0.62, Math.max(0.4, primaryOklch.l))
-      : 0.75;
+      ? Math.min(0.74, Math.max(0.45, accentSeed.l))
+      : Math.min(0.78, Math.max(0.5, accentSeed.l));
   const accentReference = oklch(accentReferenceL, accentSeed.c, accentSeed.h);
   const accent = pickClosest(accentPool, accentReference, usableAsRole);
   const accentForeground = pickForeground(fgCandidates, accent);

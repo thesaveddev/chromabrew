@@ -36,9 +36,15 @@ body {
 
 @layer components {
   .panel-title {
-    font-size: 0.875rem;
-    line-height: 1.25rem;
+    font-size: 0.6875rem;
+    line-height: 1rem;
     font-weight: 600;
-    color: var(--color-zinc-900);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-zinc-500);
+  }
+
+  .dark .panel-title {
+    color: var(--color-zinc-400);
   }
 }
