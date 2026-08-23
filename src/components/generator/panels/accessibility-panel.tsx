@@ -40,10 +40,10 @@ export function AccessibilityPanel({
     <section aria-labelledby="a11y-heading" className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 id="a11y-heading" className="panel-title">
-          Accessibility Ã¢â‚¬â€ WCAG 2.x
+          Accessibility — WCAG 2.x
         </h2>
         <p className="text-xs text-zinc-500" role="status">
-          Light: {lightFailing === 0 ? "all AA pairs pass" : `${lightFailing} pair(s) fail AA`} Ã‚Â·{" "}
+          Light: {lightFailing === 0 ? "all AA pairs pass" : `${lightFailing} pair(s) fail AA`} ·{" "}
           Dark: {darkFailing === 0 ? "all AA pairs pass" : `${darkFailing} pair(s) fail AA`}
         </p>
       </div>
@@ -97,7 +97,7 @@ export function AccessibilityPanel({
                       onApplyFix={(hex) => onApplyFix(check.mode, check.foregroundToken, hex)}
                     />
                   ) : (
-                    <span className="text-zinc-300" aria-hidden>Ã¢â‚¬â€</span>
+                    <span className="text-zinc-300" aria-hidden>—</span>
                   )}
                 </td>
               </tr>
@@ -107,8 +107,8 @@ export function AccessibilityPanel({
       </div>
 
       <p className="text-[11px] leading-4 text-zinc-400">
-        Thresholds: AA normal Ã¢â€°Â¥ 4.5:1, AA large Ã¢â€°Â¥ 3:1, AAA normal Ã¢â€°Â¥ 7:1, AAA
-        large Ã¢â€°Â¥ 4.5:1. Fixes adjust the nearest accessible value in OKLCH,
+        Thresholds: AA normal ≥ 4.5:1, AA large ≥ 3:1, AAA normal ≥ 7:1, AAA
+        large ≥ 4.5:1. Fixes adjust the nearest accessible value in OKLCH,
         preserving hue.
       </p>
     </section>
@@ -144,7 +144,7 @@ function GradeCell({ pass, label }: { pass: boolean; label: string }) {
           pass ? "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300" : "bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300"
         }`}
       >
-        <span aria-hidden>{pass ? "Ã¢Å“â€œ" : "Ã¢Å“â€¢"}</span>
+        <span aria-hidden>{pass ? "✓" : "✗"}</span>
         {label}
       </span>
       <span className="sr-only">{label.replace(/(AA|AAA)/, "$1 ") + (pass ? " passes" : " fails")}</span>

@@ -120,7 +120,7 @@ export function EcommercePreview({ system }: { system: DesignSystem }) {
               aria-hidden
             />
             <div>
-              <h3 className="text-sm font-semibold">Featured product Ã¢â‚¬â€ Ã¢â‚¬Å“The SampleÃ¢â‚¬Â</h3>
+              <h3 className="text-sm font-semibold">Featured product — “The Sample”</h3>
               <p className="mt-1 text-xs leading-5 text-[var(--ds-foreground-muted)]">
                 A product detail block demonstrating badges, size selection and
                 the primary purchase action with your tokens.
@@ -141,7 +141,7 @@ export function EcommercePreview({ system }: { system: DesignSystem }) {
               </div>
               <div className="mt-3 flex items-center gap-2">
                 <button className="rounded-[var(--ds-radius-lg)] bg-[var(--ds-primary)] px-4 py-1.5 text-xs font-medium text-[var(--ds-primary-foreground)] hover:bg-[var(--ds-primary-hover)] active:bg-[var(--ds-primary-active)]">
-                  Add to cart Ã¢â‚¬â€ $49
+                  Add to cart — $49
                 </button>
                 <span className="rounded-full bg-[var(--ds-info)] px-2 py-0.5 text-[10px] font-semibold text-[var(--ds-info-foreground)]">
                   Free shipping

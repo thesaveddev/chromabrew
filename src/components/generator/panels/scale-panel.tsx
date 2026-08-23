@@ -3,7 +3,7 @@
 import { generateScale } from "@/lib/design-system/colour/scale";
 import { CopyButton, copyToClipboard } from "@/components/ui/primitives";
 
-/** 50Ã¢â‚¬â€œ950 perceptual scale strip with copy actions. */
+/** 50–950 perceptual scale strip with copy actions. */
 export function ScalePanel({ scale }: { scale: ReturnType<typeof generateScale> }) {
   return (
     <section aria-labelledby="scale-heading" className="space-y-3">
@@ -35,7 +35,7 @@ export function ScalePanel({ scale }: { scale: ReturnType<typeof generateScale> 
                 <span className="font-sans font-semibold">{step.step}</span>
                 <span className="opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
                   {step.hex}
-                  {step.isSource ? " Ã‚Â· source" : ""}
+                  {step.isSource ? " · source" : ""}
                 </span>
               </button>
             </li>

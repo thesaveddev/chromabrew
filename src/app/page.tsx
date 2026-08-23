@@ -9,7 +9,7 @@ import { LinkButton } from "@/components/ui/primitives";
 import { TOOLS } from "@/lib/tools";
 
 export const metadata: Metadata = {
-  title: "Colorsmith Ã¢â‚¬â€ Turn one colour into an entire design system",
+  title: "Colorsmith — Turn one colour into an entire design system",
   description:
     "Generate accessible palettes, semantic tokens, light and dark themes, and production-ready code from a single colour. Free, no account required.",
   alternates: { canonical: "/" },
@@ -17,8 +17,8 @@ export const metadata: Metadata = {
 
 const PIPELINE = [
   ["One colour", "HEX, RGB, HSL or a picked swatch"],
-  ["Colour scale", "Perceptual 50Ã¢â‚¬â€œ950 in OKLCH"],
-  ["Semantic tokens", "background Ã¢â€ â€™ primary Ã¢â€ â€™ status roles"],
+  ["Colour scale", "Perceptual 50–950 in OKLCH"],
+  ["Semantic tokens", "background → primary → status roles"],
   ["Light + dark", "Independent accessible themes"],
   ["WCAG checks", "AA / AAA measured, never assumed"],
   ["Production code", "CSS, Tailwind v4, shadcn/ui, JSON"],
@@ -27,7 +27,7 @@ const PIPELINE = [
 const FEATURES = [
   {
     title: "Perceptual colour engine",
-    body: "Scales are generated in OKLCH so every step is evenly spaced to the eye Ã¢â‚¬â€ not arbitrary white/black mixes. Your brand hue survives end to end.",
+    body: "Scales are generated in OKLCH so every step is evenly spaced to the eye — not arbitrary white/black mixes. Your brand hue survives end to end.",
   },
   {
     title: "Semantic design tokens",
@@ -39,7 +39,7 @@ const FEATURES = [
   },
   {
     title: "Thoughtful dark mode",
-    body: "Dark themes are constructed independently Ã¢â‚¬â€ lighter primaries, tinted neutrals, verified foregrounds Ã¢â‚¬â€ never a mechanical inversion.",
+    body: "Dark themes are constructed independently — lighter primaries, tinted neutrals, verified foregrounds — never a mechanical inversion.",
   },
   {
     title: "Live interface previews",
@@ -75,7 +75,7 @@ export default function HomePage() {
             <HeroColourForm />
           </div>
           <p className="mt-4 text-sm text-zinc-500">
-            No account. No upload. Everything runs in your browser Ã¢â‚¬â€{" "}
+            No account. No upload. Everything runs in your browser —{" "}
             <Link href="/tools" className="font-medium text-zinc-700 dark:text-zinc-300 underline decoration-zinc-300 underline-offset-4 hover:text-zinc-900 dark:hover:text-zinc-100">
               or explore the individual tools
             </Link>

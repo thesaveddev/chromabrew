@@ -102,7 +102,7 @@ export function SourcePanel({
 
       {busy ? (
         <p className="text-xs text-zinc-500" role="status">
-          Reading imageÃ¢â‚¬Â¦
+          Reading image…
         </p>
       ) : null}
       {imageError ? (
@@ -114,7 +114,7 @@ export function SourcePanel({
       {extracted ? (
         <fieldset className="rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
           <legend className="px-1 text-xs font-medium text-zinc-600 dark:text-zinc-400">
-            Dominant colours Ã¢â‚¬â€ pick your primary
+            Dominant colours — pick your primary
           </legend>
           <div className="mt-1 grid grid-cols-4 gap-2">
             {extracted.map((colour) => (

@@ -121,7 +121,7 @@ export function ColourInput({
           inputMode="text"
           autoComplete="off"
           spellCheck={false}
-          placeholder="#47003A, rgb(71,0,58), hsl(Ã¢â‚¬Â¦)"
+          placeholder="#47003A, rgb(71,0,58), hsl(…)"
           value={value}
           aria-invalid={invalid || undefined}
           aria-describedby={invalid ? `${id}-error` : undefined}

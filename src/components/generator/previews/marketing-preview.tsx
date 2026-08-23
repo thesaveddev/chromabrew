@@ -27,7 +27,7 @@ export function MarketingPreview({ system }: { system: DesignSystem }) {
       {/* Hero */}
       <section className="px-6 py-14 text-center">
         <p className="mx-auto w-fit rounded-full bg-[var(--ds-secondary)] px-3 py-1 text-[11px] font-medium text-[var(--ds-secondary-foreground)]">
-          Placeholder content Ã¢â‚¬â€ swap in your own story
+          Placeholder content — swap in your own story
         </p>
         <h2 className="mx-auto mt-4 max-w-xl text-3xl font-bold leading-tight tracking-tight sm:text-4xl">
           Ship your product faster than ever
@@ -69,11 +69,11 @@ export function MarketingPreview({ system }: { system: DesignSystem }) {
       <section className="grid gap-6 px-6 py-10 lg:grid-cols-2">
         <div className="space-y-4">
           {[
-            ["Placeholder quote from a fictional customer.", "Alex Doe Ã¢â‚¬â€ Demo Title"],
-            ["Replace this layout with real social proof.", "SamPLE Ã¢â‚¬â€ Another Title"],
+            ["Placeholder quote from a fictional customer.", "Alex Doe — Demo Title"],
+            ["Replace this layout with real social proof.", "SamPLE — Another Title"],
           ].map(([quote, author]) => (
             <figure key={author} className="rounded-[var(--ds-radius-xl)] border border-[var(--ds-border-muted)] bg-[var(--ds-surface)] p-4 shadow-[var(--ds-shadow-sm)]">
-              <blockquote className="text-sm leading-6">Ã¢â‚¬Å“{quote}Ã¢â‚¬Â</blockquote>
+              <blockquote className="text-sm leading-6">“{quote}”</blockquote>
               <figcaption className="mt-2 text-xs font-medium text-[var(--ds-foreground-subtle)]">{author}</figcaption>
             </figure>
           ))}

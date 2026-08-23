@@ -92,7 +92,7 @@ describe("buildAccessibilityReport", () => {
     ).length;
     expect(report.summary.light.failing).toBe(failingLight);
     expect(report.summary.light.passed).toBe(failingLight === 0);
-    expect(report.checks.length).toBe(20); // 10 pairs Ã— 2 modes
+    expect(report.checks.length).toBe(20); // 10 pairs × 2 modes
   });
 });
 

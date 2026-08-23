@@ -124,7 +124,7 @@ export function generateRadius(style: RadiusStyle): RadiusTokens {
 export type ShadowTokens = Record<"sm" | "md" | "lg" | "xl", string>;
 
 /**
- * Neutral elevation set shared by both themes Ã¢â‚¬â€ layered soft shadows
+ * Neutral elevation set shared by both themes — layered soft shadows
  * rather than coloured glows.
  */
 export function generateShadows(): ShadowTokens {
