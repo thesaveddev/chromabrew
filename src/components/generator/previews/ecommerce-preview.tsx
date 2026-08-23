@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import type { DesignSystem } from "@/lib/design-system/types";
 
@@ -27,7 +27,7 @@ export function EcommercePreview({ system }: { system: DesignSystem }) {
           <span>Bestsellers</span>
           <span>Sale</span>
         </nav>
-        <button className="relative rounded-md border border-[var(--ds-input-border)] px-2.5 py-1.5 text-xs font-medium hover:bg-[var(--ds-secondary-hover)]">
+        <button className="relative rounded-[var(--ds-radius-md)] border border-[var(--ds-input-border)] px-2.5 py-1.5 text-xs font-medium hover:bg-[var(--ds-secondary-hover)]">
           Cart
           <span className="absolute -right-1.5 -top-1.5 grid h-4 w-4 place-items-center rounded-full bg-[var(--ds-primary)] text-[10px] font-semibold text-[var(--ds-primary-foreground)]">
             2
@@ -52,7 +52,7 @@ export function EcommercePreview({ system }: { system: DesignSystem }) {
             <input type="range" min="0" max="100" defaultValue="60" className="w-full accent-[var(--ds-primary)]" aria-label="Maximum price" />
             <p className="mt-1 text-[var(--ds-foreground-muted)]">Up to $60</p>
           </fieldset>
-          <button className="w-full rounded-lg border border-[var(--ds-input-border)] bg-[var(--ds-secondary)] py-1.5 font-medium text-[var(--ds-secondary-foreground)] hover:bg-[var(--ds-secondary-hover)]">
+          <button className="w-full rounded-[var(--ds-radius-lg)] border border-[var(--ds-input-border)] bg-[var(--ds-secondary)] py-1.5 font-medium text-[var(--ds-secondary-foreground)] hover:bg-[var(--ds-secondary-hover)]">
             Apply filters
           </button>
         </aside>
@@ -64,7 +64,7 @@ export function EcommercePreview({ system }: { system: DesignSystem }) {
             <label className="text-xs">
               <span className="mr-1.5 text-[var(--ds-foreground-muted)]">Sort</span>
               <select
-                className="rounded-md border border-[var(--ds-input-border)] bg-[var(--ds-input)] px-2 py-1 outline-none focus:border-[var(--ds-focus-ring)] focus:ring-2 focus:ring-[var(--ds-focus-ring)]"
+                className="rounded-[var(--ds-radius-md)] border border-[var(--ds-input-border)] bg-[var(--ds-input)] px-2 py-1 outline-none focus:border-[var(--ds-focus-ring)] focus:ring-2 focus:ring-[var(--ds-focus-ring)]"
                 defaultValue="featured"
                 aria-label="Sort products"
               >
@@ -75,12 +75,12 @@ export function EcommercePreview({ system }: { system: DesignSystem }) {
           </div>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {products.map(([name, price, badge, tone], i) => (
-              <article key={name} className="group overflow-hidden rounded-xl border border-[var(--ds-border-muted)] bg-[var(--ds-surface)] shadow-sm transition-shadow hover:shadow-md">
+              <article key={name} className="group overflow-hidden rounded-[var(--ds-radius-xl)] border border-[var(--ds-border-muted)] bg-[var(--ds-surface)] shadow-[var(--ds-shadow-sm)] transition-shadow hover:shadow-[var(--ds-shadow-md)]">
                 <div
                   className="relative grid h-28 place-items-center"
                   style={{ backgroundColor: scaleTints[i % scaleTints.length]?.hex ?? "#eee" }}
                 >
-                  <span className="h-10 w-10 rounded-lg bg-white/40 shadow-inner" />
+                  <span className="h-10 w-10 rounded-[var(--ds-radius-lg)] bg-white/40 shadow-inner" />
                   {badge ? (
                     <span
                       className={`absolute left-2 top-2 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
@@ -103,7 +103,7 @@ export function EcommercePreview({ system }: { system: DesignSystem }) {
                   </p>
                   <div className="mt-2 flex items-center justify-between">
                     <span className="text-sm font-semibold">{price}</span>
-                    <button className="rounded-md bg-[var(--ds-primary)] px-2.5 py-1 text-[11px] font-medium text-[var(--ds-primary-foreground)] transition-colors hover:bg-[var(--ds-primary-hover)] active:bg-[var(--ds-primary-active)]">
+                    <button className="rounded-[var(--ds-radius-md)] bg-[var(--ds-primary)] px-2.5 py-1 text-[11px] font-medium text-[var(--ds-primary-foreground)] transition-colors hover:bg-[var(--ds-primary-hover)] active:bg-[var(--ds-primary-active)]">
                       Add
                     </button>
                   </div>
@@ -113,14 +113,14 @@ export function EcommercePreview({ system }: { system: DesignSystem }) {
           </div>
 
           {/* Product detail strip */}
-          <section className="mt-6 grid gap-4 rounded-xl border border-[var(--ds-border-muted)] bg-[var(--ds-surface-raised)] p-4 shadow-sm sm:grid-cols-[140px_1fr]">
+          <section className="mt-6 grid gap-4 rounded-[var(--ds-radius-xl)] border border-[var(--ds-border-muted)] bg-[var(--ds-surface-raised)] p-4 shadow-[var(--ds-shadow-sm)] sm:grid-cols-[140px_1fr]">
             <div
-              className="h-32 rounded-lg"
+              className="h-32 rounded-[var(--ds-radius-lg)]"
               style={{ backgroundColor: scaleTints[1]?.hex ?? "#eee" }}
               aria-hidden
             />
             <div>
-              <h3 className="text-sm font-semibold">Featured product — “The Sample”</h3>
+              <h3 className="text-sm font-semibold">Featured product Ã¢â‚¬â€ Ã¢â‚¬Å“The SampleÃ¢â‚¬Â</h3>
               <p className="mt-1 text-xs leading-5 text-[var(--ds-foreground-muted)]">
                 A product detail block demonstrating badges, size selection and
                 the primary purchase action with your tokens.
@@ -129,7 +129,7 @@ export function EcommercePreview({ system }: { system: DesignSystem }) {
                 {["S", "M", "L"].map((size, i) => (
                   <span
                     key={size}
-                    className={`grid h-7 w-7 place-items-center rounded-md border text-xs ${
+                    className={`grid h-7 w-7 place-items-center rounded-[var(--ds-radius-md)] border text-xs ${
                       i === 1
                         ? "border-[var(--ds-primary)] bg-[var(--ds-primary)] font-medium text-[var(--ds-primary-foreground)]"
                         : "border-[var(--ds-border-strong)]"
@@ -140,8 +140,8 @@ export function EcommercePreview({ system }: { system: DesignSystem }) {
                 ))}
               </div>
               <div className="mt-3 flex items-center gap-2">
-                <button className="rounded-lg bg-[var(--ds-primary)] px-4 py-1.5 text-xs font-medium text-[var(--ds-primary-foreground)] hover:bg-[var(--ds-primary-hover)] active:bg-[var(--ds-primary-active)]">
-                  Add to cart — $49
+                <button className="rounded-[var(--ds-radius-lg)] bg-[var(--ds-primary)] px-4 py-1.5 text-xs font-medium text-[var(--ds-primary-foreground)] hover:bg-[var(--ds-primary-hover)] active:bg-[var(--ds-primary-active)]">
+                  Add to cart Ã¢â‚¬â€ $49
                 </button>
                 <span className="rounded-full bg-[var(--ds-info)] px-2 py-0.5 text-[10px] font-semibold text-[var(--ds-info-foreground)]">
                   Free shipping

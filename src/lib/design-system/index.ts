@@ -2,12 +2,18 @@ import { generateScale } from "./colour/scale";
 import { oklchToHex, toColourValue } from "./colour/convert";
 import { generatePalette } from "./palette/generate";
 import {
+  generateRadius,
+  generateShadows,
+  generateSpacing,
+  generateTypography,
+} from "./primitives/generate";
+import {
   buildAccessibilityReport,
   generateTheme,
 } from "./tokens/generate";
 import type { DesignSystem, GeneratorConfig } from "./types";
 
-export const GENERATOR_VERSION = "1.0.0";
+export const GENERATOR_VERSION = "1.1.0";
 
 export const DEFAULT_PRIMARY = "#47003a";
 
@@ -62,6 +68,10 @@ export function buildDesignSystem(config: GeneratorConfig): DesignSystem {
         palette,
         accentSeed: accentSeed,
       },
+      typography: generateTypography(config.typeRatio),
+      spacing: generateSpacing(),
+      radius: generateRadius(config.radiusStyle),
+      shadows: generateShadows(),
     },
     themes,
     accessibility,

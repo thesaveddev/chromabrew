@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import type { DesignSystem } from "@/lib/design-system/types";
 
@@ -10,7 +10,7 @@ export function MarketingPreview({ system }: { system: DesignSystem }) {
       {/* Nav */}
       <header className="flex items-center justify-between border-b border-[var(--ds-border-muted)] px-6 py-3.5 text-sm">
         <div className="flex items-center gap-2 font-semibold">
-          <span className="h-5 w-5 rounded-md bg-[var(--ds-primary)]" />
+          <span className="h-5 w-5 rounded-[var(--ds-radius-md)] bg-[var(--ds-primary)]" />
           Northstar
         </div>
         <nav aria-label="Marketing nav" className="hidden gap-5 text-xs text-[var(--ds-foreground-muted)] md:flex">
@@ -19,7 +19,7 @@ export function MarketingPreview({ system }: { system: DesignSystem }) {
           <span>Docs</span>
           <span>Blog</span>
         </nav>
-        <button className="rounded-lg bg-[var(--ds-primary)] px-3.5 py-1.5 text-xs font-medium text-[var(--ds-primary-foreground)] transition-colors hover:bg-[var(--ds-primary-hover)] active:bg-[var(--ds-primary-active)]">
+        <button className="rounded-[var(--ds-radius-lg)] bg-[var(--ds-primary)] px-3.5 py-1.5 text-xs font-medium text-[var(--ds-primary-foreground)] transition-colors hover:bg-[var(--ds-primary-hover)] active:bg-[var(--ds-primary-active)]">
           Get started
         </button>
       </header>
@@ -27,7 +27,7 @@ export function MarketingPreview({ system }: { system: DesignSystem }) {
       {/* Hero */}
       <section className="px-6 py-14 text-center">
         <p className="mx-auto w-fit rounded-full bg-[var(--ds-secondary)] px-3 py-1 text-[11px] font-medium text-[var(--ds-secondary-foreground)]">
-          Placeholder content — swap in your own story
+          Placeholder content Ã¢â‚¬â€ swap in your own story
         </p>
         <h2 className="mx-auto mt-4 max-w-xl text-3xl font-bold leading-tight tracking-tight sm:text-4xl">
           Ship your product faster than ever
@@ -41,10 +41,10 @@ export function MarketingPreview({ system }: { system: DesignSystem }) {
             type="email"
             placeholder="you@example.com"
             readOnly
-            className="w-full flex-1 rounded-lg border border-[var(--ds-input-border)] bg-[var(--ds-input)] px-3 py-2 text-sm outline-none focus:border-[var(--ds-focus-ring)] focus:ring-2 focus:ring-[var(--ds-focus-ring)]"
+            className="w-full flex-1 rounded-[var(--ds-radius-lg)] border border-[var(--ds-input-border)] bg-[var(--ds-input)] px-3 py-2 text-sm outline-none focus:border-[var(--ds-focus-ring)] focus:ring-2 focus:ring-[var(--ds-focus-ring)]"
             aria-label="Email address (demo)"
           />
-          <button className="rounded-lg bg-[var(--ds-primary)] px-4 py-2 text-sm font-medium text-[var(--ds-primary-foreground)] transition-colors hover:bg-[var(--ds-primary-hover)]">
+          <button className="rounded-[var(--ds-radius-lg)] bg-[var(--ds-primary)] px-4 py-2 text-sm font-medium text-[var(--ds-primary-foreground)] transition-colors hover:bg-[var(--ds-primary-hover)]">
             Start free
           </button>
         </form>
@@ -57,8 +57,8 @@ export function MarketingPreview({ system }: { system: DesignSystem }) {
           ["Accessible pairs", "Every combination is measured against WCAG thresholds."],
           ["Yours to theme", "The accent swatch demonstrates secondary hues from your palette."],
         ].map(([title, body], i) => (
-          <article key={title} className="rounded-xl border border-[var(--ds-border-muted)] bg-[var(--ds-surface)] p-4 shadow-sm">
-            <span className="mb-2 block h-8 w-8 rounded-lg" style={{ backgroundColor: i === 1 ? accent : "var(--ds-primary)", opacity: 0.9 }} />
+          <article key={title} className="rounded-[var(--ds-radius-xl)] border border-[var(--ds-border-muted)] bg-[var(--ds-surface)] p-4 shadow-[var(--ds-shadow-sm)]">
+            <span className="mb-2 block h-8 w-8 rounded-[var(--ds-radius-lg)]" style={{ backgroundColor: i === 1 ? accent : "var(--ds-primary)", opacity: 0.9 }} />
             <h3 className="text-sm font-semibold">{title}</h3>
             <p className="mt-1 text-xs leading-5 text-[var(--ds-foreground-muted)]">{body}</p>
           </article>
@@ -69,16 +69,16 @@ export function MarketingPreview({ system }: { system: DesignSystem }) {
       <section className="grid gap-6 px-6 py-10 lg:grid-cols-2">
         <div className="space-y-4">
           {[
-            ["Placeholder quote from a fictional customer.", "Alex Doe — Demo Title"],
-            ["Replace this layout with real social proof.", "SamPLE — Another Title"],
+            ["Placeholder quote from a fictional customer.", "Alex Doe Ã¢â‚¬â€ Demo Title"],
+            ["Replace this layout with real social proof.", "SamPLE Ã¢â‚¬â€ Another Title"],
           ].map(([quote, author]) => (
-            <figure key={author} className="rounded-xl border border-[var(--ds-border-muted)] bg-[var(--ds-surface)] p-4 shadow-sm">
-              <blockquote className="text-sm leading-6">“{quote}”</blockquote>
+            <figure key={author} className="rounded-[var(--ds-radius-xl)] border border-[var(--ds-border-muted)] bg-[var(--ds-surface)] p-4 shadow-[var(--ds-shadow-sm)]">
+              <blockquote className="text-sm leading-6">Ã¢â‚¬Å“{quote}Ã¢â‚¬Â</blockquote>
               <figcaption className="mt-2 text-xs font-medium text-[var(--ds-foreground-subtle)]">{author}</figcaption>
             </figure>
           ))}
         </div>
-        <section className="rounded-xl border border-[var(--ds-border)] bg-[var(--ds-surface-raised)] p-6 shadow-md">
+        <section className="rounded-[var(--ds-radius-xl)] border border-[var(--ds-border)] bg-[var(--ds-surface-raised)] p-6 shadow-[var(--ds-shadow-md)]">
           <h3 className="text-sm font-semibold uppercase tracking-wide text-[var(--ds-foreground-subtle)]">Sample plan</h3>
           <p className="mt-2 text-3xl font-bold tracking-tight">
             $0<span className="text-base font-normal text-[var(--ds-foreground-muted)]">/month</span>
@@ -90,7 +90,7 @@ export function MarketingPreview({ system }: { system: DesignSystem }) {
               </li>
             ))}
           </ul>
-          <button className="mt-5 w-full rounded-lg bg-[var(--ds-primary)] px-4 py-2 text-sm font-medium text-[var(--ds-primary-foreground)] transition-colors hover:bg-[var(--ds-primary-hover)] active:bg-[var(--ds-primary-active)]">
+          <button className="mt-5 w-full rounded-[var(--ds-radius-lg)] bg-[var(--ds-primary)] px-4 py-2 text-sm font-medium text-[var(--ds-primary-foreground)] transition-colors hover:bg-[var(--ds-primary-hover)] active:bg-[var(--ds-primary-active)]">
             Choose sample plan
           </button>
         </section>
@@ -102,7 +102,7 @@ export function MarketingPreview({ system }: { system: DesignSystem }) {
         <p className="mx-auto mt-2 max-w-sm text-sm text-[var(--ds-foreground-muted)]">
           The footer band demonstrates background-subtle contrast at scale.
         </p>
-        <button className="mt-4 rounded-lg bg-[var(--ds-accent)] px-4 py-2 text-sm font-medium text-[var(--ds-accent-foreground)] hover:brightness-110">
+        <button className="mt-4 rounded-[var(--ds-radius-lg)] bg-[var(--ds-accent)] px-4 py-2 text-sm font-medium text-[var(--ds-accent-foreground)] hover:brightness-110">
           Accent button example
         </button>
       </footer>

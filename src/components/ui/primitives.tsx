@@ -10,14 +10,15 @@ type ButtonVariant = "primary" | "secondary" | "ghost";
 
 const buttonStyles: Record<ButtonVariant, string> = {
   primary:
-    "bg-zinc-900 text-white hover:bg-zinc-700 active:bg-zinc-800 disabled:bg-zinc-300",
+    "bg-zinc-900 text-white hover:bg-zinc-700 active:bg-zinc-800 disabled:bg-zinc-300 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300 dark:active:bg-zinc-200",
   secondary:
-    "border border-zinc-300 bg-white text-zinc-800 hover:border-zinc-400 hover:bg-zinc-50 disabled:text-zinc-400",
-  ghost: "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900",
+    "border border-zinc-300 bg-white text-zinc-800 hover:border-zinc-400 hover:bg-zinc-50 disabled:text-zinc-400 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-200 dark:hover:border-zinc-600 dark:hover:bg-zinc-900 dark:disabled:text-zinc-600",
+  ghost:
+    "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100",
 };
 
 const baseButton =
-  "inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 disabled:cursor-not-allowed";
+  "inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 dark:focus-visible:outline-zinc-100 disabled:cursor-not-allowed";
 
 export const Button = forwardRef<
   HTMLButtonElement,
@@ -185,7 +186,7 @@ export function TabList<T extends string>({
     <div
       role="tablist"
       aria-label={label}
-      className="inline-flex flex-wrap items-center gap-1 rounded-lg bg-zinc-100 p-1"
+      className="inline-flex flex-wrap items-center gap-1 rounded-lg bg-zinc-100 p-1 dark:bg-zinc-800/80"
     >
       {options.map((option) => {
         const active = option.id === value;
@@ -196,12 +197,12 @@ export function TabList<T extends string>({
             type="button"
             aria-selected={active}
             onClick={() => onChange(option.id)}
-            className={`rounded-md font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 ${
+            className={`rounded-md font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 dark:focus-visible:outline-zinc-100 ${
               size === "sm" ? "px-2.5 py-1 text-xs" : "px-3.5 py-1.5 text-sm"
             } ${
               active
-                ? "bg-white text-zinc-900 shadow-sm"
-                : "text-zinc-500 hover:text-zinc-800"
+                ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-950 dark:text-zinc-100"
+                : "text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
             }`}
           >
             {option.label}

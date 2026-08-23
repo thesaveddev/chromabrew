@@ -14,7 +14,7 @@ export function SaasPreview({ system }: { system: DesignSystem }) {
       {/* Sidebar */}
       <aside className="hidden w-48 shrink-0 flex-col border-r border-[var(--ds-border)] bg-[var(--ds-background-subtle)] p-4 sm:flex">
         <div className="flex items-center gap-2">
-          <span className="h-6 w-6 rounded-md bg-[var(--ds-primary)]" />
+          <span className="h-6 w-6 rounded-[var(--ds-radius-md)] bg-[var(--ds-primary)]" />
           <span className="text-sm font-semibold">Acme Cloud</span>
         </div>
         <nav aria-label="Dashboard sections" className="mt-6 space-y-1">
@@ -27,7 +27,7 @@ export function SaasPreview({ system }: { system: DesignSystem }) {
           ].map(([label, active]) => (
             <span
               key={label as string}
-              className={`flex items-center justify-between rounded-md px-2.5 py-1.5 ${
+              className={`flex items-center justify-between rounded-[var(--ds-radius-md)] px-2.5 py-1.5 ${
                 active
                   ? "bg-[var(--ds-primary)] font-medium text-[var(--ds-primary-foreground)]"
                   : "text-[var(--ds-foreground-muted)] hover:bg-[var(--ds-secondary-hover)]"
@@ -42,12 +42,12 @@ export function SaasPreview({ system }: { system: DesignSystem }) {
             </span>
           ))}
         </nav>
-        <div className="mt-auto rounded-lg border border-[var(--ds-border-muted)] bg-[var(--ds-surface)] p-3">
+        <div className="mt-auto rounded-[var(--ds-radius-lg)] border border-[var(--ds-border-muted)] bg-[var(--ds-surface)] p-3">
           <p className="font-medium">Sample workspace</p>
           <p className="mt-0.5 text-xs text-[var(--ds-foreground-muted)]">
             Demo data only
           </p>
-          <button className="mt-2 w-full rounded-md border border-[var(--ds-input-border)] bg-[var(--ds-surface-raised)] px-2 py-1 text-xs font-medium hover:bg-[var(--ds-secondary-hover)]">
+          <button className="mt-2 w-full rounded-[var(--ds-radius-md)] border border-[var(--ds-input-border)] bg-[var(--ds-surface-raised)] px-2 py-1 text-xs font-medium hover:bg-[var(--ds-secondary-hover)]">
             Manage plan
           </button>
         </div>
@@ -62,12 +62,12 @@ export function SaasPreview({ system }: { system: DesignSystem }) {
             <span className="sr-only">Search</span>
             <input
               type="text"
-              placeholder="Search…"
-              className="w-44 rounded-md border border-[var(--ds-input-border)] bg-[var(--ds-input)] px-2.5 py-1.5 text-xs outline-none focus:border-[var(--ds-focus-ring)] focus:ring-2 focus:ring-[var(--ds-focus-ring)]"
+              placeholder="Searchâ€¦"
+              className="w-44 rounded-[var(--ds-radius-md)] border border-[var(--ds-input-border)] bg-[var(--ds-input)] px-2.5 py-1.5 text-xs outline-none focus:border-[var(--ds-focus-ring)] focus:ring-2 focus:ring-[var(--ds-focus-ring)]"
               readOnly
             />
           </label>
-          <button className="rounded-md bg-[var(--ds-primary)] px-3 py-1.5 text-xs font-medium text-[var(--ds-primary-foreground)] transition-colors hover:bg-[var(--ds-primary-hover)] active:bg-[var(--ds-primary-active)]">
+          <button className="rounded-[var(--ds-radius-md)] bg-[var(--ds-primary)] px-3 py-1.5 text-xs font-medium text-[var(--ds-primary-foreground)] transition-colors hover:bg-[var(--ds-primary-hover)] active:bg-[var(--ds-primary-active)]">
             New invoice
           </button>
           <span
@@ -86,7 +86,7 @@ export function SaasPreview({ system }: { system: DesignSystem }) {
           ].map((kpi, i) => (
             <section
               key={kpi.label}
-              className="rounded-xl border border-[var(--ds-border-muted)] bg-[var(--ds-surface)] p-4 shadow-sm"
+              className="rounded-[var(--ds-radius-xl)] border border-[var(--ds-border-muted)] bg-[var(--ds-surface)] p-4 shadow-[var(--ds-shadow-sm)]"
             >
               <p className="text-xs font-medium text-[var(--ds-foreground-muted)]">{kpi.label}</p>
               <div className="mt-1 flex items-baseline justify-between gap-2">
@@ -109,10 +109,10 @@ export function SaasPreview({ system }: { system: DesignSystem }) {
 
           {/* Table */}
           <section className="lg:col-span-2">
-            <div className="overflow-hidden rounded-xl border border-[var(--ds-border-muted)] bg-[var(--ds-surface)] shadow-sm">
+            <div className="overflow-hidden rounded-[var(--ds-radius-xl)] border border-[var(--ds-border-muted)] bg-[var(--ds-surface)] shadow-[var(--ds-shadow-sm)]">
               <div className="flex items-center justify-between border-b border-[var(--ds-border-muted)] px-4 py-3">
                 <h3 className="font-semibold">Recent invoices</h3>
-                <button className="rounded-md border border-[var(--ds-input-border)] px-2.5 py-1 text-xs font-medium hover:bg-[var(--ds-secondary-hover)]">
+                <button className="rounded-[var(--ds-radius-md)] border border-[var(--ds-input-border)] px-2.5 py-1 text-xs font-medium hover:bg-[var(--ds-secondary-hover)]">
                   View all
                 </button>
               </div>
@@ -145,20 +145,20 @@ export function SaasPreview({ system }: { system: DesignSystem }) {
             </div>
 
             {/* Form controls */}
-            <div className="mt-4 grid gap-3 rounded-xl border border-[var(--ds-border-muted)] bg-[var(--ds-surface)] p-4 shadow-sm sm:grid-cols-2">
+            <div className="mt-4 grid gap-3 rounded-[var(--ds-radius-xl)] border border-[var(--ds-border-muted)] bg-[var(--ds-surface)] p-4 shadow-[var(--ds-shadow-sm)] sm:grid-cols-2">
               <label className="block">
                 <span className="mb-1 block text-xs font-medium">Customer name</span>
                 <input
                   type="text"
                   placeholder="Jane Sample"
                   readOnly
-                  className="w-full rounded-md border border-[var(--ds-input-border)] bg-[var(--ds-input)] px-2.5 py-1.5 text-xs outline-none focus:border-[var(--ds-focus-ring)] focus:ring-2 focus:ring-[var(--ds-focus-ring)]"
+                  className="w-full rounded-[var(--ds-radius-md)] border border-[var(--ds-input-border)] bg-[var(--ds-input)] px-2.5 py-1.5 text-xs outline-none focus:border-[var(--ds-focus-ring)] focus:ring-2 focus:ring-[var(--ds-focus-ring)]"
                 />
               </label>
               <label className="block">
                 <span className="mb-1 block text-xs font-medium">Plan</span>
                 <select
-                  className="w-full rounded-md border border-[var(--ds-input-border)] bg-[var(--ds-input)] px-2.5 py-1.5 text-xs outline-none focus:border-[var(--ds-focus-ring)] focus:ring-2 focus:ring-[var(--ds-focus-ring)]"
+                  className="w-full rounded-[var(--ds-radius-md)] border border-[var(--ds-input-border)] bg-[var(--ds-input)] px-2.5 py-1.5 text-xs outline-none focus:border-[var(--ds-focus-ring)] focus:ring-2 focus:ring-[var(--ds-focus-ring)]"
                   defaultValue="pro"
                 >
                   <option value="starter">Starter</option>
@@ -182,11 +182,11 @@ export function SaasPreview({ system }: { system: DesignSystem }) {
 
           {/* Right rail: dropdown + modal demo */}
           <aside className="space-y-4">
-            <section className="rounded-xl border border-[var(--ds-border-muted)] bg-[var(--ds-surface)] p-4 shadow-sm">
+            <section className="rounded-[var(--ds-radius-xl)] border border-[var(--ds-border-muted)] bg-[var(--ds-surface)] p-4 shadow-[var(--ds-shadow-sm)]">
               <h3 className="mb-2 font-semibold">Dropdown menu</h3>
-              <div className="rounded-lg border border-[var(--ds-border-muted)] bg-[var(--ds-surface-raised)] p-1 shadow-sm">
+              <div className="rounded-[var(--ds-radius-lg)] border border-[var(--ds-border-muted)] bg-[var(--ds-surface-raised)] p-1 shadow-[var(--ds-shadow-sm)]">
                 {["Duplicate", "Archive", "Export CSV"].map((item) => (
-                  <span key={item} className="block rounded-md px-2.5 py-1.5 text-xs hover:bg-[var(--ds-secondary-hover)]">
+                  <span key={item} className="block rounded-[var(--ds-radius-md)] px-2.5 py-1.5 text-xs hover:bg-[var(--ds-secondary-hover)]">
                     {item}
                   </span>
                 ))}
@@ -195,17 +195,17 @@ export function SaasPreview({ system }: { system: DesignSystem }) {
                 </span>
               </div>
             </section>
-            <section className="rounded-xl border border-[var(--ds-border)] bg-[var(--ds-surface-raised)] p-4 shadow-md">
+            <section className="rounded-[var(--ds-radius-xl)] border border-[var(--ds-border)] bg-[var(--ds-surface-raised)] p-4 shadow-[var(--ds-shadow-md)]">
               <h3 className="font-semibold">Delete workspace?</h3>
               <p className="mt-1 text-xs leading-5 text-[var(--ds-foreground-muted)]">
                 This is a demonstration modal rendered inline so you can see
                 destructive styling without popups.
               </p>
               <div className="mt-3 flex gap-2">
-                <button className="rounded-md bg-[var(--ds-danger)] px-3 py-1.5 text-xs font-medium text-[var(--ds-danger-foreground)] hover:brightness-95">
+                <button className="rounded-[var(--ds-radius-md)] bg-[var(--ds-danger)] px-3 py-1.5 text-xs font-medium text-[var(--ds-danger-foreground)] hover:brightness-95">
                   Delete
                 </button>
-                <button className="rounded-md border border-[var(--ds-input-border)] bg-[var(--ds-surface)] px-3 py-1.5 text-xs font-medium hover:bg-[var(--ds-secondary-hover)]">
+                <button className="rounded-[var(--ds-radius-md)] border border-[var(--ds-input-border)] bg-[var(--ds-surface)] px-3 py-1.5 text-xs font-medium hover:bg-[var(--ds-secondary-hover)]">
                   Cancel
                 </button>
               </div>

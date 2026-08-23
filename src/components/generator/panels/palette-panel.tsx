@@ -67,7 +67,7 @@ function SwatchRow({
   if (editing) {
     return (
       <form
-        className="flex items-center gap-2 rounded-lg border border-zinc-300 px-2 py-1.5"
+        className="flex items-center gap-2 rounded-lg border border-zinc-300 dark:border-zinc-700 px-2 py-1.5"
         onSubmit={(event) => {
           event.preventDefault();
           const resolved = parseColour(draft);

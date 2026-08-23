@@ -3,14 +3,18 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { buildDesignSystem } from "@/lib/design-system";
 import {
+  configFromParams,
   configToQueryString,
+  DEFAULT_CONFIG,
 } from "@/lib/design-system/share";
 import { buildAccessibilityReport } from "@/lib/design-system/tokens/generate";
 import type {
   GeneratorConfig,
   PaletteStrategyId,
+  RadiusStyle,
   SemanticTokenId,
   ThemeMode,
+  TypeScaleRatio,
 } from "@/lib/design-system/types";
 import { regeneratePalette } from "@/lib/design-system/palette/generate";
 import { track } from "@/lib/analytics";
@@ -18,6 +22,7 @@ import { Button, TabList, copyToClipboard } from "@/components/ui/primitives";
 import { SourcePanel } from "./panels/source-panel";
 import { ScalePanel } from "./panels/scale-panel";
 import { PalettePanel } from "./panels/palette-panel";
+import { PrimitivesPanel } from "./panels/primitives-panel";
 import { TokensPanel } from "./panels/tokens-panel";
 import { AccessibilityPanel } from "./panels/accessibility-panel";
 import { ExportPanel } from "./panels/export-panel";
@@ -41,7 +46,12 @@ const MODE_OPTIONS = [
   { id: "dark" as const, label: "Dark" },
 ];
 
-export function GeneratorWorkspace({ initialConfig }: { initialConfig: GeneratorConfig }) {
+function initialConfig(): GeneratorConfig {
+  if (typeof window === "undefined") return DEFAULT_CONFIG;
+  return configFromParams(new URLSearchParams(window.location.search));
+}
+
+export function GeneratorWorkspace() {
   const [config, setConfig] = useState<GeneratorConfig>(initialConfig);
   const [mode, setMode] = useState<ThemeMode>("light");
   const [preview, setPreview] = useState<PreviewId>("saas");
@@ -115,6 +125,12 @@ export function GeneratorWorkspace({ initialConfig }: { initialConfig: Generator
     }));
   };
 
+  const setRadiusStyle = (radiusStyle: RadiusStyle) =>
+    setConfig((prev) => ({ ...prev, radiusStyle }));
+
+  const setTypeRatio = (typeRatio: TypeScaleRatio) =>
+    setConfig((prev) => ({ ...prev, typeRatio }));
+
   const applyFix = (fixMode: ThemeMode, token: SemanticTokenId, hex: string) =>
     setFixes((prev) => ({
       ...prev,
@@ -150,9 +166,9 @@ export function GeneratorWorkspace({ initialConfig }: { initialConfig: Generator
   return (
     <div className="mx-auto w-full max-w-7xl px-4 pb-16 sm:px-6">
       {/* Toolbar */}
-      <div className="sticky top-14 z-30 -mx-4 mb-6 border-b border-zinc-200 bg-white/90 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6">
+      <div className="sticky top-14 z-30 -mx-4 mb-6 border-b border-zinc-200 bg-white/90 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 dark:border-zinc-800 dark:bg-zinc-950/90">
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-sm font-semibold text-zinc-900">
+          <h1 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
             Design system{" "}
             <span className="font-mono font-normal text-zinc-500">
               {system.source.primary.hex.toUpperCase()}
@@ -187,6 +203,11 @@ export function GeneratorWorkspace({ initialConfig }: { initialConfig: Generator
             onStrategyChange={setStrategy}
             onToggleLock={toggleLock}
             onEditSwatch={editSwatch}
+          />
+          <PrimitivesPanel
+            system={system}
+            onRadiusChange={setRadiusStyle}
+            onTypeRatioChange={setTypeRatio}
           />
         </div>
 

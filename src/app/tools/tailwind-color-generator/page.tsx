@@ -14,8 +14,8 @@ export default function Page() {
       tool={TOOL}
       usage={[
         "Enter your brand colour.",
-        "A full 50–950 perceptual scale is generated and emitted as Tailwind CSS v4 @theme variables.",
-        "Copy the snippet into your global stylesheet — bg-brand-500 style utilities become available immediately.",
+        "A full 50â€“950 perceptual scale is generated and emitted as Tailwind CSS v4 @theme variables.",
+        "Copy the snippet into your global stylesheet â€” bg-brand-500 style utilities become available immediately.",
       ]}
     >
       <TailwindColourTool />

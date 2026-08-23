@@ -6,7 +6,7 @@ import type { DesignSystem } from "@/lib/design-system/types";
 export function MobilePreview({ system }: { system: DesignSystem }) {
   const tint = system.primitives.colors.scale.find((s) => s.step === 100)?.hex ?? "#eee";
   return (
-    <div className="flex min-h-[560px] items-center justify-center bg-zinc-100 p-6 font-sans">
+    <div className="flex min-h-[560px] items-center justify-center bg-zinc-100 p-6 font-sans dark:bg-zinc-800/50">
       <div
         className="w-[300px] overflow-hidden rounded-[2rem] border-[10px] border-zinc-900 bg-[var(--ds-background)] shadow-xl"
         role="img"
@@ -24,7 +24,7 @@ export function MobilePreview({ system }: { system: DesignSystem }) {
         {/* App header */}
         <header className="flex items-center justify-between px-4 py-2">
           <h2 className="text-base font-bold tracking-tight">Wallet</h2>
-          <button className="rounded-md bg-[var(--ds-primary)] px-2.5 py-1 text-[11px] font-medium text-[var(--ds-primary-foreground)] hover:bg-[var(--ds-primary-hover)] active:bg-[var(--ds-primary-active)]">
+          <button className="rounded-[var(--ds-radius-md)] bg-[var(--ds-primary)] px-2.5 py-1 text-[11px] font-medium text-[var(--ds-primary-foreground)] hover:bg-[var(--ds-primary-hover)] active:bg-[var(--ds-primary-active)]">
             + Add
           </button>
         </header>
@@ -34,22 +34,22 @@ export function MobilePreview({ system }: { system: DesignSystem }) {
           <p className="text-[10px] uppercase tracking-wider opacity-80">Sample balance</p>
           <p className="mt-1 text-2xl font-bold tracking-tight">$12,480.00</p>
           <div className="mt-3 flex gap-2">
-            <button className="rounded-lg bg-white/20 px-3 py-1 text-[11px] font-medium backdrop-blur hover:bg-white/30">
+            <button className="rounded-[var(--ds-radius-lg)] bg-white/20 px-3 py-1 text-[11px] font-medium backdrop-blur hover:bg-white/30">
               Send
             </button>
-            <button className="rounded-lg bg-white/20 px-3 py-1 text-[11px] font-medium backdrop-blur hover:bg-white/30">
+            <button className="rounded-[var(--ds-radius-lg)] bg-white/20 px-3 py-1 text-[11px] font-medium backdrop-blur hover:bg-white/30">
               Request
             </button>
           </div>
         </section>
 
         {/* Segmented control */}
-        <div className="mx-4 mt-4 grid grid-cols-3 gap-1 rounded-lg bg-[var(--ds-secondary)] p-1 text-[11px]" role="tablist" aria-label="Transaction filters">
+        <div className="mx-4 mt-4 grid grid-cols-3 gap-1 rounded-[var(--ds-radius-lg)] bg-[var(--ds-secondary)] p-1 text-[11px]" role="tablist" aria-label="Transaction filters">
           {["All", "Sent", "Received"].map((tab, i) => (
             <span
               key={tab}
-              className={`rounded-md py-1 text-center ${
-                i === 0 ? "bg-[var(--ds-surface-raised)] font-semibold text-[var(--ds-foreground)] shadow-sm" : "text-[var(--ds-foreground-muted)]"
+              className={`rounded-[var(--ds-radius-md)] py-1 text-center ${
+                i === 0 ? "bg-[var(--ds-surface-raised)] font-semibold text-[var(--ds-foreground)] shadow-[var(--ds-shadow-sm)]" : "text-[var(--ds-foreground-muted)]"
               }`}
             >
               {tab}
@@ -64,16 +64,16 @@ export function MobilePreview({ system }: { system: DesignSystem }) {
             ["Salary sample", "+$2,900", "info"],
             ["Groceries demo", "-$56.20", "warning"],
           ].map(([name, amount]) => (
-            <li key={name} className="flex items-center gap-3 rounded-xl px-1 py-2.5">
+            <li key={name} className="flex items-center gap-3 rounded-[var(--ds-radius-xl)] px-1 py-2.5">
               <span
-                className="grid h-9 w-9 shrink-0 place-items-center rounded-xl text-[10px] font-bold"
+                className="grid h-9 w-9 shrink-0 place-items-center rounded-[var(--ds-radius-xl)] text-[10px] font-bold"
                 style={{ backgroundColor: tint }}
               >
                 {String(name).slice(0, 1)}
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block truncate font-medium">{name}</span>
-                <span className="block text-[10px] text-[var(--ds-foreground-subtle)]">Today · placeholder</span>
+                <span className="block text-[10px] text-[var(--ds-foreground-subtle)]">Today Â· placeholder</span>
               </span>
               <span
                 className={`font-semibold ${
@@ -94,9 +94,9 @@ export function MobilePreview({ system }: { system: DesignSystem }) {
           <input
             id="mp-search"
             type="text"
-            placeholder="Try “coffee”"
+            placeholder="Try â€œcoffeeâ€"
             readOnly
-            className="w-full rounded-xl border border-[var(--ds-input-border)] bg-[var(--ds-input)] px-3 py-2 text-xs outline-none focus:border-[var(--ds-focus-ring)] focus:ring-2 focus:ring-[var(--ds-focus-ring)]"
+            className="w-full rounded-[var(--ds-radius-xl)] border border-[var(--ds-input-border)] bg-[var(--ds-input)] px-3 py-2 text-xs outline-none focus:border-[var(--ds-focus-ring)] focus:ring-2 focus:ring-[var(--ds-focus-ring)]"
           />
         </div>
 
@@ -104,7 +104,7 @@ export function MobilePreview({ system }: { system: DesignSystem }) {
         <nav aria-label="App sections" className="mt-4 flex items-center justify-around border-t border-[var(--ds-border-muted)] bg-[var(--ds-background-subtle)] px-2 py-2.5 text-[10px]">
           {["Home", "Cards", "Stats"].map((item, i) => (
             <span key={item} className={`flex flex-col items-center gap-0.5 ${i === 0 ? "font-semibold text-[var(--ds-primary)]" : "text-[var(--ds-foreground-subtle)]"}`}>
-              <span className={`block h-4 w-4 rounded-md ${i === 0 ? "bg-[var(--ds-primary)]" : "bg-[var(--ds-border-strong)]"}`} />
+              <span className={`block h-4 w-4 rounded-[var(--ds-radius-md)] ${i === 0 ? "bg-[var(--ds-primary)]" : "bg-[var(--ds-border-strong)]"}`} />
               {item}
             </span>
           ))}

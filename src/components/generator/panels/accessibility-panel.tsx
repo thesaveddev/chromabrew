@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { fixContrast } from "@/lib/design-system/colour/contrast";
 import { CHECK_PAIR_TOKENS } from "@/lib/design-system/tokens/generate";
@@ -40,21 +40,21 @@ export function AccessibilityPanel({
     <section aria-labelledby="a11y-heading" className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 id="a11y-heading" className="panel-title">
-          Accessibility — WCAG 2.x
+          Accessibility Ã¢â‚¬â€ WCAG 2.x
         </h2>
         <p className="text-xs text-zinc-500" role="status">
-          Light: {lightFailing === 0 ? "all AA pairs pass" : `${lightFailing} pair(s) fail AA`} ·{" "}
+          Light: {lightFailing === 0 ? "all AA pairs pass" : `${lightFailing} pair(s) fail AA`} Ã‚Â·{" "}
           Dark: {darkFailing === 0 ? "all AA pairs pass" : `${darkFailing} pair(s) fail AA`}
         </p>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-zinc-200">
+      <div className="overflow-x-auto rounded-xl border border-zinc-200 dark:border-zinc-800">
         <table className="w-full min-w-[640px] border-collapse text-left text-xs">
           <caption className="sr-only">
             Contrast ratios for key colour pairs with WCAG pass/fail results
           </caption>
           <thead>
-            <tr className="border-b border-zinc-200 bg-zinc-50 text-[11px] uppercase tracking-wide text-zinc-500">
+            <tr className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/60 text-[11px] uppercase tracking-wide text-zinc-500">
               <th scope="col" className="px-3 py-2 font-medium">Pair</th>
               <th scope="col" className="px-3 py-2 font-medium">Preview</th>
               <th scope="col" className="px-3 py-2 font-medium">Ratio</th>
@@ -69,7 +69,7 @@ export function AccessibilityPanel({
           </thead>
           <tbody>
             {checks.map((check) => (
-              <tr key={check.id} className="border-b border-zinc-100 last:border-0">
+              <tr key={check.id} className="border-b border-zinc-100 dark:border-zinc-800/70 last:border-0">
                 <td className="px-3 py-1.5">
                   {check.label}
                   <span className="ml-1.5 rounded bg-zinc-100 px-1 py-0.5 text-[10px] uppercase text-zinc-500">
@@ -97,7 +97,7 @@ export function AccessibilityPanel({
                       onApplyFix={(hex) => onApplyFix(check.mode, check.foregroundToken, hex)}
                     />
                   ) : (
-                    <span className="text-zinc-300" aria-hidden>—</span>
+                    <span className="text-zinc-300" aria-hidden>Ã¢â‚¬â€</span>
                   )}
                 </td>
               </tr>
@@ -107,8 +107,8 @@ export function AccessibilityPanel({
       </div>
 
       <p className="text-[11px] leading-4 text-zinc-400">
-        Thresholds: AA normal ≥ 4.5:1, AA large ≥ 3:1, AAA normal ≥ 7:1, AAA
-        large ≥ 4.5:1. Fixes adjust the nearest accessible value in OKLCH,
+        Thresholds: AA normal Ã¢â€°Â¥ 4.5:1, AA large Ã¢â€°Â¥ 3:1, AAA normal Ã¢â€°Â¥ 7:1, AAA
+        large Ã¢â€°Â¥ 4.5:1. Fixes adjust the nearest accessible value in OKLCH,
         preserving hue.
       </p>
     </section>
@@ -129,7 +129,7 @@ function FixButton({
       type="button"
       onClick={() => onApplyFix(fixed.hex)}
       title={`Adjust ${check.foregroundToken} to ${fixed.hex} (${fixed.ratio.toFixed(2)}:1)`}
-      className="rounded-md border border-zinc-300 px-2 py-1 text-[11px] font-medium text-zinc-700 transition-colors hover:border-zinc-400 hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-zinc-900"
+      className="rounded-md border border-zinc-300 dark:border-zinc-700 px-2 py-1 text-[11px] font-medium text-zinc-700 dark:text-zinc-300 transition-colors hover:border-zinc-400 dark:hover:border-zinc-600 hover:bg-zinc-50 dark:hover:bg-zinc-900 dark:bg-zinc-900/60 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-zinc-900 dark:focus-visible:outline-zinc-100"
     >
       Fix contrast
     </button>
@@ -141,10 +141,10 @@ function GradeCell({ pass, label }: { pass: boolean; label: string }) {
     <td className="px-3 py-1.5">
       <span
         className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
-          pass ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-700"
+          pass ? "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300" : "bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300"
         }`}
       >
-        <span aria-hidden>{pass ? "✓" : "✕"}</span>
+        <span aria-hidden>{pass ? "Ã¢Å“â€œ" : "Ã¢Å“â€¢"}</span>
         {label}
       </span>
       <span className="sr-only">{label.replace(/(AA|AAA)/, "$1 ") + (pass ? " passes" : " fails")}</span>

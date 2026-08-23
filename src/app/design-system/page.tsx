@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { configFromParams } from "@/lib/design-system/share";
 import { GeneratorWorkspace } from "@/components/generator/generator-client";
 
 export const metadata: Metadata = {
@@ -9,13 +8,10 @@ export const metadata: Metadata = {
   alternates: { canonical: "/design-system" },
 };
 
-export default async function DesignSystemPage({
-  searchParams,
-}: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-}) {
-  const params = await searchParams;
-  return (
-    <GeneratorWorkspace initialConfig={configFromParams(params)} />
-  );
+/**
+ * Statically prerendered shell. Shareable-URL state (?primary=…&strategy=…)
+ * is hydrated client-side after mount, so the route stays fully static.
+ */
+export default function DesignSystemPage() {
+  return <GeneratorWorkspace />;
 }

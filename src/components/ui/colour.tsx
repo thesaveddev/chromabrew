@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   formatHsl,
@@ -14,12 +14,12 @@ export function ColourChip({ hex, label }: { hex: string; label?: string }) {
   const isLight = relativeLuma(hex) > 0.45;
   return (
     <div
-      className="group relative overflow-hidden rounded-xl border border-zinc-200"
+      className="group relative overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800"
       style={{ backgroundColor: hex }}
     >
       <div
         className={`flex flex-col gap-0.5 p-3 font-mono text-[11px] leading-4 ${
-          isLight ? "text-zinc-800" : "text-white"
+          isLight ? "text-zinc-800 dark:text-zinc-200" : "text-white"
         }`}
       >
         {label ? <span className="font-sans text-[11px] font-medium opacity-80">{label}</span> : null}
@@ -52,7 +52,7 @@ export function ColourFormatsTable({ hex }: { hex: string }) {
           <dt className="text-xs font-medium uppercase tracking-wide text-zinc-400">
             {row.format}
           </dt>
-          <dd className="flex items-center gap-2 font-mono text-xs text-zinc-700">
+          <dd className="flex items-center gap-2 font-mono text-xs text-zinc-700 dark:text-zinc-300">
             <code>{row.code}</code>
             <CopyButton value={row.code} label="Copy" className="px-2 py-0.5 text-xs" />
           </dd>
@@ -98,30 +98,30 @@ export function ColourInput({
       <label htmlFor={id} className="sr-only">
         {label}
       </label>
-      <div
-        className={`flex items-stretch overflow-hidden rounded-lg border bg-white transition-colors focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-zinc-900 ${
-          invalid ? "border-red-400" : "border-zinc-300"
+    <div
+      className={`flex items-stretch overflow-hidden rounded-lg border bg-white transition-colors focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-zinc-900 dark:bg-zinc-950 dark:focus-within:outline-zinc-100 ${
+        invalid ? "border-red-400" : "border-zinc-300 dark:border-zinc-700"
+      }`}
+    >
+      <input
+        type="color"
+        aria-label={`${label} picker`}
+        value={/^#[0-9a-f]{6}$/i.test(value) ? value : "#000000"}
+        onChange={(event) => {
+          onChange(event.target.value);
+          onSubmit?.(event.target.value);
+        }}
+        className={`cursor-pointer border-r border-zinc-200 dark:border-zinc-800 bg-white p-1 dark:border-zinc-800 dark:bg-zinc-950 ${
+          size === "lg" ? "h-14 w-14" : "h-10 w-10"
         }`}
-      >
-        <input
-          type="color"
-          aria-label={`${label} picker`}
-          value={/^#[0-9a-f]{6}$/i.test(value) ? value : "#000000"}
-          onChange={(event) => {
-            onChange(event.target.value);
-            onSubmit?.(event.target.value);
-          }}
-          className={`cursor-pointer border-r border-zinc-200 bg-white p-1 ${
-            size === "lg" ? "h-14 w-14" : "h-10 w-10"
-          }`}
-        />
+      />
         <input
           id={id}
           type="text"
           inputMode="text"
           autoComplete="off"
           spellCheck={false}
-          placeholder="#47003A, rgb(71,0,58), hsl(…)"
+          placeholder="#47003A, rgb(71,0,58), hsl(Ã¢â‚¬Â¦)"
           value={value}
           aria-invalid={invalid || undefined}
           aria-describedby={invalid ? `${id}-error` : undefined}

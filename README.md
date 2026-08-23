@@ -9,12 +9,15 @@ accessible, production-ready design system:
 - perceptual 50–950 colour scales (OKLCH)
 - palette generation (six strategies, with locks and manual overrides)
 - semantic design tokens for **light and dark themes**
+- typography, spacing, radius and shadow primitives with configurable knobs
 - WCAG 2.x contrast analysis with one-click accessible fixes
 - live UI previews (SaaS dashboard, marketing site, ecommerce, mobile app)
 - exports: CSS variables, DTCG-style JSON, Tailwind CSS v4, shadcn/ui
+- light/dark app chrome with no-flash script and ThemeToggle
 - shareable URLs — no account required, nothing uploaded
 
-Everything runs client-side. There is no database and no tracking in Phase 1.
+Everything runs client-side. There is no database. Vercel Analytics
+loads only on Vercel deployments; local development is fully silent.
 
 ## Quick start
 
@@ -33,7 +36,7 @@ npm run test:e2e   # browser E2E for the critical workflow (Playwright; builds f
 ```
 
 Requires Node 18.18+ (developed on Node 22). E2E tests need a one-time
-`npx playwright install chromium`.
+`npx playwright install chromium firefox webkit`.
 
 ## Environment variables
 
@@ -61,9 +64,11 @@ No secrets are required in Phase 1.
 
 ## Tech stack
 
-- Next.js (App Router) + React + TypeScript
+- Next.js (App Router) + React 19 + TypeScript
 - Tailwind CSS v4
 - Vitest for deterministic-engine tests
+- Playwright for cross-browser E2E (Chromium, Firefox, WebKit)
+- @vercel/analytics (Vercel deployments only)
 - No runtime dependencies beyond the framework
 
 ## Licence / status

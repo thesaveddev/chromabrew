@@ -6,10 +6,12 @@ import { jsonAdapter } from "./exports/json";
 import { tailwindAdapter } from "./exports/tailwind";
 import { shadcnAdapter } from "./exports/shadcn";
 
-describe("buildDesignSystem — critical workflow integration", () => {
+describe("buildDesignSystem â€” critical workflow integration", () => {
   const system = buildDesignSystem({
     primary: "#47003a",
     paletteStrategy: "complementary",
+    radiusStyle: "soft",
+    typeRatio: 1.25,
     lockedIndices: [],
     paletteOverrides: {},
   });
@@ -18,7 +20,7 @@ describe("buildDesignSystem — critical workflow integration", () => {
     expect(system.source.primary.hex).toBe("#47003a");
   });
 
-  it("derives scale → palette → themes → accessibility in order", () => {
+  it("derives scale â†’ palette â†’ themes â†’ accessibility in order", () => {
     expect(system.primitives.colors.scale).toHaveLength(11);
     expect(system.primitives.colors.palette.length).toBeGreaterThanOrEqual(2);
     expect(system.themes.light.background).not.toBe(
@@ -31,6 +33,8 @@ describe("buildDesignSystem — critical workflow integration", () => {
     const again = buildDesignSystem({
       primary: "#47003a",
       paletteStrategy: "complementary",
+    radiusStyle: "soft",
+    typeRatio: 1.25,
       lockedIndices: [],
       paletteOverrides: {},
     });
@@ -46,6 +50,8 @@ describe("shareable URL codec", () => {
       paletteStrategy: "triadic" as const,
       lockedIndices: [1, 2],
       paletteOverrides: { 3: "#123456" },
+      radiusStyle: "round" as const,
+      typeRatio: 1.333 as const,
     };
     const url = configToQueryString(config);
     expect(url.startsWith("/design-system?")).toBe(true);
@@ -56,6 +62,8 @@ describe("shareable URL codec", () => {
     expect(decoded.paletteStrategy).toBe("triadic");
     expect(decoded.lockedIndices).toEqual([1, 2]);
     expect(decoded.paletteOverrides[3]).toBe("#123456");
+    expect(decoded.radiusStyle).toBe("round");
+    expect(decoded.typeRatio).toBe(1.333);
   });
 
   it("parses the documented share format ?primary=47003A", () => {
@@ -77,6 +85,8 @@ describe("export adapters", () => {
   const system = buildDesignSystem({
     primary: "#47003a",
     paletteStrategy: "complementary",
+    radiusStyle: "soft",
+    typeRatio: 1.25,
     lockedIndices: [],
     paletteOverrides: {},
   });
@@ -91,6 +101,17 @@ describe("export adapters", () => {
     expect(result.code).toContain("--success-foreground:");
   });
 
+  it("CSS adapter emits primitive tokens for typography, spacing, radius and shadows", () => {
+    const result = cssAdapter.generate(system);
+    expect(result.code).toContain("--font-size-base: 1rem;");
+    expect(result.code).toContain("--font-size-2xl-line-height:");
+    expect(result.code).toContain("--space-4: 0.25rem;");
+    expect(result.code).toContain("--radius-lg:");
+    expect(result.code).toContain("--shadow-md:");
+    // Primitives are mode-independent — emitted once.
+    expect(result.code.split("--radius-sm:").length - 1).toBe(1);
+  });
+
   it("JSON adapter emits valid DTCG-style tokens", () => {
     const result = jsonAdapter.generate(system);
     expect(result.suggestedFilename).toBe("design-tokens.json");
@@ -103,9 +124,20 @@ describe("export adapters", () => {
     // Brand scale included.
     const primitive = parsed.primitive as {
       color: { brand: Record<string, { $value: string }> };
+      typography: {
+        fontFamily: Record<string, unknown>;
+        fontSize: Record<string, { size: { $value: string } }>;
+      };
+      spacing: Record<string, { $value: string }>;
+      radius: Record<string, { $value: string }>;
+      shadow: Record<string, unknown>;
     };
     expect(Object.keys(primitive.color.brand)).toHaveLength(11);
     expect(primitive.color.brand["950"].$value).toBe("#47003a");
+    expect(primitive.typography.fontSize.base.size.$value).toBe("1rem");
+    expect(primitive.spacing["16"].$value).toBe("1rem");
+    expect(Object.keys(primitive.radius)).toContain("xl");
+    expect(Object.keys(primitive.shadow)).toEqual(["sm", "md", "lg", "xl"]);
   });
 
   it("Tailwind adapter emits v4 @theme output", () => {
@@ -115,6 +147,12 @@ describe("export adapters", () => {
     expect(result.code).toContain("@theme inline {");
     expect(result.code).toContain("--color-primary: var(--primary);");
     expect(result.code).toContain("--color-brand-500: #");
+    // Typography/radius/shadow primitives use native v4 namespaces.
+    expect(result.code).toContain("--text-base: 1rem;");
+    expect(result.code).toContain("--text-sm--line-height:");
+    expect(result.code).toContain("--radius-lg: 0.75rem;");
+    expect(result.code).toContain("--shadow-xl: 0 8px 16px");
+    expect(result.code).toContain("--radius: var(--radius-md);");
   });
 
   it("shadcn adapter emits oklch variables with current conventions", () => {

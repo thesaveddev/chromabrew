@@ -1,9 +1,10 @@
-import type { DesignSystem } from "@/lib/design-system/types";
-import { tokensToStyle } from "./token-style";
+import type { DesignSystem, ThemeMode } from "@/lib/design-system/types";
+import { systemToStyle } from "./token-style";
 
 /**
- * Frame that injects the generated semantic tokens as CSS variables so
- * preview components can consume them with `var(--ds-*)` utilities.
+ * Frame that injects the generated semantic tokens (plus radius/shadow
+ * primitives) as CSS variables so preview components can consume them with
+ * `var(--ds-*)` utilities.
  */
 export function PreviewFrame({
   system,
@@ -12,14 +13,14 @@ export function PreviewFrame({
   className = "",
 }: {
   system: DesignSystem;
-  mode: "light" | "dark";
+  mode: ThemeMode;
   children: React.ReactNode;
   className?: string;
 }) {
   return (
     <div
-      style={tokensToStyle(system.themes[mode])}
-      className={`overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm ${className}`}
+      style={systemToStyle(system, mode)}
+      className={`overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900 ${className}`}
     >
       {children}
     </div>

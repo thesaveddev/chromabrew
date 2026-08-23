@@ -1,4 +1,8 @@
 import { normalizeHex, parseColour } from "./colour/convert";
+import {
+  normaliseRadiusStyle,
+  normaliseTypeRatio,
+} from "./primitives/generate";
 import type { GeneratorConfig, PaletteStrategyId } from "./types";
 
 const STRATEGIES: PaletteStrategyId[] = [
@@ -15,6 +19,8 @@ export const DEFAULT_CONFIG: GeneratorConfig = {
   paletteStrategy: "complementary",
   lockedIndices: [],
   paletteOverrides: {},
+  radiusStyle: "soft",
+  typeRatio: 1.25,
 };
 
 function parseIndices(value: string | null): number[] {
@@ -62,11 +68,16 @@ export function configFromParams(
       ? (strategyParam as PaletteStrategyId)
       : DEFAULT_CONFIG.paletteStrategy;
 
+  const radius = normaliseRadiusStyle(get("radius"));
+  const ratio = normaliseTypeRatio(get("ratio"));
+
   return {
     primary: primary ?? DEFAULT_CONFIG.primary,
     paletteStrategy: strategy,
     lockedIndices: parseIndices(get("locked")),
     paletteOverrides: parseOverrides(get("custom")),
+    radiusStyle: radius ?? DEFAULT_CONFIG.radiusStyle,
+    typeRatio: ratio ?? DEFAULT_CONFIG.typeRatio,
   };
 }
 
@@ -75,6 +86,8 @@ export function paramsFromConfig(config: GeneratorConfig): Record<string, string
   const params: Record<string, string> = {
     primary: config.primary.replace("#", ""),
     strategy: config.paletteStrategy,
+    radius: config.radiusStyle,
+    ratio: String(config.typeRatio),
   };
   if (config.lockedIndices.length) {
     params.locked = [...config.lockedIndices].sort((a, b) => a - b).join(",");

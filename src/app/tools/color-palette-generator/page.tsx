@@ -13,7 +13,7 @@ export default function Page() {
     <ToolShell
       tool={TOOL}
       usage={[
-        "Enter or pick your base colour — HEX, rgb() and hsl() input are all accepted.",
+        "Enter or pick your base colour â€” HEX, rgb() and hsl() input are all accepted.",
         "Choose a palette strategy such as complementary, triadic or analogous.",
         "Copy any swatch as HEX, or jump into the generator to turn the palette into a complete design system.",
       ]}

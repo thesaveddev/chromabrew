@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { TOKEN_GROUPS } from "@/lib/design-system/exports/css";
 import type { ThemeMode, ThemeTokens } from "@/lib/design-system/types";
@@ -34,11 +34,11 @@ export function TokensPanel({
       </div>
 
       {TOKEN_GROUPS.map((group) => (
-        <div key={group.title} className="overflow-hidden rounded-xl border border-zinc-200">
+        <div key={group.title} className="overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800">
           <table className="w-full border-collapse text-left text-xs">
             <caption className="sr-only">{GROUP_TITLES[group.title]} tokens</caption>
             <thead>
-              <tr className="border-b border-zinc-200 bg-zinc-50 text-[11px] uppercase tracking-wide text-zinc-500">
+              <tr className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/60 text-[11px] uppercase tracking-wide text-zinc-500">
                 <th scope="col" className="px-3 py-2 font-medium">Token</th>
                 <th scope="col" className="px-3 py-2 font-medium">Light</th>
                 <th scope="col" className="px-3 py-2 font-medium">Dark</th>
@@ -46,8 +46,8 @@ export function TokensPanel({
             </thead>
             <tbody>
               {group.tokens.map((id) => (
-                <tr key={id} className="border-b border-zinc-100 last:border-0">
-                  <td className="px-3 py-1.5 font-mono text-[11px] text-zinc-600">
+                <tr key={id} className="border-b border-zinc-100 dark:border-zinc-800/70 last:border-0">
+                  <td className="px-3 py-1.5 font-mono text-[11px] text-zinc-600 dark:text-zinc-400">
                     --{id}
                   </td>
                   <td className="px-3 py-1.5">
@@ -78,14 +78,14 @@ function TokenCell({ hex }: { hex: string | undefined }) {
         window.setTimeout(() => setCopied(false), 1200);
       }}
       title={`Copy ${hex}`}
-      className="flex w-full items-center gap-2 rounded-md p-0.5 text-left transition-colors hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-zinc-900"
+      className="flex w-full items-center gap-2 rounded-md p-0.5 text-left transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-900 dark:bg-zinc-900/60 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-zinc-900 dark:focus-visible:outline-zinc-100"
     >
       <span
         aria-hidden
-        className="h-5 w-5 shrink-0 rounded border border-zinc-300"
+        className="h-5 w-5 shrink-0 rounded border border-zinc-300 dark:border-zinc-700"
         style={{ backgroundColor: hex }}
       />
-      <span className="font-mono text-[11px] uppercase text-zinc-700">
+      <span className="font-mono text-[11px] uppercase text-zinc-700 dark:text-zinc-300">
         {copied ? "Copied" : hex}
       </span>
     </button>

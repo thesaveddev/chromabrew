@@ -19,7 +19,23 @@ export type AnalyticsEvent =
 
 type Sink = (event: AnalyticsEvent, properties?: Record<string, string | number>) => void;
 
-let sink: Sink = () => {};
+interface VercelAnalyticsWindow {
+  va?: (event: string, properties?: Record<string, string | number>) => void;
+}
+
+/**
+ * Default sink: forward to Vercel Analytics custom events when the script
+ * is active (production on Vercel). It is cookie-less and PII-free; the
+ * call sites stay provider-agnostic — swap this sink to integrate
+ * Plausible/GA4/PostHog later without touching product code.
+ */
+const vercelSink: Sink = (event, properties) => {
+  if (typeof window === "undefined") return;
+  const va = (window as unknown as VercelAnalyticsWindow).va;
+  if (typeof va === "function") va(event, properties);
+};
+
+let sink: Sink = vercelSink;
 
 export function setAnalyticsSink(next: Sink): void {
   sink = next;

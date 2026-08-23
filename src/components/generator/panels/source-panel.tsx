@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useRef, useState } from "react";
 import {
@@ -102,7 +102,7 @@ export function SourcePanel({
 
       {busy ? (
         <p className="text-xs text-zinc-500" role="status">
-          Reading image…
+          Reading imageÃ¢â‚¬Â¦
         </p>
       ) : null}
       {imageError ? (
@@ -112,9 +112,9 @@ export function SourcePanel({
       ) : null}
 
       {extracted ? (
-        <fieldset className="rounded-lg border border-zinc-200 p-3">
-          <legend className="px-1 text-xs font-medium text-zinc-600">
-            Dominant colours — pick your primary
+        <fieldset className="rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
+          <legend className="px-1 text-xs font-medium text-zinc-600 dark:text-zinc-400">
+            Dominant colours Ã¢â‚¬â€ pick your primary
           </legend>
           <div className="mt-1 grid grid-cols-4 gap-2">
             {extracted.map((colour) => (
@@ -127,7 +127,7 @@ export function SourcePanel({
                   onPrimaryChange(colour.hex);
                   track("design_system_generated", { source: "image" });
                 }}
-                className={`group relative aspect-square rounded-md border-2 transition-transform focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 ${
+                className={`group relative aspect-square rounded-md border-2 transition-transform focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 dark:focus-visible:outline-zinc-100 ${
                   colour.hex.toLowerCase() === primary.toLowerCase()
                     ? "border-zinc-900"
                     : "border-transparent hover:scale-105"

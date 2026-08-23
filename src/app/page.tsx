@@ -1,14 +1,15 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import Link from "next/link";
 import { HeroColourForm } from "@/components/home/hero-form";
 import { buildDesignSystem } from "@/lib/design-system";
+import { DEFAULT_CONFIG } from "@/lib/design-system/share";
 import { PreviewFrame } from "@/components/generator/previews/preview-frame";
 import { SaasPreview } from "@/components/generator/previews/saas-preview";
 import { LinkButton } from "@/components/ui/primitives";
 import { TOOLS } from "@/lib/tools";
 
 export const metadata: Metadata = {
-  title: "Colorsmith — Turn one colour into an entire design system",
+  title: "Colorsmith Ã¢â‚¬â€ Turn one colour into an entire design system",
   description:
     "Generate accessible palettes, semantic tokens, light and dark themes, and production-ready code from a single colour. Free, no account required.",
   alternates: { canonical: "/" },
@@ -16,8 +17,8 @@ export const metadata: Metadata = {
 
 const PIPELINE = [
   ["One colour", "HEX, RGB, HSL or a picked swatch"],
-  ["Colour scale", "Perceptual 50–950 in OKLCH"],
-  ["Semantic tokens", "background → primary → status roles"],
+  ["Colour scale", "Perceptual 50Ã¢â‚¬â€œ950 in OKLCH"],
+  ["Semantic tokens", "background Ã¢â€ â€™ primary Ã¢â€ â€™ status roles"],
   ["Light + dark", "Independent accessible themes"],
   ["WCAG checks", "AA / AAA measured, never assumed"],
   ["Production code", "CSS, Tailwind v4, shadcn/ui, JSON"],
@@ -26,7 +27,7 @@ const PIPELINE = [
 const FEATURES = [
   {
     title: "Perceptual colour engine",
-    body: "Scales are generated in OKLCH so every step is evenly spaced to the eye — not arbitrary white/black mixes. Your brand hue survives end to end.",
+    body: "Scales are generated in OKLCH so every step is evenly spaced to the eye Ã¢â‚¬â€ not arbitrary white/black mixes. Your brand hue survives end to end.",
   },
   {
     title: "Semantic design tokens",
@@ -38,7 +39,7 @@ const FEATURES = [
   },
   {
     title: "Thoughtful dark mode",
-    body: "Dark themes are constructed independently — lighter primaries, tinted neutrals, verified foregrounds — never a mechanical inversion.",
+    body: "Dark themes are constructed independently Ã¢â‚¬â€ lighter primaries, tinted neutrals, verified foregrounds Ã¢â‚¬â€ never a mechanical inversion.",
   },
   {
     title: "Live interface previews",
@@ -51,26 +52,21 @@ const FEATURES = [
 ];
 
 export default function HomePage() {
-  const demoSystem = buildDesignSystem({
-    primary: "#47003a",
-    paletteStrategy: "complementary",
-    lockedIndices: [],
-    paletteOverrides: {},
-  });
+  const demoSystem = buildDesignSystem(DEFAULT_CONFIG);
 
   return (
     <>
       {/* Hero */}
-      <section className="border-b border-zinc-200">
+      <section className="border-b border-zinc-200 dark:border-zinc-800">
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24">
           <div className="max-w-2xl">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500">
               Free design system generator
             </p>
-            <h1 className="mt-3 text-4xl font-bold leading-[1.1] tracking-tight text-zinc-900 sm:text-5xl">
+            <h1 className="mt-3 text-4xl font-bold leading-[1.1] tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-5xl">
               Turn one colour into an entire design system.
             </h1>
-            <p className="mt-4 text-lg leading-8 text-zinc-600">
+            <p className="mt-4 text-lg leading-8 text-zinc-600 dark:text-zinc-400">
               Generate accessible palettes, semantic tokens, light and dark
               themes, and production-ready code in seconds.
             </p>
@@ -79,8 +75,8 @@ export default function HomePage() {
             <HeroColourForm />
           </div>
           <p className="mt-4 text-sm text-zinc-500">
-            No account. No upload. Everything runs in your browser —{" "}
-            <Link href="/tools" className="font-medium text-zinc-700 underline decoration-zinc-300 underline-offset-4 hover:text-zinc-900">
+            No account. No upload. Everything runs in your browser Ã¢â‚¬â€{" "}
+            <Link href="/tools" className="font-medium text-zinc-700 dark:text-zinc-300 underline decoration-zinc-300 underline-offset-4 hover:text-zinc-900 dark:hover:text-zinc-100">
               or explore the individual tools
             </Link>
             .
@@ -96,22 +92,22 @@ export default function HomePage() {
               <span className="text-[11px] font-semibold uppercase tracking-wide text-zinc-400">
                 Step {i + 1}
               </span>
-              <h2 className="mt-1 text-sm font-semibold text-zinc-900">{title}</h2>
-              <p className="mt-1 text-xs leading-5 text-zinc-600">{body}</p>
+              <h2 className="mt-1 text-sm font-semibold text-zinc-900 dark:text-zinc-100">{title}</h2>
+              <p className="mt-1 text-xs leading-5 text-zinc-600 dark:text-zinc-400">{body}</p>
             </li>
           ))}
         </ol>
       </section>
 
       {/* Live demo */}
-      <section aria-labelledby="demo-heading" className="bg-zinc-50 py-16">
+      <section aria-labelledby="demo-heading" className="bg-zinc-50 dark:bg-zinc-900/60 py-16">
         <div className="mx-auto max-w-5xl px-4 sm:px-6">
           <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
             <div>
-              <h2 id="demo-heading" className="text-xl font-semibold tracking-tight text-zinc-900">
+              <h2 id="demo-heading" className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
                 Real interfaces, not swatches
               </h2>
-              <p className="mt-1 max-w-xl text-sm leading-6 text-zinc-600">
+              <p className="mt-1 max-w-xl text-sm leading-6 text-zinc-600 dark:text-zinc-400">
                 This dashboard is rendered live from the default example colour
                 #47003A. Open the generator to change it and watch every
                 surface, badge and button follow.
@@ -129,26 +125,26 @@ export default function HomePage() {
 
       {/* Features */}
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
-        <h2 className="text-xl font-semibold tracking-tight text-zinc-900">
+        <h2 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
           Built like part of your team&apos;s toolchain
         </h2>
         <div className="mt-6 grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
           {FEATURES.map((feature) => (
             <article key={feature.title}>
-              <h3 className="text-sm font-semibold text-zinc-900">{feature.title}</h3>
-              <p className="mt-1.5 text-sm leading-6 text-zinc-600">{feature.body}</p>
+              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{feature.title}</h3>
+              <p className="mt-1.5 text-sm leading-6 text-zinc-600 dark:text-zinc-400">{feature.body}</p>
             </article>
           ))}
         </div>
       </section>
 
       {/* Tools */}
-      <section className="border-t border-zinc-200 bg-zinc-50 py-16">
+      <section className="border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/60 py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <h2 className="text-xl font-semibold tracking-tight text-zinc-900">
+          <h2 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
             Free colour &amp; token tools
           </h2>
-          <p className="mt-1 max-w-2xl text-sm leading-6 text-zinc-600">
+          <p className="mt-1 max-w-2xl text-sm leading-6 text-zinc-600 dark:text-zinc-400">
             The same engines behind the generator, available as focused
             single-purpose tools.
           </p>
@@ -157,9 +153,9 @@ export default function HomePage() {
               <li key={tool.href}>
                 <Link
                   href={tool.href}
-                  className="group block h-full rounded-xl border border-zinc-200 bg-white p-4 transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900"
+                  className="group block h-full rounded-xl border border-zinc-200 bg-white p-4 transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-600 dark:focus-visible:outline-zinc-100"
                 >
-                  <span className="block text-sm font-medium text-zinc-900 group-hover:underline group-hover:underline-offset-4">
+                  <span className="block text-sm font-medium text-zinc-900 dark:text-zinc-100 group-hover:underline group-hover:underline-offset-4">
                     {tool.title}
                   </span>
                   <span className="mt-1 block text-xs leading-5 text-zinc-500">

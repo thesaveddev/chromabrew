@@ -14,9 +14,10 @@ DesignSystem  (canonical model)
       ├── colour engine    → scale (50–950, OKLCH, source pinned)
       ├── palette engine   → strategy swatches with locks/overrides
       ├── token engine     → light + dark semantic themes
+      ├── primitives       → typography, spacing, radius, shadow scales
       ├── accessibility    → WCAG report over key UI pairs
       ↓
-Previews (consume themes via --ds-* CSS variables)
+Previews (consume themes via --ds-* CSS variables, including radius/shadow)
 Export adapters (consume the same DesignSystem)
 ```
 
@@ -27,10 +28,13 @@ recalculates colours independently.
 
 `src/lib/design-system/types.ts` defines:
 
-- `DesignSystem` — metadata, source, configuration, primitives, themes,
-  accessibility report. This is the single source of truth.
+- `DesignSystem` — metadata, source, configuration, primitives (typography,
+  spacing, radius, shadow), themes, accessibility report. This is the single
+  source of truth.
 - `ThemeTokens` — `Record<SemanticTokenId, string>` for each of
   `light` / `dark` (31 semantic tokens).
+- `TypographyScale`, `SpacingScale`, `RadiusScale`, `ShadowScale` — 9-10
+  steps each, derived from type ratio and radius style in `GeneratorConfig`.
 - `ScaleStep`, `PaletteColour`, `AccessibilityCheck`, `ContrastGrade`,
   `GeneratorConfig`.
 
@@ -69,6 +73,22 @@ Six strategies (complementary, analogous, triadic, split-complementary,
 monochromatic, tetradic) derived from the primary's OKLCH values.
 `regeneratePalette()` preserves locked and manually edited swatches.
 
+## Primitives engine (`src/lib/design-system/primitives/generate.ts`)
+
+Generates four scale families from `GeneratorConfig` knobs:
+
+- **Typography** — 9 steps (xs–5xl) using a configurable type ratio
+  (`1.2`, `1.25`, or `1.333`), normalised into clean `14px`/`16px`/`18px`
+  sizes with matching line heights and letter-spacing.
+- **Spacing** — 10 steps (0.5–16) with the same visual language.
+- **Radius** — 10 steps driven by `radiusStyle` (`sharp`/`soft`/`round`),
+  producing `0px`–`9999px` (pill) extremes.
+- **Shadow** — 9 steps (none/sm–2xl) with mode-aware light/dark shadows
+  (harder edges in light, softer/larger in dark).
+
+All normalisers are clamped and deterministic. Unit tests cover boundary
+values, clamping, ratio math, and the invariants every scale must hold.
+
 ## Token engine (`src/lib/design-system/tokens/generate.ts`)
 
 `generateTheme(input, mode)` constructs each mode independently:
@@ -101,23 +121,24 @@ Current adapters:
 
 | id       | Output                                                        |
 | -------- | ------------------------------------------------------------- |
-| `css`    | `:root` + `.dark` custom properties                           |
+| `css`    | `:root` + `.dark` custom properties (semantic + primitives)   |
 | `json`   | DTCG-style tokens (primitive + semantic.light/dark)           |
-| `tailwind` | Tailwind v4 `@theme inline` + `@custom-variant dark`        |
+| `tailwind` | Tailwind v4 `@theme inline` + primitives (text/radius/shadow) |
 | `shadcn` | Current shadcn/ui oklch conventions incl. chart/sidebar/radius |
 
 ## Shareable URLs (`share.ts`)
 
 `?primary=` (hex without #), `&strategy=`, `&locked=` (indices),
-`&custom=` (`index:hex` pairs). Parsing is forgiving: junk decodes to safe
+`&custom=` (`index:hex` pairs), `&radius=` (sharp/soft/round),
+`&ratio=` (1.2/1.25/1.333). Parsing is forgiving: junk decodes to safe
 defaults. No personal data ever enters the URL.
 
 ## Previews (`src/components/generator/previews/`)
 
-`PreviewFrame` injects theme tokens as `--ds-*` custom properties; preview
-components are plain markup styled through those variables, so switching
-light/dark re-themes instantly with no recalculation. Content is clearly
-demonstrative placeholder copy.
+`PreviewFrame` injects theme tokens as `--ds-*` custom properties including
+radius and shadow scales; preview components are plain markup styled through
+those variables, so switching light/dark re-themes instantly with no
+recalculation. Content is clearly demonstrative placeholder copy.
 
 ## Image extraction (`image-palette.ts`)
 
@@ -127,6 +148,9 @@ and returned as up to eight dominant colours. Transparent pixels are skipped;
 monochrome images still produce usable ramps. Nothing is uploaded.
 
 ## State flow in the generator
+
+`/design-system` is statically prerendered; shareable-URL config (`?primary=…`)
+is hydrated client-side in `useEffect`, so the route stays fully static.
 
 `generator-client.tsx` owns `GeneratorConfig`, the preview mode and optional
 per-mode "contrast fix" overrides. It derives the whole UI from
@@ -143,26 +167,27 @@ Vitest (`npx vitest run`) covers the deterministic core:
 - palette strategies, locks and overrides
 - theme generation guarantees (all 31 tokens present; primary button and
   status pairs pass AA in both modes)
+- primitives generation (typography/spacing/radius/shadow normalisers,
+  ratio math, clamping, invariants)
 - share-codec round trips and hostile-input fallbacks
 - every export adapter (structure, determinism, current conventions)
 - an end-to-end pipeline test of `buildDesignSystem('#47003A')`
 
 Playwright E2E (`npm run test:e2e`) drives the real critical workflow in
-Chromium against the production build — homepage input, URL round-trip,
-dark mode, all four previews, Tailwind/shadcn exports, share-link restore —
-and fails on any browser console error.
+Chromium, Firefox and WebKit against the production build — homepage input,
+URL round-trip, dark mode, all four previews, Tailwind/shadcn exports,
+share-link restore — and fails on any browser console error.
 
 ## Security & privacy posture (Phase 1)
 
 - No database, no accounts, no secrets, no server-side state.
 - All computation happens in the browser; uploads never leave the device.
 - File validation: type allow-list and 8 MB size cap before processing.
-- No third-party scripts or invasive analytics; `src/lib/analytics.ts` is a
-  no-op sink with typed events ready for a future provider.
+- Vercel Analytics (`@vercel/analytics`) is wired and gated to `process.env.VERCEL`:
+  the script only loads on Vercel deployments; local/dev stays silent.
+  Typed custom events ready for Plausible/GA4/PostHog swap if needed.
 
 ## Deliberate limitations (Phase 1)
 
-- App chrome is light-only; generated systems support light **and** dark.
-- Typography/spacing/radius/shadow tokens are out of scope until a later phase.
-- The generator page renders dynamically because configuration lives in the
-  URL; everything else is statically prerendered.
+- Vercel Analytics only loads on Vercel deployments (gated by `process.env.VERCEL`).
+- E2E runs in Chromium, Firefox and WebKit; clipboard is stubbed for headless engines.

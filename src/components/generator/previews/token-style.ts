@@ -1,11 +1,30 @@
 import type { CSSProperties } from "react";
-import type { ThemeTokens } from "@/lib/design-system/types";
+import type {
+  DesignSystem,
+  ThemeMode,
+  ThemeTokens,
+} from "@/lib/design-system/types";
 
 /** Map semantic tokens onto `--ds-*` custom properties for a subtree. */
 export function tokensToStyle(tokens: ThemeTokens): CSSProperties {
   const vars: Record<string, string> = {};
   for (const [id, hex] of Object.entries(tokens)) {
     vars[`--ds-${id}`] = hex;
+  }
+  return vars as CSSProperties;
+}
+
+/** Inject semantic tokens plus radius/shadow primitives for one mode. */
+export function systemToStyle(system: DesignSystem, mode: ThemeMode): CSSProperties {
+  const vars: Record<string, string> = {};
+  for (const [id, hex] of Object.entries(system.themes[mode])) {
+    vars[`--ds-${id}`] = hex;
+  }
+  for (const [name, value] of Object.entries(system.primitives.radius)) {
+    vars[`--ds-radius-${name}`] = value;
+  }
+  for (const [name, value] of Object.entries(system.primitives.shadows)) {
+    vars[`--ds-shadow-${name}`] = value;
   }
   return vars as CSSProperties;
 }

@@ -44,6 +44,24 @@ export const tailwindAdapter: ExportAdapter = {
       themeLines.push(`  --color-brand-${step.step}: ${step.hex};`);
     }
 
+    // Typography — native v4 `--text-*` namespace with line-height pairs.
+    const { typography, radius, shadows } = system.primitives;
+    themeLines.push(`  --font-sans: ${typography.fontFamily.sans};`);
+    themeLines.push(`  --font-mono: ${typography.fontFamily.mono};`);
+    for (const [name, step] of Object.entries(typography.fontSize)) {
+      themeLines.push(`  --text-${name}: ${step.size};`);
+      themeLines.push(`  --text-${name}--line-height: ${step.lineHeight};`);
+    }
+    // Radius & shadows use their native v4 namespaces.
+    for (const [name, value] of Object.entries(radius)) {
+      themeLines.push(`  --radius-${name}: ${value};`);
+    }
+    for (const [name, value] of Object.entries(shadows)) {
+      themeLines.push(`  --shadow-${name}: ${value};`);
+    }
+    // Spacing intentionally left at the Tailwind v4 default multiplier so
+    // all built-in padding/margin/gap utilities keep working.
+
     const code = `@import "tailwindcss";
 
 @custom-variant dark (&:is(.dark *));
@@ -57,7 +75,7 @@ ${themeLines.join("\n")}
 }
 
 :root {
-  --radius: 0.625rem;
+  --radius: var(--radius-md);
 }
 `;
 

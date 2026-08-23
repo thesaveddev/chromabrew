@@ -5,7 +5,15 @@ import { expect, test } from "@playwright/test";
  *   visit → enter #47003A → generate → scale/palette/tokens →
  *   light/dark → accessibility → previews → exports → share URL.
  */
-test("one colour becomes a full design system", async ({ page }) => {
+test("one colour becomes a full design system", async ({ page, context }) => {
+  // Deterministic clipboard across engines (permissions differ headless).
+  await context.addInitScript(() => {
+    Object.defineProperty(navigator, "clipboard", {
+      value: { writeText: async () => undefined },
+      configurable: true,
+    });
+  });
+
   const consoleErrors: string[] = [];
   page.on("console", (message) => {
     if (message.type() === "error") consoleErrors.push(message.text());

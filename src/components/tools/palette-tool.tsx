@@ -64,10 +64,10 @@ export function PaletteTool({ initial = "#47003a" }: { initial?: string }) {
         ))}
       </div>
 
-      <p className="text-sm text-zinc-600">
+      <p className="text-sm text-zinc-600 dark:text-zinc-400">
         {PALETTE_STRATEGIES.find((s) => s.id === strategy)?.description} Want the
         full design system from this colour?{" "}
-        <a href={`/design-system?primary=${primary.replace("#", "")}`} className="font-medium text-zinc-900 underline underline-offset-4">
+        <a href={`/design-system?primary=${primary.replace("#", "")}`} className="font-medium text-zinc-900 dark:text-zinc-100 underline underline-offset-4">
           Open it in the generator
         </a>
         .

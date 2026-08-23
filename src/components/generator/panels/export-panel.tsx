@@ -61,7 +61,7 @@ export function ExportPanel({ system }: { system: DesignSystem }) {
       />
       <p className="text-xs text-zinc-500">{adapter.description}</p>
 
-      <pre className="max-h-96 overflow-auto rounded-xl border border-zinc-200 bg-zinc-950 p-4 text-[11px] leading-5 text-zinc-100">
+      <pre className="max-h-96 overflow-auto rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-950 p-4 text-[11px] leading-5 text-zinc-100">
         <code>{result.code}</code>
       </pre>
     </section>

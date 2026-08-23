@@ -1,3 +1,12 @@
+import type {
+  RadiusStyle,
+  RadiusTokens,
+  ShadowTokens,
+  SpacingScale,
+  TypeScaleRatio,
+  TypographyTokens,
+} from "./primitives/generate";
+
 export type ThemeMode = "light" | "dark";
 
 export type PaletteStrategyId =
@@ -7,6 +16,17 @@ export type PaletteStrategyId =
   | "split-complementary"
   | "monochromatic"
   | "tetradic";
+
+export interface GeneratorConfig {
+  primary: string;
+  paletteStrategy: PaletteStrategyId;
+  /** Indices locked against regeneration. */
+  lockedIndices: number[];
+  /** Manual overrides keyed by palette index. */
+  paletteOverrides: Record<number, string>;
+  radiusStyle: RadiusStyle;
+  typeRatio: TypeScaleRatio;
+}
 
 export interface Rgb {
   r: number;
@@ -118,15 +138,6 @@ export interface AccessibilityReport {
   summary: Record<ThemeMode, { passed: boolean; failing: number }>;
 }
 
-export interface GeneratorConfig {
-  primary: string;
-  paletteStrategy: PaletteStrategyId;
-  /** Indices locked against regeneration. */
-  lockedIndices: number[];
-  /** Manual overrides keyed by palette index. */
-  paletteOverrides: Record<number, string>;
-}
-
 export interface DesignSystemMetadata {
   name: string;
   sourceKind: "hex" | "rgb" | "hsl" | "image" | "palette";
@@ -151,7 +162,21 @@ export interface DesignSystem {
       palette: PaletteColour[];
       accentSeed: ColourValue;
     };
+    typography: TypographyTokens;
+    spacing: SpacingScale;
+    radius: RadiusTokens;
+    shadows: ShadowTokens;
   };
   themes: Record<ThemeMode, ThemeTokens>;
   accessibility: AccessibilityReport;
 }
+
+export type {
+  SpacingScale,
+  RadiusTokens,
+  ShadowTokens,
+  TypographyTokens,
+  TypeStep,
+  TypeScaleRatio,
+  RadiusStyle,
+} from "./primitives/generate";

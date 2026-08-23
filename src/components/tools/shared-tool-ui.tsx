@@ -70,10 +70,10 @@ export function ShadeTool({ initial = "#47003a" }: { initial?: string }) {
         onPrimaryChange={setPrimary}
         submitLabel="Generate shades"
       />
-      <div className="overflow-hidden rounded-xl border border-zinc-200">
+      <div className="overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800">
         <table className="w-full border-collapse text-left text-xs">
           <thead>
-            <tr className="border-b border-zinc-200 bg-zinc-50 text-[11px] uppercase tracking-wide text-zinc-500">
+            <tr className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/60 text-[11px] uppercase tracking-wide text-zinc-500">
               <th scope="col" className="px-3 py-2 font-medium">Step</th>
               <th scope="col" className="px-3 py-2 font-medium">HEX</th>
               <th scope="col" className="px-3 py-2 font-medium">OKLCH</th>
@@ -84,13 +84,13 @@ export function ShadeTool({ initial = "#47003a" }: { initial?: string }) {
           </thead>
           <tbody>
             {scale.map((step) => (
-              <tr key={step.step} className="border-b border-zinc-100 last:border-0">
+              <tr key={step.step} className="border-b border-zinc-100 dark:border-zinc-800/70 last:border-0">
                 <td className="px-3 py-1.5 font-semibold">{step.step}</td>
                 <td className="px-3 py-1.5">
                   <span className="flex items-center gap-2">
                     <span
                       aria-hidden
-                      className="inline-block h-4 w-8 rounded border border-zinc-300"
+                      className="inline-block h-4 w-8 rounded border border-zinc-300 dark:border-zinc-700"
                       style={{ backgroundColor: step.hex }}
                     />
                     <code className="font-mono uppercase">{step.hex}</code>

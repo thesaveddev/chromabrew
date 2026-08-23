@@ -3,12 +3,12 @@ import { TOOLS } from "@/lib/tools";
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-zinc-200 bg-zinc-50">
+    <footer className="border-t border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/60">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
         <div className="grid gap-10 md:grid-cols-[1.2fr_2fr]">
           <div>
-            <p className="text-sm font-semibold text-zinc-900">Colorsmith</p>
-            <p className="mt-2 max-w-xs text-sm leading-6 text-zinc-600">
+            <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Colorsmith</p>
+            <p className="mt-2 max-w-xs text-sm leading-6 text-zinc-600 dark:text-zinc-400">
               Turn one colour into an accessible, production-ready design
               system. Free tools for developers and designers.
             </p>
@@ -18,15 +18,15 @@ export function SiteFooter() {
               <Link
                 key={tool.href}
                 href={tool.href}
-                className="text-sm text-zinc-600 transition-colors hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900"
+                className="text-sm text-zinc-600 transition-colors hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 dark:focus-visible:outline-zinc-100"
               >
                 {tool.navLabel}
               </Link>
             ))}
           </nav>
         </div>
-        <div className="mt-10 flex flex-col gap-2 border-t border-zinc-200 pt-6 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs text-zinc-500">
+        <div className="mt-10 flex flex-col gap-2 border-t border-zinc-200 pt-6 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs text-zinc-500 dark:text-zinc-500">
             © {new Date().getFullYear()} Colorsmith. All colour processing runs
             in your browser.
           </p>

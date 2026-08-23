@@ -23,7 +23,7 @@ functionality exists and has been tested.
 
 ## Phase 1 — Free Design System Generator (current)
 
-Goal: a visitor can enter one colour and leave with an accessible, production-ready design system — scale, palette, semantic tokens, light/dark themes, WCAG analysis, live UI previews, exports (CSS / JSON / Tailwind / shadcn) and a shareable URL — without an account or payment.
+Goal: a visitor can enter one colour and leave with an accessible, production-ready design system — scale, palette, semantic tokens, primitives (typography/spacing/radius/shadows), light/dark themes for both generated systems and app chrome, WCAG analysis, live UI previews, exports (CSS / JSON / Tailwind / shadcn) and a shareable URL — without an account or payment.
 
 Scope:
 
@@ -36,11 +36,15 @@ Scope:
 - WCAG 2.x contrast engine with pass/fail grading and contrast fixing
 - Live UI previews: SaaS dashboard, marketing site, ecommerce, mobile
 - Light/dark preview switching driven by semantic tokens
-- Export adapters: CSS variables, JSON tokens, Tailwind CSS v4, shadcn/ui
+- Typography/spacing/radius/shadow primitives with configurable type ratio
+  and radius style, visualised in a dedicated Primitives panel with knobs
+- Light/dark app chrome with no-flash script, ThemeToggle, localStorage persistence
+- Export adapters: CSS variables, JSON tokens (DTCG), Tailwind CSS v4, shadcn/ui
 - Shareable URLs encoding generator state (no account required)
 - Client-side image colour extraction (no uploads leave the browser)
 - SEO tool architecture: `/tools/*` pages with unique metadata and genuine utility
 - Unit/integration tests for all deterministic engines and export adapters
+- Cross-browser E2E: Chromium, Firefox, WebKit via Playwright
 
 Out of scope (deliberately): authentication, databases, payments, AI features,
 APIs, integrations, templates, marketplace, teams, advertising.

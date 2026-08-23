@@ -34,7 +34,7 @@ function ContrastField({
 }) {
   return (
     <div className="space-y-2">
-      <span className="block text-xs font-medium text-zinc-600">{label}</span>
+      <span className="block text-xs font-medium text-zinc-600 dark:text-zinc-400">{label}</span>
       <ColourInput
         id={id}
         label={label}
@@ -47,7 +47,7 @@ function ContrastField({
       />
       <span
         aria-hidden
-        className="block h-10 rounded-lg border border-zinc-200"
+        className="block h-10 rounded-lg border border-zinc-200 dark:border-zinc-800"
         style={{ backgroundColor: hex }}
       />
     </div>
@@ -91,7 +91,7 @@ export function ContrastTool({
       </div>
 
       <div
-        className="rounded-xl border border-zinc-200 p-6"
+        className="rounded-xl border border-zinc-200 dark:border-zinc-800 p-6"
         style={{ backgroundColor: bg }}
       >
         <p style={{ color: fg }} className="text-base leading-7">
@@ -102,8 +102,8 @@ export function ContrastTool({
         </p>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-zinc-200 p-4">
-        <p className="text-sm text-zinc-700" role="status">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4">
+        <p className="text-sm text-zinc-700 dark:text-zinc-300" role="status">
           Contrast ratio{" "}
           <strong className="font-mono text-base">{ratio.toFixed(2)}:1</strong>
         </p>
@@ -127,7 +127,7 @@ export function ContrastTool({
       <table className="w-full border-collapse text-left text-xs">
         <caption className="sr-only">WCAG pass/fail results</caption>
         <thead>
-          <tr className="border-b border-zinc-200 text-[11px] uppercase tracking-wide text-zinc-500">
+          <tr className="border-b border-zinc-200 dark:border-zinc-800 text-[11px] uppercase tracking-wide text-zinc-500">
             <th scope="col" className="py-2 font-medium">Threshold</th>
             <th scope="col" className="py-2 font-medium">Required</th>
             <th scope="col" className="py-2 font-medium">Result</th>
@@ -140,13 +140,13 @@ export function ContrastTool({
             ["AAA normal text", "≥ 7.0", g.aaaNormal],
             ["AAA large text", "≥ 4.5", g.aaaLarge],
           ].map(([label, required, pass]) => (
-            <tr key={label as string} className="border-b border-zinc-100 last:border-0">
+            <tr key={label as string} className="border-b border-zinc-100 dark:border-zinc-800/70 last:border-0">
               <td className="py-1.5">{label}</td>
               <td className="py-1.5 font-mono text-zinc-500">{required}</td>
               <td className="py-1.5">
                 <span
                   className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-semibold ${
-                    pass ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-700"
+                    pass ? "bg-emerald-100 text-emerald-800 dark:text-emerald-300" : "bg-red-100 text-red-700 dark:text-red-300"
                   }`}
                 >
                   <span aria-hidden>{pass ? "✓" : "✕"}</span>
@@ -163,7 +163,7 @@ export function ContrastTool({
           ["Text", fg],
           ["Background", bg],
         ].map(([label, hex]) => (
-          <div key={label as string} className="rounded-lg border border-zinc-200 p-3">
+          <div key={label as string} className="rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
             <dt className="font-medium text-zinc-500">{label}</dt>
             <dd className="mt-1 flex items-center justify-between gap-2">
               <code className="font-mono uppercase">{hex}</code>
@@ -220,10 +220,10 @@ export function ConverterTool({ mode }: { mode: ConverterMode }) {
       />
 
       {output ? (
-        <div className="flex items-center justify-between gap-3 rounded-xl border border-zinc-200 p-4">
+        <div className="flex items-center justify-between gap-3 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4">
           <div className="min-w-0">
             <p className="text-xs uppercase tracking-wide text-zinc-400">Result</p>
-            <code className="block truncate font-mono text-base text-zinc-900">{output}</code>
+            <code className="block truncate font-mono text-base text-zinc-900 dark:text-zinc-100">{output}</code>
             {value ? (
               <p className="mt-1 truncate font-mono text-[11px] text-zinc-400">
                 {formatOklch(value.oklch)}

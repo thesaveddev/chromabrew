@@ -15,7 +15,7 @@ export default function Page() {
       usage={[
         "Paste a HEX value such as #47003A or pick a colour.",
         "The rgb() equivalent updates live as you type.",
-        "Copy the result with one click — an OKLCH readout is included for modern CSS.",
+        "Copy the result with one click â€” an OKLCH readout is included for modern CSS.",
       ]}
     >
       <ConverterTool mode="hex-to-rgb" />
