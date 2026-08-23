@@ -76,6 +76,14 @@ export function rgbToHsl({ r, g, b }: Rgb): Hsl {
   return { h: round(h, 1), s: round(s * 100, 1), l: round(l * 100, 1) };
 }
 
+export function hexToHsl(hex: string): Hsl {
+  return rgbToHsl(hexToRgb(hex));
+}
+
+export function hslToHex(h: number, s: number, l: number): string {
+  return rgbToHex(hslToRgb({ h, s, l }));
+}
+
 export function hslToRgb({ h, s, l }: Hsl): Rgb {
   const hn = (((h % 360) + 360) % 360) / 360;
   const sn = clamp(s, 0, 100) / 100;

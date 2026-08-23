@@ -6,42 +6,30 @@ import {
   ImagePaletteError,
   type ExtractedColour,
 } from "@/lib/design-system/image-palette";
-import { parseColour } from "@/lib/design-system/colour/convert";
 import { track } from "@/lib/analytics";
 import { Button } from "@/components/ui/primitives";
-import { ColourInput } from "@/components/ui/colour";
+import { ColourPicker } from "@/components/ui/colour-picker";
 
-/**
- * Primary colour source: manual entry (HEX/RGB/HSL/picker) plus local
- * image extraction.
- */
 export function SourcePanel({
   primary,
+  secondary,
+  accent,
   onPrimaryChange,
+  onSecondaryChange,
+  onAccentChange,
 }: {
   primary: string;
+  secondary: string;
+  accent: string;
   onPrimaryChange: (hex: string) => void;
+  onSecondaryChange: (hex: string) => void;
+  onAccentChange: (hex: string) => void;
 }) {
-  const [raw, setRaw] = useState(primary.toUpperCase());
-  const [invalid, setInvalid] = useState(false);
   const [extracted, setExtracted] = useState<ExtractedColour[] | null>(null);
   const [imageError, setImageError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [activeSlot, setActiveSlot] = useState<"primary" | "secondary" | "accent">("primary");
   const fileRef = useRef<HTMLInputElement>(null);
-
-  const applyRaw = (candidate: string) => {
-    const trimmed = candidate.trim();
-    if (!trimmed) return;
-    const resolved = parseColour(trimmed);
-    if (resolved) {
-      setInvalid(false);
-      setRaw(resolved.toUpperCase());
-      onPrimaryChange(resolved);
-      track("design_system_generated", { source: "manual" });
-    } else {
-      setInvalid(true);
-    }
-  };
 
   async function handleFile(file: File | undefined) {
     if (!file) return;
@@ -63,30 +51,52 @@ export function SourcePanel({
     }
   }
 
+  const handleExtractedColour = (colour: ExtractedColour) => {
+    const handlers = {
+      primary: onPrimaryChange,
+      secondary: onSecondaryChange,
+      accent: onAccentChange,
+    };
+    handlers[activeSlot](colour.hex);
+    track("design_system_generated", { source: "image" });
+  };
+
   return (
-    <section aria-labelledby="source-heading" className="space-y-3">
+    <section aria-labelledby="source-heading" className="space-y-4">
       <h2 id="source-heading" className="panel-title">
-        Primary colour
+        Colours
       </h2>
-      <ColourInput
-        id="primary-colour"
-        label="Primary colour"
-        size="lg"
-        value={raw}
-        invalid={invalid}
-        errorMessage="Enter a valid HEX, rgb() or hsl() value."
-        onChange={(next) => {
-          setRaw(next);
-          setInvalid(false);
-        }}
-        onSubmit={(candidate) => {
-          if (candidate) applyRaw(candidate);
-        }}
-      />
+
+      {/* Colour slots */}
+      <div className="space-y-3">
+        <ColourSlot
+          label="Primary"
+          description="Main brand colour"
+          value={primary}
+          isActive={activeSlot === "primary"}
+          onChange={onPrimaryChange}
+          onSelect={() => setActiveSlot("primary")}
+        />
+        <ColourSlot
+          label="Secondary"
+          description="Supporting colour"
+          value={secondary}
+          isActive={activeSlot === "secondary"}
+          onChange={onSecondaryChange}
+          onSelect={() => setActiveSlot("secondary")}
+        />
+        <ColourSlot
+          label="Accent"
+          description="Highlight colour"
+          value={accent}
+          isActive={activeSlot === "accent"}
+          onChange={onAccentChange}
+          onSelect={() => setActiveSlot("accent")}
+        />
+      </div>
+
+      {/* Actions */}
       <div className="flex flex-wrap gap-2">
-        <Button type="button" onClick={() => applyRaw(raw)}>
-          Generate design system
-        </Button>
         <Button type="button" variant="secondary" onClick={() => fileRef.current?.click()}>
           Extract from image
         </Button>
@@ -111,10 +121,11 @@ export function SourcePanel({
         </p>
       ) : null}
 
+      {/* Extracted colours */}
       {extracted ? (
         <fieldset className="rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
           <legend className="px-1 text-xs font-medium text-zinc-600 dark:text-zinc-400">
-            Dominant colours — pick your primary
+            Dominant colours — filling: {activeSlot}
           </legend>
           <div className="mt-1 grid grid-cols-4 gap-2">
             {extracted.map((colour) => (
@@ -122,19 +133,28 @@ export function SourcePanel({
                 key={colour.hex}
                 type="button"
                 title={`${colour.hex} (${Math.round(colour.weight * 100)}% of image)`}
-                onClick={() => {
-                  setRaw(colour.hex.toUpperCase());
-                  onPrimaryChange(colour.hex);
-                  track("design_system_generated", { source: "image" });
-                }}
-                className={`group relative aspect-square rounded-md border-2 transition-transform focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 dark:focus-visible:outline-zinc-100 ${
-                  colour.hex.toLowerCase() === primary.toLowerCase()
-                    ? "border-zinc-900"
-                    : "border-transparent hover:scale-105"
-                }`}
+                onClick={() => handleExtractedColour(colour)}
+                className="group relative aspect-square rounded-md border-2 border-transparent transition-transform hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 dark:focus-visible:outline-zinc-100"
                 style={{ backgroundColor: colour.hex }}
               >
                 <span className="sr-only">Use {colour.hex}</span>
+              </button>
+            ))}
+          </div>
+          {/* Slot selector for extracted colours */}
+          <div className="mt-2 flex gap-1">
+            {(["primary", "secondary", "accent"] as const).map((slot) => (
+              <button
+                key={slot}
+                type="button"
+                onClick={() => setActiveSlot(slot)}
+                className={`rounded-md px-2 py-1 text-[10px] font-medium transition-colors ${
+                  activeSlot === slot
+                    ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+                    : "text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+                }`}
+              >
+                {slot}
               </button>
             ))}
           </div>
@@ -144,5 +164,73 @@ export function SourcePanel({
         </fieldset>
       ) : null}
     </section>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Individual colour slot                                              */
+/* ------------------------------------------------------------------ */
+
+function ColourSlot({
+  label,
+  description,
+  value,
+  isActive,
+  onChange,
+  onSelect,
+}: {
+  label: string;
+  description: string;
+  value: string;
+  isActive: boolean;
+  onChange: (hex: string) => void;
+  onSelect: () => void;
+}) {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <div
+      className={`rounded-lg border p-3 transition-colors ${
+        isActive
+          ? "border-zinc-400 dark:border-zinc-500 bg-zinc-50 dark:bg-zinc-800/50"
+          : "border-zinc-200 dark:border-zinc-800"
+      }`}
+    >
+      <button
+        type="button"
+        onClick={() => {
+          onSelect();
+          setExpanded(!expanded);
+        }}
+        className="flex w-full items-center gap-3"
+      >
+        <div
+          className="h-8 w-8 shrink-0 rounded-lg border border-zinc-200 dark:border-zinc-700"
+          style={{ backgroundColor: value }}
+        />
+        <div className="flex-1 text-left">
+          <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{label}</p>
+          <p className="text-[11px] text-zinc-500 dark:text-zinc-400">{description}</p>
+        </div>
+        <span className="font-mono text-xs text-zinc-500 dark:text-zinc-400">{value.toUpperCase()}</span>
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          className={`shrink-0 text-zinc-400 transition-transform ${expanded ? "rotate-180" : ""}`}
+        >
+          <path d="M6 9l6 6 6-6" />
+        </svg>
+      </button>
+
+      {expanded && (
+        <div className="mt-3">
+          <ColourPicker value={value} onChange={onChange} label={label} size="lg" />
+        </div>
+      )}
+    </div>
   );
 }

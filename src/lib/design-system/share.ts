@@ -16,6 +16,8 @@ const STRATEGIES: PaletteStrategyId[] = [
 
 export const DEFAULT_CONFIG: GeneratorConfig = {
   primary: "#47003a",
+  secondary: "#7c3aed",
+  accent: "#f59e0b",
   paletteStrategy: "complementary",
   lockedIndices: [],
   paletteOverrides: {},
@@ -62,6 +64,20 @@ export function configFromParams(
         parseColour(primaryParam))) ||
     null;
 
+  const secondaryParam = get("secondary") ?? get("sec");
+  const secondary =
+    (secondaryParam &&
+      (normalizeHex(secondaryParam.startsWith("#") ? secondaryParam : `#${secondaryParam}`) ||
+        parseColour(secondaryParam))) ||
+    null;
+
+  const accentParam = get("accent") ?? get("acc");
+  const accent =
+    (accentParam &&
+      (normalizeHex(accentParam.startsWith("#") ? accentParam : `#${accentParam}`) ||
+        parseColour(accentParam))) ||
+    null;
+
   const strategyParam = get("strategy") ?? get("s");
   const strategy =
     strategyParam && STRATEGIES.includes(strategyParam as PaletteStrategyId)
@@ -73,6 +89,8 @@ export function configFromParams(
 
   return {
     primary: primary ?? DEFAULT_CONFIG.primary,
+    secondary: secondary ?? DEFAULT_CONFIG.secondary,
+    accent: accent ?? DEFAULT_CONFIG.accent,
     paletteStrategy: strategy,
     lockedIndices: parseIndices(get("locked")),
     paletteOverrides: parseOverrides(get("custom")),
@@ -85,6 +103,8 @@ export function configFromParams(
 export function paramsFromConfig(config: GeneratorConfig): Record<string, string> {
   const params: Record<string, string> = {
     primary: config.primary.replace("#", ""),
+    secondary: config.secondary.replace("#", ""),
+    accent: config.accent.replace("#", ""),
     strategy: config.paletteStrategy,
     radius: config.radiusStyle,
     ratio: String(config.typeRatio),

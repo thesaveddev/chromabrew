@@ -99,6 +99,8 @@ describe("buildAccessibilityReport", () => {
 function defaultConfig() {
   return {
     primary: SOURCE,
+    secondary: "#7c3aed",
+    accent: "#f59e0b",
     paletteStrategy: "complementary" as const,
     lockedIndices: [],
     paletteOverrides: {},

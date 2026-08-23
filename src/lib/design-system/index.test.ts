@@ -9,6 +9,8 @@ import { shadcnAdapter } from "./exports/shadcn";
 describe("buildDesignSystem â€” critical workflow integration", () => {
   const system = buildDesignSystem({
     primary: "#47003a",
+    secondary: "#7c3aed",
+    accent: "#f59e0b",
     paletteStrategy: "complementary",
     radiusStyle: "soft",
     typeRatio: 1.25,
@@ -32,9 +34,11 @@ describe("buildDesignSystem â€” critical workflow integration", () => {
   it("is deterministic for identical configs", () => {
     const again = buildDesignSystem({
       primary: "#47003a",
+      secondary: "#7c3aed",
+      accent: "#f59e0b",
       paletteStrategy: "complementary",
-    radiusStyle: "soft",
-    typeRatio: 1.25,
+      radiusStyle: "soft",
+      typeRatio: 1.25,
       lockedIndices: [],
       paletteOverrides: {},
     });
@@ -47,6 +51,8 @@ describe("shareable URL codec", () => {
   it("round-trips configuration", () => {
     const config = {
       primary: "#47003a",
+      secondary: "#7c3aed",
+      accent: "#f59e0b",
       paletteStrategy: "triadic" as const,
       lockedIndices: [1, 2],
       paletteOverrides: { 3: "#123456" },
@@ -84,6 +90,8 @@ describe("shareable URL codec", () => {
 describe("export adapters", () => {
   const system = buildDesignSystem({
     primary: "#47003a",
+    secondary: "#7c3aed",
+    accent: "#f59e0b",
     paletteStrategy: "complementary",
     radiusStyle: "soft",
     typeRatio: 1.25,

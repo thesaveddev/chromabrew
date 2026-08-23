@@ -19,6 +19,8 @@ export type PaletteStrategyId =
 
 export interface GeneratorConfig {
   primary: string;
+  secondary: string;
+  accent: string;
   paletteStrategy: PaletteStrategyId;
   /** Indices locked against regeneration. */
   lockedIndices: number[];

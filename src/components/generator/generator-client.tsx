@@ -34,14 +34,16 @@ import { SaasPreview } from "./previews/saas-preview";
 import { MarketingPreview } from "./previews/marketing-preview";
 import { EcommercePreview } from "./previews/ecommerce-preview";
 import { MobilePreview } from "./previews/mobile-preview";
+import { BrandingPreview } from "./previews/branding-preview";
 
-type PreviewId = "saas" | "marketing" | "ecommerce" | "mobile";
+type PreviewId = "saas" | "marketing" | "ecommerce" | "mobile" | "branding";
 
 const PREVIEW_OPTIONS = [
   { id: "saas" as const, label: "SaaS dashboard" },
   { id: "marketing" as const, label: "Marketing site" },
   { id: "ecommerce" as const, label: "Ecommerce" },
   { id: "mobile" as const, label: "Mobile app" },
+  { id: "branding" as const, label: "Branding items" },
 ];
 
 const MODE_OPTIONS = [
@@ -131,6 +133,12 @@ export function GeneratorWorkspace() {
 
   const setPrimary = (hex: string) =>
     setConfig((prev) => ({ ...prev, primary: hex }));
+
+  const setSecondary = (hex: string) =>
+    setConfig((prev) => ({ ...prev, secondary: hex }));
+
+  const setAccent = (hex: string) =>
+    setConfig((prev) => ({ ...prev, accent: hex }));
 
   const applyAiPalette = (hex: string) => {
     setPrimary(hex);
@@ -252,6 +260,7 @@ export function GeneratorWorkspace() {
       {preview === "marketing" && <MarketingPreview system={system} />}
       {preview === "ecommerce" && <EcommercePreview system={system} />}
       {preview === "mobile" && <MobilePreview system={system} />}
+      {preview === "branding" && <BrandingPreview system={system} />}
     </PreviewFrame>
   );
 
@@ -298,7 +307,14 @@ export function GeneratorWorkspace() {
       <div className="grid gap-8 lg:grid-cols-[330px_minmax(0,1fr)]">
         {/* Configuration rail */}
         <div className="space-y-8">
-          <SourcePanel primary={config.primary} onPrimaryChange={setPrimary} />
+          <SourcePanel
+            primary={config.primary}
+            secondary={config.secondary}
+            accent={config.accent}
+            onPrimaryChange={setPrimary}
+            onSecondaryChange={setSecondary}
+            onAccentChange={setAccent}
+          />
           <ScalePanel scale={system.primitives.colors.scale} />
           <PalettePanel
             palette={palette}
