@@ -198,15 +198,15 @@ export function generateTheme(
   /* --- secondary ------------------------------------------------------ */
   const secondarySeed = rgbToOklch(hexToRgb(secondarySeedHex));
   const secondaryHue = secondarySeed.c < 0.008 ? h : secondarySeed.h;
-  const secondaryChromaCap = mode === "light" ? 0.009 : 0.012;
+  const secondaryChromaCap = mode === "light" ? 0.045 : 0.055;
   const secondary = oklch(
     mode === "light" ? 0.962 : 0.235,
-    Math.min(secondaryChromaCap, secondarySeed.c * 0.3),
+    Math.min(secondaryChromaCap, secondarySeed.c * 0.6),
     secondaryHue,
   );
   const secondaryHover = oklch(
     mode === "light" ? 0.928 : 0.275,
-    Math.min(secondaryChromaCap + 0.002, secondarySeed.c * 0.35),
+    Math.min(secondaryChromaCap + 0.005, secondarySeed.c * 0.7),
     secondaryHue,
   );
   const secondaryForeground =
