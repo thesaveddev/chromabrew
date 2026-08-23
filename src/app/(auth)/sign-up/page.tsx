@@ -2,36 +2,48 @@
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-export default function SignInPage() {
-  const { data: session, status } = useSession();
+export default function SignUpPage() {
+  const router = useRouter();
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  if (status === "loading") return null;
-  if (session) redirect("/projects");
-
-  const handleCredentials = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
     try {
-      const result = await signIn("credentials", {
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error ?? "Something went wrong");
+        return;
+      }
+
+      // Auto sign-in after registration
+      const signInResult = await signIn("credentials", {
         email,
         password,
         redirect: false,
       });
 
-      if (result?.error) {
-        setError("Invalid email or password");
+      if (signInResult?.error) {
+        setError("Account created but sign-in failed. Try signing in.");
       } else {
-        redirect("/projects");
+        router.push("/projects");
+        router.refresh();
       }
     } catch {
       setError("Something went wrong");
@@ -45,19 +57,36 @@ export default function SignInPage() {
       <div className="w-full max-w-sm space-y-8">
         <div className="text-center">
           <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
-            Welcome back
+            Create your account
           </h1>
           <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-            Sign in to access your saved design systems.
+            Save and manage your design systems.
           </p>
         </div>
 
-        <form onSubmit={handleCredentials} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
             <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
               {error}
             </div>
           )}
+
+          <div>
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-zinc-700 dark:text-zinc-300"
+            >
+              Name
+            </label>
+            <input
+              id="name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="mt-1 block w-full rounded-lg border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-zinc-500"
+              placeholder="Optional"
+            />
+          </div>
 
           <div>
             <label
@@ -88,10 +117,11 @@ export default function SignInPage() {
               id="password"
               type="password"
               required
+              minLength={8}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="mt-1 block w-full rounded-lg border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-zinc-500"
-              placeholder="Your password"
+              placeholder="At least 8 characters"
             />
           </div>
 
@@ -100,7 +130,7 @@ export default function SignInPage() {
             disabled={loading}
             className="w-full rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
           >
-            {loading ? "Signing in…" : "Sign in"}
+            {loading ? "Creating account…" : "Create account"}
           </button>
         </form>
 
@@ -143,12 +173,12 @@ export default function SignInPage() {
         </div>
 
         <p className="text-center text-xs text-zinc-400">
-          No account?{" "}
+          Already have an account?{" "}
           <Link
-            href="/sign-up"
+            href="/sign-in"
             className="font-medium text-zinc-700 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-zinc-100"
           >
-            Create one
+            Sign in
           </Link>
         </p>
 

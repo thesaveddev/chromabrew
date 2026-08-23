@@ -4,14 +4,29 @@ import { NextResponse } from "next/server";
 import type { GeneratorConfig } from "@/lib/design-system/types";
 import type { Prisma } from "@prisma/client";
 
-export async function GET() {
+export async function GET(request: Request) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const { searchParams } = new URL(request.url);
+  const q = searchParams.get("q")?.trim() ?? "";
+  const visibility = searchParams.get("visibility") as "private" | "public" | null;
+
+  const where: Prisma.ProjectWhereInput = {
+    userId: session.user.id,
+    ...(q && {
+      OR: [
+        { name: { contains: q, mode: "insensitive" } },
+        { description: { contains: q, mode: "insensitive" } },
+      ],
+    }),
+    ...(visibility && { visibility }),
+  };
+
   const projects = await prisma.project.findMany({
-    where: { userId: session.user.id },
+    where,
     orderBy: { updatedAt: "desc" },
     select: {
       id: true,
