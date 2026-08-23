@@ -27,26 +27,35 @@ export function buildDesignSystem(config: GeneratorConfig): DesignSystem {
 
   const scale = generateScale(primaryValue.hex);
 
-  // Use user-supplied secondary/accent when provided, otherwise fall back
-  // to heuristic derivation from primary.
-  const secondaryValue = config.secondary
-    ? toColourValue(config.secondary)
-    : primaryValue;
-  const accentValue = config.accent
-    ? toColourValue(config.accent)
-    : toColourValue(rotateHue(primaryValue.hex, 30));
-
   const palette = generatePalette(primaryValue.hex, config.paletteStrategy, {
     overrides: config.paletteOverrides,
   });
 
+  // Derive secondary and accent from the palette strategy when the user
+  // hasn't explicitly chosen them.  The palette swatches are ordered by
+  // hue offset, so index 1 is typically the secondary and index 2 (or 1
+  // for complementary) is the accent.
+  const secondaryHex = config.secondary
+    ? toColourValue(config.secondary).hex
+    : palette.length >= 2
+      ? palette[1].hex
+      : primaryValue.hex;
+
+  const accentHex = config.accent
+    ? toColourValue(config.accent).hex
+    : palette.length >= 3
+      ? palette[2].hex
+      : palette.length >= 2
+        ? palette[1].hex
+        : rotateHue(primaryValue.hex, 30);
+
   const themes = {
     light: generateTheme(
-      { primaryHex: primaryValue.hex, scale, accentSeedHex: accentValue.hex, secondarySeedHex: secondaryValue.hex },
+      { primaryHex: primaryValue.hex, scale, accentSeedHex: accentHex, secondarySeedHex: secondaryHex },
       "light",
     ),
     dark: generateTheme(
-      { primaryHex: primaryValue.hex, scale, accentSeedHex: accentValue.hex, secondarySeedHex: secondaryValue.hex },
+      { primaryHex: primaryValue.hex, scale, accentSeedHex: accentHex, secondarySeedHex: secondaryHex },
       "dark",
     ),
   };
@@ -68,7 +77,7 @@ export function buildDesignSystem(config: GeneratorConfig): DesignSystem {
       colors: {
         scale,
         palette,
-        accentSeed: accentValue,
+        accentSeed: toColourValue(accentHex),
       },
       typography: generateTypography(config.typeRatio),
       spacing: generateSpacing(),
