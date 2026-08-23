@@ -80,15 +80,19 @@ export function SaasPreview({ system }: { system: DesignSystem }) {
         <div className="grid gap-4 p-4 lg:grid-cols-3">
           {/* KPI cards */}
           {[
-            { label: "MRR", value: "$48,210", delta: "+12.4%", up: true },
-            { label: "Active customers", value: "1,284", delta: "+3.1%", up: true },
-            { label: "Churned", value: "17", delta: "-0.8%", up: false },
+            { label: "MRR", value: "$48,210", delta: "+12.4%", up: true, accent: false },
+            { label: "Active customers", value: "1,284", delta: "+3.1%", up: true, accent: true },
+            { label: "Churned", value: "17", delta: "-0.8%", up: false, accent: false },
           ].map((kpi, i) => (
             <section
               key={kpi.label}
-              className="rounded-[var(--ds-radius-xl)] border border-[var(--ds-border-muted)] bg-[var(--ds-surface)] p-4 shadow-[var(--ds-shadow-sm)]"
+              className={`rounded-[var(--ds-radius-xl)] border p-4 shadow-[var(--ds-shadow-sm)] ${
+                kpi.accent
+                  ? "border-[var(--ds-accent)] bg-[var(--ds-accent)] text-[var(--ds-accent-foreground)]"
+                  : "border-[var(--ds-border-muted)] bg-[var(--ds-surface)]"
+              }`}
             >
-              <p className="text-xs font-medium text-[var(--ds-foreground-muted)]">{kpi.label}</p>
+              <p className={`text-xs font-medium ${kpi.accent ? "opacity-80" : "text-[var(--ds-foreground-muted)]"}`}>{kpi.label}</p>
               <div className="mt-1 flex items-baseline justify-between gap-2">
                 <p className="text-xl font-semibold tracking-tight">{kpi.value}</p>
                 <span
@@ -112,7 +116,7 @@ export function SaasPreview({ system }: { system: DesignSystem }) {
             <div className="overflow-hidden rounded-[var(--ds-radius-xl)] border border-[var(--ds-border-muted)] bg-[var(--ds-surface)] shadow-[var(--ds-shadow-sm)]">
               <div className="flex items-center justify-between border-b border-[var(--ds-border-muted)] px-4 py-3">
                 <h3 className="font-semibold">Recent invoices</h3>
-                <button className="rounded-[var(--ds-radius-md)] border border-[var(--ds-input-border)] px-2.5 py-1 text-xs font-medium hover:bg-[var(--ds-secondary-hover)]">
+                <button className="rounded-[var(--ds-radius-md)] bg-[var(--ds-secondary)] px-2.5 py-1 text-xs font-medium text-[var(--ds-secondary-foreground)] hover:bg-[var(--ds-secondary-hover)]">
                   View all
                 </button>
               </div>
