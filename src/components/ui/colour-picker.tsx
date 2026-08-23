@@ -71,11 +71,41 @@ function SaturationCanvas({
   const containerRef = useRef<HTMLDivElement>(null);
   const dragging = useRef(false);
 
-  // Convert HSL to pure saturation (horizontal) and lightness (vertical) position
-  // We show a saturation gradient (left=0, right=100) and lightness gradient (top=100, bottom=0)
-  // at the current hue
+  const w = size === "lg" ? 220 : 180;
+  const hgt = size === "lg" ? 160 : 120;
+
+  // Draw the saturation/brightness gradient
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    // Base colour at current hue, full saturation, 50% lightness
+    const baseRgb = hslToRgb(h, 100, 50);
+
+    // Fill with the base hue
+    ctx.fillStyle = `rgb(${baseRgb.r}, ${baseRgb.g}, ${baseRgb.b})`;
+    ctx.fillRect(0, 0, w, hgt);
+
+    // White gradient (left to right = white to transparent)
+    const whiteGrad = ctx.createLinearGradient(0, 0, w, 0);
+    whiteGrad.addColorStop(0, "rgba(255,255,255,1)");
+    whiteGrad.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.fillStyle = whiteGrad;
+    ctx.fillRect(0, 0, w, hgt);
+
+    // Black gradient (top to bottom = transparent to black)
+    const blackGrad = ctx.createLinearGradient(0, 0, 0, hgt);
+    blackGrad.addColorStop(0, "rgba(0,0,0,0)");
+    blackGrad.addColorStop(1, "rgba(0,0,0,1)");
+    ctx.fillStyle = blackGrad;
+    ctx.fillRect(0, 0, w, hgt);
+  }, [h, w, hgt]);
+
+  // Convert HSL to position on canvas
   const satX = s; // 0-100
-  const litY = 100 - l; // 0-100 (inverted for visual)
+  const litY = 100 - l; // inverted for visual
 
   const pick = useCallback(
     (clientX: number, clientY: number) => {
@@ -108,9 +138,6 @@ function SaturationCanvas({
     };
   }, [pick]);
 
-  const w = size === "lg" ? 220 : 180;
-  const hgt = size === "lg" ? 160 : 120;
-
   return (
     <div
       ref={containerRef}
@@ -134,6 +161,39 @@ function SaturationCanvas({
       />
     </div>
   );
+}
+
+/* ------------------------------------------------------------------ */
+/* HSL to RGB helper (inline to avoid circular imports)                */
+/* ------------------------------------------------------------------ */
+
+function hslToRgb(h: number, s: number, l: number): { r: number; g: number; b: number } {
+  const hn = (((h % 360) + 360) % 360) / 360;
+  const sn = Math.max(0, Math.min(100, s)) / 100;
+  const ln = Math.max(0, Math.min(100, l)) / 100;
+
+  if (sn === 0) {
+    const v = Math.round(ln * 255);
+    return { r: v, g: v, b: v };
+  }
+
+  const q = ln < 0.5 ? ln * (1 + sn) : ln + sn - ln * sn;
+  const p = 2 * ln - q;
+  const channel = (t: number): number => {
+    let tt = t;
+    if (tt < 0) tt += 1;
+    if (tt > 1) tt -= 1;
+    if (tt < 1 / 6) return Math.round((p + (q - p) * 6 * tt) * 255);
+    if (tt < 1 / 2) return Math.round(q * 255);
+    if (tt < 2 / 3) return Math.round((p + (q - p) * (2 / 3 - tt) * 6) * 255);
+    return Math.round(p * 255);
+  };
+
+  return {
+    r: channel(hn + 1 / 3),
+    g: channel(hn),
+    b: channel(hn - 1 / 3),
+  };
 }
 
 /* ------------------------------------------------------------------ */
