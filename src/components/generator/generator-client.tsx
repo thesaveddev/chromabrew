@@ -34,16 +34,14 @@ import { SaasPreview } from "./previews/saas-preview";
 import { MarketingPreview } from "./previews/marketing-preview";
 import { EcommercePreview } from "./previews/ecommerce-preview";
 import { MobilePreview } from "./previews/mobile-preview";
-import { BrandingPreview } from "./previews/branding-preview";
 
-type PreviewId = "saas" | "marketing" | "ecommerce" | "mobile" | "branding";
+type PreviewId = "saas" | "marketing" | "ecommerce" | "mobile";
 
 const PREVIEW_OPTIONS = [
   { id: "saas" as const, label: "SaaS dashboard" },
   { id: "marketing" as const, label: "Marketing site" },
   { id: "ecommerce" as const, label: "Ecommerce" },
   { id: "mobile" as const, label: "Mobile app" },
-  { id: "branding" as const, label: "Branding items" },
 ];
 
 const MODE_OPTIONS = [
@@ -260,7 +258,6 @@ export function GeneratorWorkspace() {
       {preview === "marketing" && <MarketingPreview system={system} />}
       {preview === "ecommerce" && <EcommercePreview system={system} />}
       {preview === "mobile" && <MobilePreview system={system} />}
-      {preview === "branding" && <BrandingPreview system={system} />}
     </PreviewFrame>
   );
 
