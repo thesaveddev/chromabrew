@@ -37,6 +37,7 @@ export function primitiveBlock(system: DesignSystem): string {
   const lines: string[] = [":root {"];
   const { typography, spacing, radius, shadows } = system.primitives;
 
+  lines.push(`  --font-heading: ${typography.fontFamily.heading};`);
   lines.push(`  --font-sans: ${typography.fontFamily.sans};`);
   lines.push(`  --font-mono: ${typography.fontFamily.mono};`);
   lines.push("");

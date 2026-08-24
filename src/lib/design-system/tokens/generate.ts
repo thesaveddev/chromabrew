@@ -1,5 +1,6 @@
 import {
   hexToRgb,
+  normalizeHex,
   oklch,
   rgbToOklch,
 } from "../colour/convert";
@@ -111,6 +112,11 @@ export interface ThemeGenerationInput {
   /** Hue-shifted seeds derived from the palette engine. */
   accentSeedHex: string;
   secondarySeedHex: string;
+  /**
+   * Optional explicit dark-mode background ("#000000" for solid black
+   * or a custom pick). Light mode is unaffected.
+   */
+  darkBackgroundHex?: string;
 }
 
 export function generateTheme(
@@ -126,15 +132,39 @@ export function generateTheme(
     Math.min(cap, primaryOklch.c * fraction);
 
   /* --- backgrounds & surfaces ------------------------------------- */
+  // Dark neutrals anchor either on the tinted default or an explicit
+  // background (solid black / custom pick), stepping lightness from it.
+  const customDark =
+    mode === "dark" && input.darkBackgroundHex
+      ? rgbToOklch(hexToRgb(input.darkBackgroundHex))
+      : null;
+  const darkAnchorL = customDark ? customDark.l : 0.148;
+  const darkAnchorC = customDark ? Math.min(0.02, customDark.c) : tint(0.55);
+  // Custom picks keep their own hue; only the tinted default uses the primary's.
+  const neutralH = customDark ? customDark.h : h;
+
   const background =
-    mode === "light" ? oklch(0.993, tint(0.12), h) : oklch(0.148, tint(0.55), h);
+    mode === "light"
+      ? oklch(0.993, tint(0.12), h)
+      : mode === "dark" && input.darkBackgroundHex
+        ? normalizeHex(input.darkBackgroundHex) ?? oklch(darkAnchorL, darkAnchorC, neutralH)
+        : oklch(darkAnchorL, darkAnchorC, neutralH);
   const backgroundSubtle =
-    mode === "light" ? oklch(0.968, tint(0.2), h) : oklch(0.178, tint(0.6), h);
+    mode === "light"
+      ? oklch(0.968, tint(0.2), h)
+      : oklch(Math.min(1, darkAnchorL + 0.03), darkAnchorC, neutralH);
   const surface =
-    mode === "light" ? oklch(0.995, tint(0.06), h) : oklch(0.196, tint(0.6), h);
-  const surfaceRaised = mode === "light" ? "#ffffff" : oklch(0.226, tint(0.65), h);
+    mode === "light"
+      ? oklch(0.995, tint(0.06), h)
+      : oklch(Math.min(1, darkAnchorL + 0.048), darkAnchorC, neutralH);
+  const surfaceRaised =
+    mode === "light"
+      ? "#ffffff"
+      : oklch(Math.min(1, darkAnchorL + 0.078), darkAnchorC, neutralH);
   const surfaceMuted =
-    mode === "light" ? oklch(0.972, tint(0.22), h) : oklch(0.172, tint(0.5), h);
+    mode === "light"
+      ? oklch(0.972, tint(0.22), h)
+      : oklch(Math.min(1, darkAnchorL + 0.024), darkAnchorC * 0.9, neutralH);
 
   /* --- foreground --------------------------------------------------- */
   const fgChroma = Math.min(0.03, primaryOklch.c * 0.35);
@@ -155,16 +185,19 @@ export function generateTheme(
   const borderMuted =
     mode === "light"
       ? oklch(0.925, tint(0.35, 0.01), h)
-      : oklch(0.262, tint(0.5, 0.01), h);
+      : oklch(Math.min(1, darkAnchorL + 0.114), darkAnchorC * 0.8, neutralH);
   const border =
     mode === "light"
       ? oklch(0.9, tint(0.4, 0.012), h)
-      : oklch(0.302, tint(0.55, 0.012), h);
+      : oklch(Math.min(1, darkAnchorL + 0.154), darkAnchorC * 0.9, neutralH);
   const borderStrong =
     mode === "light"
       ? oklch(0.815, tint(0.5, 0.016), h)
-      : oklch(0.392, tint(0.6, 0.016), h);
-  const inputBg = mode === "light" ? "#ffffff" : oklch(0.196, tint(0.6), h);
+      : oklch(Math.min(1, darkAnchorL + 0.244), darkAnchorC, neutralH);
+  const inputBg =
+    mode === "light"
+      ? "#ffffff"
+      : oklch(Math.min(1, darkAnchorL + 0.048), darkAnchorC, neutralH);
 
   /* --- primary ------------------------------------------------------- */
   const scaleHexes = scale.map((s) => s.hex);

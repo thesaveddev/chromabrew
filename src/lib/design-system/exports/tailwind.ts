@@ -46,6 +46,7 @@ export const tailwindAdapter: ExportAdapter = {
 
     // Typography — native v4 `--text-*` namespace with line-height pairs.
     const { typography, radius, shadows } = system.primitives;
+    themeLines.push(`  --font-heading: ${typography.fontFamily.heading};`);
     themeLines.push(`  --font-sans: ${typography.fontFamily.sans};`);
     themeLines.push(`  --font-mono: ${typography.fontFamily.mono};`);
     for (const [name, step] of Object.entries(typography.fontSize)) {

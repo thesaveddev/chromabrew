@@ -1,5 +1,6 @@
 import { generateScale } from "./colour/scale";
-import { oklchToHex, toColourValue } from "./colour/convert";
+import { toColourValue } from "./colour/convert";
+import { applyRefinement, ZERO_REFINEMENT } from "./colour/refine";
 import { generatePalette } from "./palette/generate";
 import {
   generateRadius,
@@ -11,43 +12,80 @@ import {
   buildAccessibilityReport,
   generateTheme,
 } from "./tokens/generate";
+import { normaliseConfig } from "./share";
 import type { DesignSystem, GeneratorConfig } from "./types";
 
-export const GENERATOR_VERSION = "1.1.0";
+export const GENERATOR_VERSION = "1.2.0";
 
 export const DEFAULT_PRIMARY = "#47003a";
+
+export { ZERO_REFINEMENT, normaliseConfig };
+
+/** The refined seed colours actually driving generation. */
+export function refinedSeeds(config: GeneratorConfig): {
+  primary: string;
+  secondary: string;
+  accent: string;
+} {
+  const r = config.refinement;
+  return {
+    primary: applyRefinement(config.primary, r),
+    secondary: applyRefinement(config.secondary, r),
+    accent: applyRefinement(config.accent, r),
+  };
+}
+
+function resolveDarkBackgroundHex(config: GeneratorConfig): string | undefined {
+  if (config.darkBackground === "solid-black") return "#000000";
+  if (config.darkBackground === "custom" && config.customDarkBg) {
+    try {
+      return toColourValue(config.customDarkBg).hex;
+    } catch {
+      return undefined;
+    }
+  }
+  return undefined;
+}
 
 /**
  * Deterministically build the canonical DesignSystem from a configuration.
  * This is the single entry point consumed by the generator UI, previews
  * and export adapters.
  */
-export function buildDesignSystem(config: GeneratorConfig): DesignSystem {
-  const primaryValue = toColourValue(config.primary);
+export function buildDesignSystem(input: GeneratorConfig): DesignSystem {
+  const config = normaliseConfig(input);
+  const seeds = refinedSeeds(config);
+
+  const primaryValue = toColourValue(seeds.primary);
 
   const scale = generateScale(primaryValue.hex);
 
-  const palette = generatePalette(primaryValue.hex, config.paletteStrategy, {
+  // Locked swatches keep their unrefined colour (refinement exemption),
+  // overrides are respected verbatim, everything else derives from the
+  // refined primary.
+  const basePalette = generatePalette(
+    toColourValue(config.primary).hex,
+    config.paletteStrategy,
+    { overrides: config.paletteOverrides, size: config.paletteSize },
+  );
+  const refinedPalette = generatePalette(primaryValue.hex, config.paletteStrategy, {
     overrides: config.paletteOverrides,
+    size: config.paletteSize,
+  });
+  const palette = basePalette.map((swatch, index) => {
+    if (
+      config.lockedIndices.includes(index) ||
+      config.paletteOverrides[index]
+    ) {
+      return swatch;
+    }
+    return refinedPalette[index];
   });
 
   // Derive secondary and accent from the palette strategy when the user
-  // hasn't explicitly chosen them.  The palette swatches are ordered by
-  // hue offset, so index 1 is typically the secondary and index 2 (or 1
-  // for complementary) is the accent.
-  const secondaryHex = config.secondary
-    ? toColourValue(config.secondary).hex
-    : palette.length >= 2
-      ? palette[1].hex
-      : primaryValue.hex;
-
-  const accentHex = config.accent
-    ? toColourValue(config.accent).hex
-    : palette.length >= 3
-      ? palette[2].hex
-      : palette.length >= 2
-        ? palette[1].hex
-        : rotateHue(primaryValue.hex, 30);
+  // hasn't explicitly chosen them.
+  const secondaryHex = seeds.secondary;
+  const accentHex = seeds.accent;
 
   const themes = {
     light: generateTheme(
@@ -55,7 +93,13 @@ export function buildDesignSystem(config: GeneratorConfig): DesignSystem {
       "light",
     ),
     dark: generateTheme(
-      { primaryHex: primaryValue.hex, scale, accentSeedHex: accentHex, secondarySeedHex: secondaryHex },
+      {
+        primaryHex: primaryValue.hex,
+        scale,
+        accentSeedHex: accentHex,
+        secondarySeedHex: secondaryHex,
+        darkBackgroundHex: resolveDarkBackgroundHex(config),
+      },
       "dark",
     ),
   };
@@ -79,7 +123,7 @@ export function buildDesignSystem(config: GeneratorConfig): DesignSystem {
         palette,
         accentSeed: toColourValue(accentHex),
       },
-      typography: generateTypography(config.typeRatio),
+      typography: generateTypography(config.typeRatio, config.fontPairing),
       spacing: generateSpacing(),
       radius: generateRadius(config.radiusStyle),
       shadows: generateShadows(),
@@ -87,10 +131,4 @@ export function buildDesignSystem(config: GeneratorConfig): DesignSystem {
     themes,
     accessibility,
   };
-}
-
-function rotateHue(hex: string, delta: number): string {
-  const value = toColourValue(hex);
-  const rotated = ((value.oklch.h + delta) % 360 + 360) % 360;
-  return oklchToHex({ l: value.oklch.l, c: value.oklch.c, h: rotated });
 }

@@ -11,21 +11,51 @@ import { CopyButton, TabList } from "@/components/ui/primitives";
 export function PalettePanel({
   palette,
   strategy,
+  paletteSize,
   onStrategyChange,
+  onSizeChange,
   onToggleLock,
   onEditSwatch,
 }: {
   palette: PaletteColour[];
   strategy: PaletteStrategyId;
+  paletteSize: number;
   onStrategyChange: (strategy: PaletteStrategyId) => void;
+  onSizeChange: (size: number) => void;
   onToggleLock: (index: number) => void;
   onEditSwatch: (index: number, hex: string | null) => void;
 }) {
   return (
     <section aria-labelledby="palette-heading" className="space-y-3">
-      <h2 id="palette-heading" className="panel-title">
-        Palette
-      </h2>
+      <div className="flex items-center justify-between">
+        <h2 id="palette-heading" className="panel-title">
+          Palette
+        </h2>
+        {/* Palette size stepper */}
+        <div className="flex items-center gap-1" role="group" aria-label="Palette size">
+          <button
+            type="button"
+            onClick={() => onSizeChange(paletteSize - 1)}
+            disabled={paletteSize <= 3}
+            aria-label="Fewer colours"
+            className="grid h-5 w-5 place-items-center rounded border border-zinc-200 text-xs text-zinc-600 transition-colors hover:border-zinc-400 disabled:opacity-30 dark:border-zinc-700 dark:text-zinc-300 dark:hover:border-zinc-500"
+          >
+            −
+          </button>
+          <span className="w-10 text-center text-[11px] tabular-nums text-zinc-500 dark:text-zinc-400">
+            {paletteSize} colours
+          </span>
+          <button
+            type="button"
+            onClick={() => onSizeChange(paletteSize + 1)}
+            disabled={paletteSize >= 10}
+            aria-label="More colours"
+            className="grid h-5 w-5 place-items-center rounded border border-zinc-200 text-xs text-zinc-600 transition-colors hover:border-zinc-400 disabled:opacity-30 dark:border-zinc-700 dark:text-zinc-300 dark:hover:border-zinc-500"
+          >
+            +
+          </button>
+        </div>
+      </div>
       <TabList
         label="Palette strategy"
         size="sm"

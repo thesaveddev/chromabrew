@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildDesignSystem, DEFAULT_PRIMARY } from "./index";
+import { buildDesignSystem, DEFAULT_PRIMARY, normaliseConfig } from "./index";
 import { configFromParams, configToQueryString } from "./share";
 import { cssAdapter } from "./exports/css";
 import { jsonAdapter } from "./exports/json";
@@ -7,16 +7,16 @@ import { tailwindAdapter } from "./exports/tailwind";
 import { shadcnAdapter } from "./exports/shadcn";
 
 describe("buildDesignSystem â€” critical workflow integration", () => {
-  const system = buildDesignSystem({
-    primary: "#47003a",
-    secondary: "#7c3aed",
-    accent: "#f59e0b",
-    paletteStrategy: "complementary",
-    radiusStyle: "soft",
-    typeRatio: 1.25,
-    lockedIndices: [],
-    paletteOverrides: {},
-  });
+  const system = buildDesignSystem(
+    normaliseConfig({
+      primary: "#47003a",
+      secondary: "#7c3aed",
+      accent: "#f59e0b",
+      paletteStrategy: "complementary",
+      radiusStyle: "soft",
+      typeRatio: 1.25,
+    }),
+  );
 
   it("records the source colour", () => {
     expect(system.source.primary.hex).toBe("#47003a");
@@ -32,16 +32,16 @@ describe("buildDesignSystem â€” critical workflow integration", () => {
   });
 
   it("is deterministic for identical configs", () => {
-    const again = buildDesignSystem({
-      primary: "#47003a",
-      secondary: "#7c3aed",
-      accent: "#f59e0b",
-      paletteStrategy: "complementary",
-      radiusStyle: "soft",
-      typeRatio: 1.25,
-      lockedIndices: [],
-      paletteOverrides: {},
-    });
+    const again = buildDesignSystem(
+      normaliseConfig({
+        primary: "#47003a",
+        secondary: "#7c3aed",
+        accent: "#f59e0b",
+        paletteStrategy: "complementary",
+        radiusStyle: "soft",
+        typeRatio: 1.25,
+      }),
+    );
     expect(again.themes.light).toEqual(system.themes.light);
     expect(again.primitives.colors.scale).toEqual(system.primitives.colors.scale);
   });
@@ -49,7 +49,7 @@ describe("buildDesignSystem â€” critical workflow integration", () => {
 
 describe("shareable URL codec", () => {
   it("round-trips configuration", () => {
-    const config = {
+    const config = normaliseConfig({
       primary: "#47003a",
       secondary: "#7c3aed",
       accent: "#f59e0b",
@@ -58,7 +58,7 @@ describe("shareable URL codec", () => {
       paletteOverrides: { 3: "#123456" },
       radiusStyle: "round" as const,
       typeRatio: 1.333 as const,
-    };
+    });
     const url = configToQueryString(config);
     expect(url.startsWith("/design-system?")).toBe(true);
 
@@ -88,16 +88,16 @@ describe("shareable URL codec", () => {
 });
 
 describe("export adapters", () => {
-  const system = buildDesignSystem({
-    primary: "#47003a",
-    secondary: "#7c3aed",
-    accent: "#f59e0b",
-    paletteStrategy: "complementary",
-    radiusStyle: "soft",
-    typeRatio: 1.25,
-    lockedIndices: [],
-    paletteOverrides: {},
-  });
+  const system = buildDesignSystem(
+    normaliseConfig({
+      primary: "#47003a",
+      secondary: "#7c3aed",
+      accent: "#f59e0b",
+      paletteStrategy: "complementary",
+      radiusStyle: "soft",
+      typeRatio: 1.25,
+    }),
+  );
 
   it("CSS adapter emits :root and .dark blocks with all tokens", () => {
     const result = cssAdapter.generate(system);

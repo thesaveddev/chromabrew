@@ -1,5 +1,68 @@
 ﻿export type TypeScaleRatio = 1.2 | 1.25 | 1.333;
 export type RadiusStyle = "sharp" | "soft" | "round";
+export type FontPairingId =
+  | "system"
+  | "grotesque"
+  | "editorial"
+  | "humanist"
+  | "geometric"
+  | "technical";
+
+export interface FontPairing {
+  id: FontPairingId;
+  label: string;
+  /** Stack for display/heading text. */
+  heading: string;
+  /** Stack for body copy. */
+  body: string;
+}
+
+const SANS_BODY =
+  "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
+const MONO =
+  "ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace";
+
+/**
+ * Curated heading/body pairings built from widely available system
+ * fonts — no webfont loading required; every stack degrades gracefully.
+ */
+export const FONT_PAIRINGS: FontPairing[] = [
+  { id: "system", label: "System", heading: SANS_BODY, body: SANS_BODY },
+  {
+    id: "grotesque",
+    label: "Grotesque",
+    heading: "'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+    body: SANS_BODY,
+  },
+  {
+    id: "editorial",
+    label: "Editorial",
+    heading: "Georgia, 'Times New Roman', Cambria, serif",
+    body: SANS_BODY,
+  },
+  {
+    id: "humanist",
+    label: "Humanist",
+    heading: "'Trebuchet MS', Candara, Verdana, sans-serif",
+    body: "Verdana, Geneva, Tahoma, sans-serif",
+  },
+  {
+    id: "geometric",
+    label: "Geometric",
+    heading: "'Century Gothic', 'Avant Garde', Futura, 'Segoe UI', sans-serif",
+    body: SANS_BODY,
+  },
+  {
+    id: "technical",
+    label: "Technical",
+    heading: MONO,
+    body: SANS_BODY,
+  },
+];
+
+export function getFontPairing(id: string | undefined): FontPairing {
+  return FONT_PAIRINGS.find((p) => p.id === id) ?? FONT_PAIRINGS[0];
+}
 
 export const TYPE_RATIOS: Record<string, TypeScaleRatio> = {
   compact: 1.2,
@@ -17,7 +80,7 @@ export interface TypeStep {
 }
 
 export interface TypographyTokens {
-  fontFamily: { sans: string; mono: string };
+  fontFamily: { heading: string; sans: string; mono: string };
   fontSize: Record<
     "xs" | "sm" | "base" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl",
     TypeStep
@@ -45,7 +108,11 @@ const BASE_LINE_HEIGHT = 1.5;
  * Generate a ratio-based type scale around a 1rem body size. Line heights
  * tighten as sizes grow (display text needs less leading than body).
  */
-export function generateTypography(ratio: TypeScaleRatio): TypographyTokens {
+export function generateTypography(
+  ratio: TypeScaleRatio,
+  pairingId?: string,
+): TypographyTokens {
+  const pairing = getFontPairing(pairingId);
   const fontSize = {} as TypographyTokens["fontSize"];
   TYPE_STEPS.forEach((name, index) => {
     const exponent = index - BASE_INDEX;
@@ -67,8 +134,9 @@ export function generateTypography(ratio: TypeScaleRatio): TypographyTokens {
 
   return {
     fontFamily: {
-      sans: "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
-      mono: "ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace",
+      heading: pairing.heading,
+      sans: pairing.body,
+      mono: MONO,
     },
     fontSize,
   };

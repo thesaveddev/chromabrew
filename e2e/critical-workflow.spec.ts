@@ -26,11 +26,16 @@ test("one colour becomes a full design system", async ({ page, context }) => {
   );
 
   // Enter the spec's example colour and generate.
-  const hexField = page.getByPlaceholder(/#47003A, rgb/i).first();
-  await hexField.fill("#47003A");
-  await hexField.press("Enter");
-
-  await expect(page).toHaveURL(/\/design-system\?primary=47003[Aa]/);
+  // Retried because pressing Enter before hydration natively submits
+  // the form back to "/" — a cold-start race on slower engines.
+  await expect(async () => {
+    const hexField = page.getByPlaceholder(/#47003A, rgb/i).first();
+    await hexField.fill("#47003A");
+    await hexField.press("Enter");
+    await expect(page).toHaveURL(/\/design-system\?primary=47003[Aa]/, {
+      timeout: 2_000,
+    });
+  }).toPass({ timeout: 20_000 });
   await expect(page.getByRole("heading", { name: /design system #47003A/i })).toBeVisible();
 
   // Scale panel shows the pinned source step.

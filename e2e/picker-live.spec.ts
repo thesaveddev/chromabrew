@@ -9,7 +9,7 @@ test("colour slots update preview tokens live", async ({ page }) => {
   await secondarySlot.click();
 
   // The picker canvas + hue slider should be visible
-  await expect(page.getByRole("slider", { name: "Hue" })).toBeVisible();
+  await expect(page.getByRole("slider", { name: "Hue", exact: true })).toBeVisible();
   const rgb = page.getByLabel("Red");
   await expect(rgb).toBeVisible();
 

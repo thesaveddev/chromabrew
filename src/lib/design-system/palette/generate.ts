@@ -70,47 +70,64 @@ const normalizeHue = (h: number): number => ((h % 360) + 360) % 360;
 
 /**
  * Generate a palette for a strategy. Locked indices keep their current
- * value; manual overrides are respected verbatim.
+ * value; manual overrides are respected verbatim. `size` extends the
+ * strategy's base swatches by cycling hue offsets with an alternating
+ * lightness ramp so extended palettes stay varied.
  */
 export function generatePalette(
   primaryHex: string,
   strategyId: PaletteStrategyId,
   options: {
     overrides?: Record<number, string>;
+    size?: number;
   } = {},
 ): PaletteColour[] {
   const source = rgbToOklch(hexToRgb(primaryHex));
   const strategy = getStrategy(strategyId);
+  const size = Math.max(
+    strategy.hueOffsets.length,
+    Math.min(10, Math.round(options.size ?? strategy.hueOffsets.length)),
+  );
 
-  return strategy.hueOffsets.map((offset, index) => {
+  return Array.from({ length: size }, (_, index) => {
     const override = options.overrides?.[index];
     if (override) {
-      return { hex: override.toLowerCase(), role: strategy.roles[index], index, locked: false, edited: true };
+      return { hex: override.toLowerCase(), role: roleFor(strategy, index), index, locked: false, edited: true };
     }
 
+    const cycle = Math.floor(index / strategy.hueOffsets.length);
+    const offsetIndex = index % strategy.hueOffsets.length;
+    const cycleDelta = cycle % 2 === 0 ? -0.07 * Math.ceil(cycle / 2) : 0.09 * Math.ceil(cycle / 2);
     const l = Math.min(
-      1,
-      Math.max(0, source.l + (strategy.lightnessDeltas?.[index] ?? 0)),
+      0.97,
+      Math.max(0.12,
+        source.l + (strategy.lightnessDeltas?.[offsetIndex] ?? 0) + cycleDelta),
     );
-    const c = source.c * (strategy.chromaMultipliers?.[index] ?? 1);
-    const h = normalizeHue(source.h + offset);
+    const c = source.c * (strategy.chromaMultipliers?.[offsetIndex] ?? 1);
+    const h = normalizeHue(source.h + strategy.hueOffsets[offsetIndex]);
     // Monochromatic palettes collapse onto the primary when deltas are
     // zero; nudge chroma so swatches remain distinct.
     let hex = oklchToHex({ l, c, h });
     if (
       strategy.id === "monochromatic" &&
-      index !== 1 &&
+      !(offsetIndex === 1 && cycle === 0) &&
       hex.toLowerCase() === oklchToHex({ l: source.l, c: source.c, h: source.h }).toLowerCase()
     ) {
       hex = oklchToHex({
         l,
-        c: Math.min(0.32, c * (index === 0 ? 0.6 : 1.4) + 0.01),
+        c: Math.min(0.32, c * (offsetIndex === 0 ? 0.6 : 1.4) + 0.01),
         h,
       });
     }
 
-    return { hex, role: strategy.roles[index], index, locked: false, edited: false };
+    return { hex, role: roleFor(strategy, index), index, locked: false, edited: false };
   });
+}
+
+function roleFor(strategy: StrategyDefinition, index: number): string {
+  const base = strategy.roles[index % strategy.roles.length];
+  const cycle = Math.floor(index / strategy.roles.length);
+  return cycle === 0 ? base : `${base} ${cycle + 1}`;
 }
 
 /**
@@ -121,8 +138,9 @@ export function regeneratePalette(
   primaryHex: string,
   strategyId: PaletteStrategyId,
   previous: PaletteColour[],
+  options: { size?: number } = {},
 ): PaletteColour[] {
-  const fresh = generatePalette(primaryHex, strategyId);
+  const fresh = generatePalette(primaryHex, strategyId, { size: options.size });
   return fresh.map((swatch) => {
     const prior = previous.find((p) => p.index === swatch.index);
     if (prior?.locked && !prior.edited) {

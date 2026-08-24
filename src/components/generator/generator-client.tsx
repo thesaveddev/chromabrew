@@ -1,9 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useDeferredValue } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { buildDesignSystem } from "@/lib/design-system";
+import { buildDesignSystem, normaliseConfig } from "@/lib/design-system";
 import {
   configFromParams,
   configToQueryString,
@@ -11,23 +11,31 @@ import {
 } from "@/lib/design-system/share";
 import { buildAccessibilityReport } from "@/lib/design-system/tokens/generate";
 import type {
+  DarkBackgroundStyle,
+  FontPairingId,
   GeneratorConfig,
   PaletteStrategyId,
   RadiusStyle,
+  Refinement,
   SemanticTokenId,
   ThemeMode,
   TypeScaleRatio,
 } from "@/lib/design-system/types";
+import { randomTrio } from "@/lib/design-system/colour/refine";
 import { regeneratePalette } from "@/lib/design-system/palette/generate";
+import { applyRefinement } from "@/lib/design-system/colour/refine";
 import { track } from "@/lib/analytics";
 import { Button, TabList, copyToClipboard } from "@/components/ui/primitives";
 import { SourcePanel } from "./panels/source-panel";
 import { ScalePanel } from "./panels/scale-panel";
 import { PalettePanel } from "./panels/palette-panel";
+import { RefinementPanel } from "./panels/refinement-panel";
 import { PrimitivesPanel } from "./panels/primitives-panel";
 import { TokensPanel } from "./panels/tokens-panel";
 import { AccessibilityPanel } from "./panels/accessibility-panel";
 import { ExportPanel } from "./panels/export-panel";
+import { HistoryPanel } from "./panels/history-panel";
+import { usePaletteHistory, type HistoryEntry } from "./use-palette-history";
 import { AiPaletteSuggestion } from "./ai-palette-suggestion";
 import { PreviewFrame } from "./previews/preview-frame";
 import { SaasPreview } from "./previews/saas-preview";
@@ -51,7 +59,7 @@ const MODE_OPTIONS = [
 
 function initialConfig(): GeneratorConfig {
   if (typeof window === "undefined") return DEFAULT_CONFIG;
-  return configFromParams(new URLSearchParams(window.location.search));
+  return normaliseConfig(configFromParams(new URLSearchParams(window.location.search)));
 }
 
 function getProjectId(): string | null {
@@ -76,6 +84,8 @@ export function GeneratorWorkspace() {
     dark: {},
   });
 
+  const { history, record, clear: clearHistory } = usePaletteHistory();
+
   /* ---- load project on mount ----------------------------------------- */
   useEffect(() => {
     if (loadedProject.current) return;
@@ -87,15 +97,25 @@ export function GeneratorWorkspace() {
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
         if (data?.config) {
-          setConfig(data.config as unknown as GeneratorConfig);
+          setConfig(normaliseConfig(data.config as Partial<GeneratorConfig>));
           setProjectName(data.name ?? "");
         }
       })
       .catch(() => {});
   }, []);
 
+  /* ---- palette history: record applied configs ------------------------ */
+  useEffect(() => {
+    const t = window.setTimeout(() => record(config), 800);
+    return () => window.clearTimeout(t);
+  }, [config, record]);
+
   /* ---- derived system ------------------------------------------------ */
-  const baseSystem = useMemo(() => buildDesignSystem(config), [config]);
+  // Deferred so slider drags / quick edits stay smooth; the rebuild is
+  // fast but the preview column is large — React can schedule it at a
+  // lower priority than the control the user is touching.
+  const deferredConfig = useDeferredValue(config);
+  const baseSystem = useMemo(() => buildDesignSystem(deferredConfig), [deferredConfig]);
 
   const system = useMemo(() => {
     const hasFixes = Object.keys(fixes.light).length + Object.keys(fixes.dark).length > 0;
@@ -129,35 +149,58 @@ export function GeneratorWorkspace() {
 
   /* ---- config mutations ---------------------------------------------- */
 
-  const setPrimary = (hex: string) =>
-    setConfig((prev) => ({ ...prev, primary: hex }));
+  /** Submit picked colours — one commit, instant system-wide update. */
+  const applyColours = useCallback((next: { primary?: string; secondary?: string; accent?: string }) => {
+    setConfig((prev) =>
+      normaliseConfig({
+        ...prev,
+        ...(next.primary ? { primary: next.primary } : {}),
+        ...(next.secondary ? { secondary: next.secondary } : {}),
+        ...(next.accent ? { accent: next.accent } : {}),
+      }),
+    );
+  }, []);
 
-  const setSecondary = (hex: string) =>
-    setConfig((prev) => ({ ...prev, secondary: hex }));
-
-  const setAccent = (hex: string) =>
-    setConfig((prev) => ({ ...prev, accent: hex }));
+  const randomize = useCallback(() => {
+    const trio = randomTrio();
+    setConfig((prev) =>
+      normaliseConfig({
+        ...prev,
+        ...trio,
+        lockedIndices: [],
+        paletteOverrides: {},
+      }),
+    );
+    track("palette_randomized");
+  }, []);
 
   const applyAiPalette = (hex: string) => {
-    setPrimary(hex);
-    setConfig((prev) => ({
-      ...prev,
-      paletteStrategy: "complementary",
-      lockedIndices: [],
-      paletteOverrides: {},
-    }));
+    setConfig((prev) =>
+      normaliseConfig({
+        ...prev,
+        primary: hex,
+        paletteStrategy: "complementary",
+        lockedIndices: [],
+        paletteOverrides: {},
+      }),
+    );
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const setStrategy = (strategy: PaletteStrategyId) => {
     track("palette_strategy_changed", { strategy });
-    setConfig((prev) => ({
-      ...prev,
-      paletteStrategy: strategy,
-      lockedIndices: [],
-      paletteOverrides: {},
-    }));
+    setConfig((prev) =>
+      normaliseConfig({
+        ...prev,
+        paletteStrategy: strategy,
+        lockedIndices: [],
+        paletteOverrides: {},
+      }),
+    );
   };
+
+  const setPaletteSize = (size: number) =>
+    setConfig((prev) => normaliseConfig({ ...prev, paletteSize: size }));
 
   const toggleLock = (index: number) =>
     setConfig((prev) => ({
@@ -175,11 +218,28 @@ export function GeneratorWorkspace() {
     }));
   };
 
+  const setRefinement = (refinement: Refinement) =>
+    setConfig((prev) => normaliseConfig({ ...prev, refinement }));
+
   const setRadiusStyle = (radiusStyle: RadiusStyle) =>
-    setConfig((prev) => ({ ...prev, radiusStyle }));
+    setConfig((prev) => normaliseConfig({ ...prev, radiusStyle }));
 
   const setTypeRatio = (typeRatio: TypeScaleRatio) =>
-    setConfig((prev) => ({ ...prev, typeRatio }));
+    setConfig((prev) => normaliseConfig({ ...prev, typeRatio }));
+
+  const setDarkBackground = (darkBackground: DarkBackgroundStyle) =>
+    setConfig((prev) => normaliseConfig({ ...prev, darkBackground }));
+
+  const setCustomDarkBg = (customDarkBg: string) =>
+    setConfig((prev) => normaliseConfig({ ...prev, customDarkBg }));
+
+  const setFontPairing = (fontPairing: FontPairingId) =>
+    setConfig((prev) => normaliseConfig({ ...prev, fontPairing }));
+
+  const restoreHistory = (entry: HistoryEntry) => {
+    setConfig(normaliseConfig(entry.config));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const applyFix = (fixMode: ThemeMode, token: SemanticTokenId, hex: string) =>
     setFixes((prev) => ({
@@ -236,6 +296,11 @@ export function GeneratorWorkspace() {
   }, [session, projectId, projectName, config, router]);
 
   /* ---- palette with lock/edit state merged ---------------------------- */
+  const refinedPrimary = useMemo(
+    () => applyRefinement(config.primary, config.refinement),
+    [config.primary, config.refinement],
+  );
+
   const palette = useMemo(() => {
     const seeded = system.primitives.colors.palette.map((swatch) => ({
       ...swatch,
@@ -243,11 +308,14 @@ export function GeneratorWorkspace() {
       edited: Boolean(config.paletteOverrides[swatch.index]),
       hex: config.paletteOverrides[swatch.index] ?? swatch.hex,
     }));
-    return regeneratePalette(config.primary, config.paletteStrategy, seeded);
+    return regeneratePalette(refinedPrimary, config.paletteStrategy, seeded, {
+      size: config.paletteSize,
+    });
   }, [
     system,
-    config.primary,
+    refinedPrimary,
     config.paletteStrategy,
+    config.paletteSize,
     config.lockedIndices,
     config.paletteOverrides,
   ]);
@@ -327,23 +395,34 @@ export function GeneratorWorkspace() {
             primary={config.primary}
             secondary={config.secondary}
             accent={config.accent}
-            onPrimaryChange={setPrimary}
-            onSecondaryChange={setSecondary}
-            onAccentChange={setAccent}
+            onApply={applyColours}
+            onRandomize={randomize}
           />
           <ScalePanel scale={system.primitives.colors.scale} />
           <PalettePanel
             palette={palette}
             strategy={config.paletteStrategy}
+            paletteSize={config.paletteSize}
             onStrategyChange={setStrategy}
+            onSizeChange={setPaletteSize}
             onToggleLock={toggleLock}
             onEditSwatch={editSwatch}
           />
+          <RefinementPanel
+            refinement={config.refinement}
+            palette={palette}
+            onChange={setRefinement}
+          />
           <PrimitivesPanel
             system={system}
+            config={config}
             onRadiusChange={setRadiusStyle}
             onTypeRatioChange={setTypeRatio}
+            onDarkBackgroundChange={setDarkBackground}
+            onCustomDarkBgChange={setCustomDarkBg}
+            onFontPairingChange={setFontPairing}
           />
+          <HistoryPanel history={history} onRestore={restoreHistory} onClear={clearHistory} />
         </div>
 
         {/* Preview + analysis column */}
@@ -364,10 +443,18 @@ export function GeneratorWorkspace() {
             {previewNode}
           </section>
 
-          <AccessibilityPanel report={system.accessibility} onApplyFix={applyFix} />
-          <TokensPanel themes={system.themes} />
-          <AiPaletteSuggestion onApply={applyAiPalette} />
-          <ExportPanel system={system} />
+          <section aria-label="Accessibility report">
+            <AccessibilityPanel report={system.accessibility} onApplyFix={applyFix} />
+          </section>
+          <section aria-label="Generated tokens">
+            <TokensPanel themes={system.themes} />
+          </section>
+          <section aria-label="AI palette suggestion">
+            <AiPaletteSuggestion onApply={applyAiPalette} />
+          </section>
+          <section aria-label="Export">
+            <ExportPanel system={system} />
+          </section>
 
           {Object.keys(fixes.light).length + Object.keys(fixes.dark).length > 0 ? (
             <div className="flex justify-end">

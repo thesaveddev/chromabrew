@@ -7,6 +7,7 @@
  */
 export type AnalyticsEvent =
   | "design_system_generated"
+  | "palette_randomized"
   | "palette_strategy_changed"
   | "contrast_checked"
   | "dark_mode_previewed"

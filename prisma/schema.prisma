@@ -4,9 +4,10 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  schemas  = ["chromabrew"]
 }
 
-// ─── Auth.js models ───────────────────────────────────────────────
+// â”€â”€â”€ Auth.js models â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 model User {
   id            String    @id @default(cuid())
@@ -20,6 +21,7 @@ model User {
   projects      Project[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  @@schema("chromabrew")
 }
 
 model Account {
@@ -38,6 +40,7 @@ model Account {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+  @@schema("chromabrew")
 }
 
 model Session {
@@ -45,6 +48,7 @@ model Session {
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@schema("chromabrew")
 }
 
 model VerificationToken {
@@ -53,9 +57,10 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+  @@schema("chromabrew")
 }
 
-// ─── Project models ───────────────────────────────────────────────
+// â”€â”€â”€ Project models â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 model Project {
   id          String          @id @default(cuid())
@@ -72,11 +77,13 @@ model Project {
 
   @@index([userId])
   @@index([visibility])
+  @@schema("chromabrew")
 }
 
 enum ProjectVisibility {
   private
   public
+  @@schema("chromabrew")
 }
 
 model ProjectVersion {
@@ -89,9 +96,10 @@ model ProjectVersion {
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@index([projectId])
+  @@schema("chromabrew")
 }
 
-// ─── Feedback & Analytics ───────────────────────────────────────
+// â”€â”€â”€ Feedback & Analytics â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 model Feedback {
   id        String   @id @default(cuid())
@@ -102,6 +110,7 @@ model Feedback {
   ip        String?  @db.Text
   userId    String?
   createdAt DateTime @default(now())
+  @@schema("chromabrew")
 }
 
 enum FeedbackType {
@@ -109,6 +118,7 @@ enum FeedbackType {
   bug
   feature
   praise
+  @@schema("chromabrew")
 }
 
 model PageView {
@@ -122,4 +132,5 @@ model PageView {
 
   @@index([path, createdAt])
   @@index([createdAt])
+  @@schema("chromabrew")
 }

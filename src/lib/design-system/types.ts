@@ -17,17 +17,46 @@ export type PaletteStrategyId =
   | "monochromatic"
   | "tetradic";
 
+/** Post-generation adjustments, all expressed in friendly units. */
+export interface Refinement {
+  /** -50…50 (%) */
+  brightness: number;
+  /** -50…50 (%) */
+  saturation: number;
+  /** -180…180 (degrees) */
+  hueShift: number;
+  /** -50 (cool) … 50 (warm) (%) */
+  temperature: number;
+}
+
+export type DarkBackgroundStyle = "tinted" | "solid-black" | "custom";
+
+export type FontPairingId =
+  | "system"
+  | "grotesque"
+  | "editorial"
+  | "humanist"
+  | "geometric"
+  | "technical";
+
 export interface GeneratorConfig {
   primary: string;
   secondary: string;
   accent: string;
   paletteStrategy: PaletteStrategyId;
-  /** Indices locked against regeneration. */
+  /** Number of swatches in the generated palette (3–10). */
+  paletteSize: number;
+  /** Indices locked against regeneration (and refinement). */
   lockedIndices: number[];
   /** Manual overrides keyed by palette index. */
   paletteOverrides: Record<number, string>;
   radiusStyle: RadiusStyle;
   typeRatio: TypeScaleRatio;
+  refinement: Refinement;
+  darkBackground: DarkBackgroundStyle;
+  /** Background hex when darkBackground is "custom". */
+  customDarkBg?: string;
+  fontPairing: FontPairingId;
 }
 
 export interface Rgb {

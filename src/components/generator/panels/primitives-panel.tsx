@@ -1,25 +1,42 @@
 ﻿"use client";
 
-import { RADIUS_STYLES, TYPE_RATIOS } from "@/lib/design-system/primitives/generate";
+import { FONT_PAIRINGS, RADIUS_STYLES, TYPE_RATIOS } from "@/lib/design-system/primitives/generate";
 import type {
+  DarkBackgroundStyle,
   DesignSystem,
+  FontPairingId,
+  GeneratorConfig,
   RadiusStyle,
   TypeScaleRatio,
 } from "@/lib/design-system/types";
 import { CopyButton, TabList } from "@/components/ui/primitives";
 
+const DARK_BG_OPTIONS: Array<{ id: DarkBackgroundStyle; label: string }> = [
+  { id: "tinted", label: "Tinted" },
+  { id: "solid-black", label: "Solid black" },
+  { id: "custom", label: "Custom" },
+];
+
 /**
  * Configuration + inspection of the mode-independent primitives:
- * type scale, spacing, radii and elevation shadows.
+ * type scale, fonts, spacing, radii and elevation shadows.
  */
 export function PrimitivesPanel({
   system,
+  config,
   onRadiusChange,
   onTypeRatioChange,
+  onDarkBackgroundChange,
+  onCustomDarkBgChange,
+  onFontPairingChange,
 }: {
   system: DesignSystem;
+  config: GeneratorConfig;
   onRadiusChange: (style: RadiusStyle) => void;
   onTypeRatioChange: (ratio: TypeScaleRatio) => void;
+  onDarkBackgroundChange: (style: DarkBackgroundStyle) => void;
+  onCustomDarkBgChange: (hex: string) => void;
+  onFontPairingChange: (id: FontPairingId) => void;
 }) {
   const { typography, spacing, radius, shadows } = system.primitives;
 
@@ -37,7 +54,7 @@ export function PrimitivesPanel({
             label="Radius style"
             size="sm"
             options={RADIUS_STYLES.map((s) => ({ id: s, label: s }))}
-            value={system.configuration.radiusStyle}
+            value={config.radiusStyle}
             onChange={(id) => onRadiusChange(id as RadiusStyle)}
           />
         </div>
@@ -50,9 +67,51 @@ export function PrimitivesPanel({
               id: String(value),
               label: `${label} ${value}`,
             }))}
-            value={String(system.configuration.typeRatio)}
+            value={String(config.typeRatio)}
             onChange={(id) => onTypeRatioChange(Number(id) as TypeScaleRatio)}
           />
+        </div>
+        <div>
+          <p className="mb-1.5 text-xs font-medium text-zinc-600 dark:text-zinc-400">Fonts</p>
+          <TabList
+            label="Font pairing"
+            size="sm"
+            options={FONT_PAIRINGS.map((p) => ({ id: p.id, label: p.label }))}
+            value={config.fontPairing}
+            onChange={(id) => onFontPairingChange(id as FontPairingId)}
+          />
+          <p
+            className="mt-1.5 truncate rounded-md border border-zinc-200 px-2 py-1.5 text-[11px] text-zinc-500 dark:border-zinc-800 dark:text-zinc-400"
+            style={{ fontFamily: typography.fontFamily.heading }}
+            title={`Headings: ${typography.fontFamily.heading}`}
+          >
+            The quick brown fox — 48pt heading sample
+          </p>
+        </div>
+        <div>
+          <p className="mb-1.5 text-xs font-medium text-zinc-600 dark:text-zinc-400">Dark background</p>
+          <TabList
+            label="Dark background style"
+            size="sm"
+            options={DARK_BG_OPTIONS}
+            value={config.darkBackground}
+            onChange={(id) => onDarkBackgroundChange(id as DarkBackgroundStyle)}
+          />
+          {config.darkBackground === "custom" ? (
+            <label className="mt-2 flex items-center gap-2 text-[11px] text-zinc-500 dark:text-zinc-400">
+              Background colour
+              <input
+                type="color"
+                value={config.customDarkBg ?? "#09090b"}
+                onChange={(e) => onCustomDarkBgChange(e.target.value)}
+                className="h-7 w-12 cursor-pointer rounded border border-zinc-200 dark:border-zinc-700"
+                aria-label="Custom dark background colour"
+              />
+              <span className="font-mono uppercase">
+                {(config.customDarkBg ?? "#09090b").toUpperCase()}
+              </span>
+            </label>
+          ) : null}
         </div>
       </div>
 

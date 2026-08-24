@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { generateTheme } from "./generate";
 import { contrastRatio } from "../colour/contrast";
-import { buildDesignSystem } from "..";
+import { buildDesignSystem, normaliseConfig } from "..";
 import type { ScaleStep } from "../types";
 
 const SOURCE = "#47003a";
@@ -97,14 +97,12 @@ describe("buildAccessibilityReport", () => {
 });
 
 function defaultConfig() {
-  return {
+  return normaliseConfig({
     primary: SOURCE,
     secondary: "#7c3aed",
     accent: "#f59e0b",
     paletteStrategy: "complementary" as const,
-    lockedIndices: [],
-    paletteOverrides: {},
     radiusStyle: "soft" as const,
     typeRatio: 1.25 as const,
-  };
+  });
 }

@@ -20,7 +20,7 @@ export function PreviewFrame({
   return (
     <div
       style={systemToStyle(system, mode)}
-      className={`overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900 ${className}`}
+      className={`overflow-hidden rounded-xl border border-zinc-200 bg-white font-[family-name:var(--ds-font-sans)] shadow-sm dark:border-zinc-800 dark:bg-zinc-900 [&_h1]:font-[family-name:var(--ds-font-heading)] [&_h2]:font-[family-name:var(--ds-font-heading)] [&_h3]:font-[family-name:var(--ds-font-heading)] ${className}`}
     >
       {children}
     </div>
