@@ -4,6 +4,9 @@ export default defineConfig({
   testDir: "./e2e",
   timeout: 90_000,
   retries: 0,
+  // Three engine processes compiling the same chunks starve each other on
+  // this machine — cap parallelism so cold-start latency stays bounded.
+  workers: process.env.CI ? undefined : 2,
   use: {
     baseURL: "http://localhost:3123",
     viewport: { width: 1440, height: 900 },

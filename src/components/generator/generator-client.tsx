@@ -57,23 +57,15 @@ const MODE_OPTIONS = [
   { id: "dark" as const, label: "Dark" },
 ];
 
-function initialConfig(): GeneratorConfig {
-  if (typeof window === "undefined") return DEFAULT_CONFIG;
-  return normaliseConfig(configFromParams(new URLSearchParams(window.location.search)));
-}
-
-function getProjectId(): string | null {
-  if (typeof window === "undefined") return null;
-  return new URLSearchParams(window.location.search).get("project");
-}
-
 export function GeneratorWorkspace() {
   const { data: session } = useSession();
   const router = useRouter();
-  const [config, setConfig] = useState<GeneratorConfig>(initialConfig);
+  // Start from the default so the first client render matches the
+  // server-rendered HTML; URL/project config is adopted post-hydration.
+  const [config, setConfig] = useState<GeneratorConfig>(DEFAULT_CONFIG);
   const [mode, setMode] = useState<ThemeMode>("light");
   const [preview, setPreview] = useState<PreviewId>("saas");
-  const [projectId, setProjectId] = useState<string | null>(getProjectId);
+  const [projectId, setProjectId] = useState<string | null>(null);
   const [projectName, setProjectName] = useState("");
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
@@ -86,13 +78,18 @@ export function GeneratorWorkspace() {
 
   const { history, record, clear: clearHistory } = usePaletteHistory();
 
-  /* ---- load project on mount ----------------------------------------- */
+  /* ---- adopt shared URL / saved project config post-hydration --------- */
   useEffect(() => {
     if (loadedProject.current) return;
-    const pid = new URLSearchParams(window.location.search).get("project");
-    if (!pid) return;
     loadedProject.current = true;
-    setProjectId(pid); // eslint-disable-line react-hooks/set-state-in-effect -- initial project load from URL
+    const params = new URLSearchParams(window.location.search);
+    const pid = params.get("project");
+    if (!pid) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time bootstrap from window state
+      setConfig(normaliseConfig(configFromParams(params)));
+      return;
+    }
+    setProjectId(pid);
     void fetch(`/api/projects/${pid}`)
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
@@ -105,7 +102,11 @@ export function GeneratorWorkspace() {
   }, []);
 
   /* ---- palette history: record applied configs ------------------------ */
+  // Skips the initial mount (default config) — only real changes record.
+  const prevRecorded = useRef(config);
   useEffect(() => {
+    if (prevRecorded.current === config) return;
+    prevRecorded.current = config;
     const t = window.setTimeout(() => record(config), 800);
     return () => window.clearTimeout(t);
   }, [config, record]);
