@@ -1,9 +1,6 @@
 /**
- * Entitlements — defines which features are free vs pro.
- *
- * Currently all users are on the free plan. When Stripe is integrated,
- * the user's plan will be fetched from the database and this module
- * will return the correct feature set.
+ * Entitlements — shared constants for free vs pro feature gating.
+ * No server-only imports — safe for client bundles.
  */
 
 export type PlanType = "free" | "pro";
