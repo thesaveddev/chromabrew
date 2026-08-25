@@ -11,10 +11,23 @@ import { siteUrl } from "@/lib/site-url";
 import { JsonLd } from "@/components/site/json-ld";
 
 export const metadata: Metadata = {
-  title: "ChromaBrew — Turn one color into an entire design system",
+  title: "ChromaBrew — Free Color Palette Generator & Design System Tool",
   description:
-    "Generate accessible palettes, semantic tokens, light and dark themes, and production-ready code from a single color. Free, no account required.",
+    "Turn one color into a complete design system: accessible palettes, semantic tokens, light and dark themes, WCAG checks, and production-ready CSS, Tailwind v4 and shadcn/ui exports. Free, no account required.",
   alternates: { canonical: "/" },
+  openGraph: {
+    title: "ChromaBrew — Free Color Palette Generator & Design System Tool",
+    description:
+      "Turn one color into a complete design system: accessible palettes, semantic tokens, light and dark themes, WCAG checks, and production-ready code. Free, no account.",
+    url: "/",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ChromaBrew — Free Color Palette Generator & Design System Tool",
+    description:
+      "Turn one color into a complete design system: accessible palettes, semantic tokens, light and dark themes, and production-ready code.",
+  },
 };
 
 const PIPELINE = [
@@ -65,7 +78,7 @@ export default function HomePage() {
           name: "ChromaBrew",
           url: siteUrl,
           description:
-            "Free design system generator: accessible palettes, semantic tokens, light and dark themes, and production-ready code from one color.",
+            "Free color palette generator and design system tool: accessible palettes, semantic tokens, light and dark themes, and production-ready code from one color.",
         }}
       />
       <JsonLd
@@ -74,7 +87,20 @@ export default function HomePage() {
           "@type": "Organization",
           name: "ChromaBrew",
           url: siteUrl,
-          logo: `${siteUrl}/icon.png`,
+          logo: `${siteUrl}/favicon.svg`,
+        }}
+      />
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "WebApplication",
+          name: "ChromaBrew — Design System Generator",
+          url: `${siteUrl}/design-system`,
+          description:
+            "Free design system generator: turn one color into accessible palettes, semantic tokens, light and dark themes, WCAG checks, and production-ready CSS, Tailwind v4 and shadcn/ui exports.",
+          applicationCategory: "DeveloperApplication",
+          operatingSystem: "Any (web browser)",
+          offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
         }}
       />
 

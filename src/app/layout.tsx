@@ -20,11 +20,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "ChromaBrew — Turn one color into an entire design system",
+    default: "ChromaBrew — Free Color Palette Generator & Design System Tool",
     template: "%s · ChromaBrew",
   },
   description:
-    "Generate accessible palettes, semantic tokens, light and dark themes, and production-ready code from a single color. Free, no account required.",
+    "Turn one color into a complete design system: accessible palettes, semantic tokens, light and dark themes, WCAG checks, and production-ready CSS, Tailwind v4 and shadcn/ui exports. Free, no account required.",
   openGraph: {
     type: "website",
     siteName: "ChromaBrew",

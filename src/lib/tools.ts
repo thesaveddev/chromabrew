@@ -250,6 +250,75 @@ export const TOOLS: ToolDefinition[] = [
       },
     ],
   },
+  {
+    href: "/tools/image-color-extractor",
+    navLabel: "Image color extractor",
+    title: "Image color extractor",
+    metaTitle: "Image Color Extractor — extract palette from any photo",
+    description:
+      "Upload an image and instantly extract its dominant colors as a clean palette. Get HEX values, RGB readouts and a ready-to-use color scheme. Free, runs in your browser.",
+    blurb: "Extract dominant colors from any image.",
+    faqs: [
+      {
+        q: "How does the image color extractor work?",
+        a: "Your image is drawn to an HTML Canvas element and every pixel is read directly in the browser. A median-cut algorithm clusters similar colors together to find the dominant palette. No image data is uploaded to any server.",
+      },
+      {
+        q: "What formats are supported?",
+        a: "Any image your browser can render: JPEG, PNG, GIF, WebP, SVG, and BMP. Drag-and-drop or click to upload.",
+      },
+      {
+        q: "How many colors are extracted?",
+        a: "By default the tool finds 6 dominant colors, which covers most design use cases. The algorithm groups visually similar pixels so each swatch represents a distinct region of the image.",
+      },
+    ],
+  },
+  {
+    href: "/tools/color-blindness-simulator",
+    navLabel: "Color blindness simulator",
+    title: "Color blindness simulator",
+    metaTitle: "Color Blindness Simulator — see how colors look to everyone",
+    description:
+      "Simulate how any color or palette appears to people with protanopia, deuteranopia, tritanopia and achromatopsia. Build truly accessible designs. Free, instant, browser-only.",
+    blurb: "Simulate protanopia, deuteranopia & tritanopia.",
+    faqs: [
+      {
+        q: "What types of color blindness does this simulate?",
+        a: "Four types: protanopia (no red cones), deuteranopia (no green cones), tritanopia (no blue cones), and achromatopsia (total color blindness). Each uses peer-reviewed transformation matrices.",
+      },
+      {
+        q: "How accurate is the simulation?",
+        a: "The matrices are based on published research from Machado et al. (2009) and are the same ones used by major accessibility tools. They model the most common forms of each condition.",
+      },
+      {
+        q: "Why does color accessibility matter?",
+        a: "Roughly 8 % of men and 0.5 % of women have some form of color vision deficiency. If your interface relies on color alone to convey meaning, those users may be excluded. This tool helps you catch those issues early.",
+      },
+    ],
+  },
+  {
+    href: "/tools/css-gradient-generator",
+    navLabel: "CSS gradient generator",
+    title: "CSS gradient generator",
+    metaTitle: "CSS Gradient Generator — linear, radial & conic from any colors",
+    description:
+      "Build linear, radial and conic CSS gradients visually. Pick colors, adjust angles and stops, then copy production-ready CSS. Free, no sign-up, runs in your browser.",
+    blurb: "Linear, radial & conic gradients visually.",
+    faqs: [
+      {
+        q: "What gradient types are supported?",
+        a: "Linear (any angle), radial (circle or ellipse), and conic (sweep from a center point). Switch between them with one click and the CSS updates live.",
+      },
+      {
+        q: "Can I add more color stops?",
+        a: "Yes — click anywhere on the gradient bar to add a new stop, drag to reposition, and click a stop to change its color. The generated CSS reflects every change instantly.",
+      },
+      {
+        q: "Is the output production-ready?",
+        a: "Yes — the CSS is clean, standard-compliant and ready to paste into any stylesheet. It includes fallback plain colors for older browsers when relevant.",
+      },
+    ],
+  },
 ];
 
 export function findTool(href: string): ToolDefinition | undefined {
