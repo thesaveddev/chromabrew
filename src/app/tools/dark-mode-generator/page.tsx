@@ -13,8 +13,8 @@ export default function Page() {
     <ToolShell
       tool={TOOL}
       usage={[
-        "Enter your brand colour.",
-        "The tool constructs a semantic dark theme â€” lighter primaries, tinted neutrals and status colours with verified contrast.",
+        "Enter your brand color.",
+        "The tool constructs a semantic dark theme â€” lighter primaries, tinted neutrals and status colors with verified contrast.",
         "Copy the .dark CSS block, or open the generator to preview the theme on real interfaces.",
       ]}
     >

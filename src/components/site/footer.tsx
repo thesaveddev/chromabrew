@@ -9,7 +9,7 @@ export function SiteFooter() {
           <div>
             <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">ChromaBrew</p>
             <p className="mt-2 max-w-xs text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-              Turn one colour into an accessible, production-ready design
+              Turn one color into an accessible, production-ready design
               system. Free tools for developers and designers.
             </p>
           </div>
@@ -27,7 +27,7 @@ export function SiteFooter() {
         </div>
         <div className="mt-10 flex flex-col gap-2 border-t border-zinc-200 pt-6 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs text-zinc-500 dark:text-zinc-500">
-            © {new Date().getFullYear()} ChromaBrew. All colour processing runs
+            © {new Date().getFullYear()} ChromaBrew. All color processing runs
             in your browser.
           </p>
           <p className="text-xs text-zinc-500">Phase 1 — free design system generator</p>

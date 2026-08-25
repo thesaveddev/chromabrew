@@ -3,7 +3,7 @@ import Link from "next/link";
 import { TOOLS } from "@/lib/tools";
 
 export const metadata: Metadata = {
-  title: "Free colour & design token tools",
+  title: "Free color & design token tools",
   description:
     "Ten genuinely useful free tools for developers and designers: palette generation, perceptual shades, WCAG contrast checking, format converters and theme generators. No sign-up.",
   alternates: { canonical: "/tools" },
@@ -21,7 +21,7 @@ export default function ToolsIndexPage() {
       </nav>
       <header className="mt-4 max-w-2xl">
         <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
-          Free colour &amp; design token tools
+          Free color &amp; design token tools
         </h1>
         <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
           Focused single-purpose tools powered by the same engines behind the{" "}

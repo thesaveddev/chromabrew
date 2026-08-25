@@ -13,7 +13,7 @@ export default function Page() {
     <ToolShell
       tool={TOOL}
       usage={[
-        "Enter your brand colour.",
+        "Enter your brand color.",
         "A complete shadcn/ui theme is generated in the current oklch convention â€” light and dark blocks, chart and sidebar variables included.",
         "Paste it into your global stylesheet in a Tailwind v4 + shadcn/ui project.",
       ]}

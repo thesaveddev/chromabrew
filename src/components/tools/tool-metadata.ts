@@ -15,5 +15,10 @@ export function toolMetadata(href: string): Metadata {
       url: tool.href,
       type: "website",
     },
+    twitter: {
+      card: "summary_large_image",
+      title: `${tool.metaTitle} · ChromaBrew`,
+      description: tool.description,
+    },
   };
 }

@@ -13,7 +13,7 @@ export default function Page() {
     <ToolShell
       tool={TOOL}
       usage={[
-        "Paste a HEX value or use the colour picker.",
+        "Paste a HEX value or use the color picker.",
         "Read the hsl() equivalent, plus OKLCH for perceptual work in modern CSS.",
         "Copy either format instantly.",
       ]}

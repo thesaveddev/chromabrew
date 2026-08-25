@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/site/header";
 import { SiteFooter } from "@/components/site/footer";
 import { Providers } from "@/components/providers";
 import { FeedbackWidget } from "@/components/feedback/feedback-widget";
+import { siteUrl } from "@/lib/site-url";
 import "./globals.css";
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,21 +17,20 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://chromabrew.app";
-
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "ChromaBrew — Turn one colour into an entire design system",
+    default: "ChromaBrew — Turn one color into an entire design system",
     template: "%s · ChromaBrew",
   },
   description:
-    "Generate accessible palettes, semantic tokens, light and dark themes, and production-ready code from a single colour. Free, no account required.",
+    "Generate accessible palettes, semantic tokens, light and dark themes, and production-ready code from a single color. Free, no account required.",
   openGraph: {
     type: "website",
     siteName: "ChromaBrew",
     url: siteUrl,
   },
+  twitter: { card: "summary_large_image" },
   alternates: { canonical: "/" },
 };
 

@@ -13,7 +13,7 @@ export default function Page() {
     <ToolShell
       tool={TOOL}
       usage={[
-        "Enter your brand colour.",
+        "Enter your brand color.",
         "A full 50â€“950 perceptual scale is generated and emitted as Tailwind CSS v4 @theme variables.",
         "Copy the snippet into your global stylesheet â€” bg-brand-500 style utilities become available immediately.",
       ]}

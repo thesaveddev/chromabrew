@@ -13,8 +13,8 @@ export default function Page() {
     <ToolShell
       tool={TOOL}
       usage={[
-        "Enter or pick your brand colour.",
-        "The tool generates a perceptually even 50â€“950 scale in OKLCH, pinning your exact colour at its natural step.",
+        "Enter or pick your brand color.",
+        "The tool generates a perceptually even 50â€“950 scale in OKLCH, pinning your exact color at its natural step.",
         "Copy individual values as HEX, or copy the whole scale into your design tokens.",
       ]}
     >

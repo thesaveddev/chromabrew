@@ -36,10 +36,10 @@ export function PaletteTool({ initial = "#47003a" }: { initial?: string }) {
         <div className="flex-1">
           <ColourInput
             id="palette-tool-colour"
-            label="Base colour"
+            label="Base color"
             value={raw}
             invalid={invalid}
-            errorMessage="Enter a valid HEX, rgb() or hsl() colour."
+            errorMessage="Enter a valid HEX, rgb() or hsl() color."
             onChange={(next) => {
               setRaw(next);
               setInvalid(false);
@@ -66,7 +66,7 @@ export function PaletteTool({ initial = "#47003a" }: { initial?: string }) {
 
       <p className="text-sm text-zinc-600 dark:text-zinc-400">
         {PALETTE_STRATEGIES.find((s) => s.id === strategy)?.description} Want the
-        full design system from this colour?{" "}
+        full design system from this color?{" "}
         <a href={`/design-system?primary=${primary.replace("#", "")}`} className="font-medium text-zinc-900 dark:text-zinc-100 underline underline-offset-4">
           Open it in the generator
         </a>

@@ -35,11 +35,11 @@ export function HeroColourForm({ idPrefix = "hero" }: { idPrefix?: string }) {
         <div className="flex-1">
           <ColourInput
             id={`${idPrefix}-colour`}
-            label="Starting colour"
+            label="Starting color"
             size="lg"
             value={raw}
             invalid={invalid}
-            errorMessage="Enter a valid HEX, rgb() or hsl() colour."
+            errorMessage="Enter a valid HEX, rgb() or hsl() color."
             onChange={(next) => {
               setRaw(next);
               setInvalid(false);

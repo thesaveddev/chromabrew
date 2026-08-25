@@ -74,7 +74,7 @@ export function ContrastTool({
       <div className="grid gap-4 sm:grid-cols-2">
         <ContrastField
           id="contrast-fg"
-          label="Text colour"
+          label="Text color"
           raw={fgRaw}
           onRawChange={setFgRaw}
           hex={fg}
@@ -82,7 +82,7 @@ export function ContrastTool({
         />
         <ContrastField
           id="contrast-bg"
-          label="Background colour"
+          label="Background color"
           raw={bgRaw}
           onRawChange={setBgRaw}
           hex={bg}
@@ -200,7 +200,7 @@ export function ConverterTool({ mode }: { mode: ConverterMode }) {
   }, [value, mode]);
 
   const inputLabel =
-    mode === "rgb-to-hex" ? "RGB colour (e.g. rgb(71, 0, 58))" : "HEX colour";
+    mode === "rgb-to-hex" ? "RGB color (e.g. rgb(71, 0, 58))" : "HEX color";
 
   return (
     <div className="space-y-5">
@@ -210,7 +210,7 @@ export function ConverterTool({ mode }: { mode: ConverterMode }) {
         size="lg"
         value={raw}
         invalid={!resolved && raw.trim().length > 0}
-        errorMessage="That doesn't look like a valid colour."
+        errorMessage="That doesn't look like a valid color."
         onChange={(next) => {
           setRaw(next);
           // Live-convert valid input without requiring submit.

@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-test("colour slots update preview tokens live", async ({ page }) => {
+test("color slots update preview tokens live", async ({ page }) => {
   await page.goto("/design-system");
   await expect(page.getByRole("heading", { name: /design system/i })).toBeVisible();
 
@@ -20,6 +20,6 @@ test("colour slots update preview tokens live", async ({ page }) => {
   await blue.fill("233");
   await blue.blur();
 
-  // The secondary slot hex chip should now show the new colour
+  // The secondary slot hex chip should now show the new color
   await expect(page.getByText("#0EA5E9")).toBeVisible();
 });

@@ -13,9 +13,9 @@ export default function Page() {
     <ToolShell
       tool={TOOL}
       usage={[
-        "Set the text colour and the background colour behind it.",
+        "Set the text color and the background color behind it.",
         "Read the measured WCAG 2.x contrast ratio and pass/fail results for AA and AAA at normal and large text sizes.",
-        "If a pair fails, use â€œFix contrastâ€ to get the nearest accessible text colour that preserves the hue.",
+        "If a pair fails, use â€œFix contrastâ€ to get the nearest accessible text color that preserves the hue.",
       ]}
     >
       <ContrastTool />

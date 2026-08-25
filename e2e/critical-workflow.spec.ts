@@ -5,7 +5,7 @@ import { expect, test } from "@playwright/test";
  *   visit → enter #47003A → generate → scale/palette/tokens →
  *   light/dark → accessibility → previews → exports → share URL.
  */
-test("one colour becomes a full design system", async ({ page, context }) => {
+test("one color becomes a full design system", async ({ page, context }) => {
   test.setTimeout(120_000);
   // Deterministic clipboard across engines (permissions differ headless).
   await context.addInitScript(() => {
@@ -23,10 +23,10 @@ test("one colour becomes a full design system", async ({ page, context }) => {
 
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    "Turn one colour into an entire design system",
+    "Turn one color into an entire design system",
   );
 
-  // Enter the spec's example colour and generate.
+  // Enter the spec's example color and generate.
   // Retried because pressing Enter before hydration does nothing — a
   // cold-start race when three engines compile chunks in parallel.
   await expect(async () => {
@@ -82,5 +82,5 @@ test("tool pages render their interactive shells", async ({ page }) => {
   await expect(page.getByRole("columnheader", { name: "OKLCH" })).toBeVisible();
 
   await page.goto("/tools");
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("Free colour");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Free color");
 });

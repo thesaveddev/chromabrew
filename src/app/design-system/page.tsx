@@ -4,7 +4,7 @@ import { GeneratorWorkspace } from "@/components/generator/generator-client";
 export const metadata: Metadata = {
   title: "Design system generator",
   description:
-    "Turn one colour into an accessible design system: colour scale, palette, semantic tokens, light and dark themes, WCAG checks, live UI previews and production-ready exports. Free, no account needed.",
+    "Turn one color into an accessible design system: color scale, palette, semantic tokens, light and dark themes, WCAG checks, live UI previews and production-ready exports. Free, no account needed.",
   alternates: { canonical: "/design-system" },
 };
 

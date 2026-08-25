@@ -1,7 +1,10 @@
 import type { MetadataRoute } from "next";
 import { TOOLS } from "@/lib/tools";
+import { siteUrl } from "@/lib/site-url";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://chromabrew.app";
+// Evaluated once at build time — the sitemap is a static artifact, so this
+// is the honest last-modified date for every route in that build.
+const buildDate = new Date();
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const routes = [
@@ -12,7 +15,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   ];
   return routes.map((route) => ({
     url: `${siteUrl}${route.path}`,
-    lastModified: new Date(),
+    lastModified: buildDate,
     changeFrequency: "monthly",
     priority: route.priority,
   }));

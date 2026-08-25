@@ -46,7 +46,7 @@ export function TailwindColourTool({ initial = "#47003a" }: { initial?: string }
         onRawChange={setRaw}
         primary={primary}
         onPrimaryChange={setPrimary}
-        submitLabel="Generate Tailwind colours"
+        submitLabel="Generate Tailwind colors"
       />
       <div className="flex flex-wrap gap-1.5">
         {scale.map((step) => (

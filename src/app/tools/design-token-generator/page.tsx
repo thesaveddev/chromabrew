@@ -13,7 +13,7 @@ export default function Page() {
     <ToolShell
       tool={TOOL}
       usage={[
-        "Enter your brand colour.",
+        "Enter your brand color.",
         "The generator produces DTCG-style JSON with a primitive brand scale, palette roles and full semantic token sets for light and dark themes.",
         "Copy the JSON into your token pipeline or design tools that support the format.",
       ]}

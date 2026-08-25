@@ -7,17 +7,19 @@ import { PreviewFrame } from "@/components/generator/previews/preview-frame";
 import { SaasPreview } from "@/components/generator/previews/saas-preview";
 import { LinkButton } from "@/components/ui/primitives";
 import { TOOLS } from "@/lib/tools";
+import { siteUrl } from "@/lib/site-url";
+import { JsonLd } from "@/components/site/json-ld";
 
 export const metadata: Metadata = {
-  title: "ChromaBrew — Turn one colour into an entire design system",
+  title: "ChromaBrew — Turn one color into an entire design system",
   description:
-    "Generate accessible palettes, semantic tokens, light and dark themes, and production-ready code from a single colour. Free, no account required.",
+    "Generate accessible palettes, semantic tokens, light and dark themes, and production-ready code from a single color. Free, no account required.",
   alternates: { canonical: "/" },
 };
 
 const PIPELINE = [
-  ["One colour", "HEX, RGB, HSL or a picked swatch"],
-  ["Colour scale", "Perceptual 50–950 in OKLCH"],
+  ["One color", "HEX, RGB, HSL or a picked swatch"],
+  ["Color scale", "Perceptual 50–950 in OKLCH"],
   ["Semantic tokens", "background → primary → status roles"],
   ["Light + dark", "Independent accessible themes"],
   ["WCAG checks", "AA / AAA measured, never assumed"],
@@ -26,7 +28,7 @@ const PIPELINE = [
 
 const FEATURES = [
   {
-    title: "Perceptual colour engine",
+    title: "Perceptual color engine",
     body: "Scales are generated in OKLCH so every step is evenly spaced to the eye — not arbitrary white/black mixes. Your brand hue survives end to end.",
   },
   {
@@ -43,7 +45,7 @@ const FEATURES = [
   },
   {
     title: "Live interface previews",
-    body: "Judge colours where they matter: a SaaS dashboard, marketing page, storefront and mobile app all render with your tokens instantly.",
+    body: "Judge colors where they matter: a SaaS dashboard, marketing page, storefront and mobile app all render with your tokens instantly.",
   },
   {
     title: "Exports developers can ship",
@@ -56,6 +58,26 @@ export default function HomePage() {
 
   return (
     <>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "ChromaBrew",
+          url: siteUrl,
+          description:
+            "Free design system generator: accessible palettes, semantic tokens, light and dark themes, and production-ready code from one color.",
+        }}
+      />
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name: "ChromaBrew",
+          url: siteUrl,
+          logo: `${siteUrl}/icon.png`,
+        }}
+      />
+
       {/* Hero */}
       <section className="border-b border-zinc-200 dark:border-zinc-800">
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24">
@@ -64,7 +86,7 @@ export default function HomePage() {
               Free design system generator
             </p>
             <h1 className="mt-3 text-4xl font-bold leading-[1.1] tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-5xl">
-              Turn one colour into an entire design system.
+              Turn one color into an entire design system.
             </h1>
             <p className="mt-4 text-lg leading-8 text-zinc-600 dark:text-zinc-400">
               Generate accessible palettes, semantic tokens, light and dark
@@ -108,7 +130,7 @@ export default function HomePage() {
                 Real interfaces, not swatches
               </h2>
               <p className="mt-1 max-w-xl text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                This dashboard is rendered live from the default example colour
+                This dashboard is rendered live from the default example color
                 #47003A. Open the generator to change it and watch every
                 surface, badge and button follow.
               </p>
@@ -142,7 +164,7 @@ export default function HomePage() {
       <section className="border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/60 py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <h2 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
-            Free colour &amp; token tools
+            Free color &amp; token tools
           </h2>
           <p className="mt-1 max-w-2xl text-sm leading-6 text-zinc-600 dark:text-zinc-400">
             The same engines behind the generator, available as focused
@@ -175,7 +197,7 @@ export default function HomePage() {
             One creative decision. Something you can ship.
           </h2>
           <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-zinc-300">
-            Pick a starting colour and walk away with scales, tokens, themes,
+            Pick a starting color and walk away with scales, tokens, themes,
             accessibility results and framework-ready code.
           </p>
           <div className="mt-6 flex justify-center">

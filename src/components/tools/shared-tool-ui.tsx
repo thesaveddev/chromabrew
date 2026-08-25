@@ -39,10 +39,10 @@ export function SingleColourForm({
       <div className="flex-1">
         <ColourInput
           id={id}
-          label="Base colour"
+          label="Base color"
           value={raw}
           invalid={invalid}
-          errorMessage="Enter a valid HEX, rgb() or hsl() colour."
+          errorMessage="Enter a valid HEX, rgb() or hsl() color."
           onChange={(next) => {
             onRawChange(next);
             setInvalid(false);
