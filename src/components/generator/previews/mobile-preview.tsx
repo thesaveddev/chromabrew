@@ -73,7 +73,7 @@ export function MobilePreview({ system }: { system: DesignSystem }) {
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block truncate font-medium">{name}</span>
-                <span className="block text-[10px] text-[var(--ds-foreground-subtle)]">Today Â· placeholder</span>
+                <span className="block text-[10px] text-[var(--ds-foreground-subtle)]">Today &middot; placeholder</span>
               </span>
               <span
                 className={`font-semibold ${
@@ -94,7 +94,7 @@ export function MobilePreview({ system }: { system: DesignSystem }) {
           <input
             id="mp-search"
             type="text"
-            placeholder="Try â€œcoffeeâ€"
+            placeholder='Try "coffee"'
             readOnly
             className="w-full rounded-[var(--ds-radius-xl)] border border-[var(--ds-input-border)] bg-[var(--ds-input)] px-3 py-2 text-xs outline-none focus:border-[var(--ds-focus-ring)] focus:ring-2 focus:ring-[var(--ds-focus-ring)]"
           />

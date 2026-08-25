@@ -62,7 +62,7 @@ export function SaasPreview({ system }: { system: DesignSystem }) {
             <span className="sr-only">Search</span>
             <input
               type="text"
-              placeholder="Searchâ€¦"
+              placeholder="Search..."
               className="w-44 rounded-[var(--ds-radius-md)] border border-[var(--ds-input-border)] bg-[var(--ds-input)] px-2.5 py-1.5 text-xs outline-none focus:border-[var(--ds-focus-ring)] focus:ring-2 focus:ring-[var(--ds-focus-ring)]"
               readOnly
             />
