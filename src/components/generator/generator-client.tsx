@@ -151,14 +151,14 @@ export function GeneratorWorkspace() {
 
   /* ---- config mutations ---------------------------------------------- */
 
-  /** Submit picked colours — one commit, instant system-wide update. */
+  /** Submit picked colours -- one commit, instant system-wide update. */
   const applyColours = useCallback((next: { primary?: string; secondary?: string; accent?: string }) => {
     setConfig((prev) =>
       normaliseConfig({
         ...prev,
         ...(next.primary ? { primary: next.primary } : {}),
-        ...(next.secondary ? { secondary: next.secondary } : {}),
-        ...(next.accent ? { accent: next.accent } : {}),
+        ...(next.secondary !== undefined ? { secondary: next.secondary } : {}),
+        ...(next.accent !== undefined ? { accent: next.accent } : {}),
       }),
     );
   }, []);
@@ -222,6 +222,14 @@ export function GeneratorWorkspace() {
 
   const setRefinement = (refinement: Refinement) =>
     setConfig((prev) => normaliseConfig({ ...prev, refinement }));
+
+  const removeSecondary = useCallback(() => {
+    setConfig((prev) => normaliseConfig({ ...prev, secondary: undefined }));
+  }, []);
+
+  const removeAccent = useCallback(() => {
+    setConfig((prev) => normaliseConfig({ ...prev, accent: undefined }));
+  }, []);
 
   const setRadiusStyle = (radiusStyle: RadiusStyle) =>
     setConfig((prev) => normaliseConfig({ ...prev, radiusStyle }));
@@ -336,16 +344,14 @@ export function GeneratorWorkspace() {
       {/* Toolbar */}
       <div className="sticky top-14 z-30 -mx-4 mb-6 border-b border-zinc-200 bg-white/90 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 dark:border-zinc-800 dark:bg-zinc-950/90">
         <div className="flex flex-wrap items-center gap-3">
-          {/* Live identity strip — mirrors the three source colours */}
+          {/* Live identity strip -- mirrors the source colours */}
           <div className="flex items-center gap-2.5">
             <div className="flex -space-x-1" aria-hidden>
-              {(
-                [
-                  ["Primary", config.primary],
-                  ["Secondary", config.secondary],
-                  ["Accent", config.accent],
-                ] as const
-              ).map(([name, hex]) => (
+              {[
+                ["Primary", config.primary],
+                ...(config.secondary ? [["Secondary", config.secondary] as const] : []),
+                ...(config.accent ? [["Accent", config.accent] as const] : []),
+              ].map(([name, hex]) => (
                 <span
                   key={name}
                   title={`${name} ${hex.toUpperCase()}`}
@@ -406,6 +412,8 @@ export function GeneratorWorkspace() {
             secondary={config.secondary}
             accent={config.accent}
             onApply={applyColours}
+            onRemoveSecondary={removeSecondary}
+            onRemoveAccent={removeAccent}
             onRandomize={randomize}
           />
           <ScalePanel scale={system.primitives.colors.scale} />

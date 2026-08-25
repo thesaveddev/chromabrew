@@ -41,8 +41,8 @@ export type FontPairingId =
 
 export interface GeneratorConfig {
   primary: string;
-  secondary: string;
-  accent: string;
+  secondary?: string;
+  accent?: string;
   paletteStrategy: PaletteStrategyId;
   /** Number of swatches in the generated palette (3–10). */
   paletteSize: number;

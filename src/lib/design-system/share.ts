@@ -34,8 +34,6 @@ const FONT_PAIRING_IDS: FontPairingId[] = [
 
 export const DEFAULT_CONFIG: GeneratorConfig = {
   primary: "#47003a",
-  secondary: "#7c3aed",
-  accent: "#f59e0b",
   paletteStrategy: "complementary",
   paletteSize: 6,
   lockedIndices: [],
@@ -53,6 +51,8 @@ export function normaliseConfig(config: Partial<GeneratorConfig>): GeneratorConf
   return {
     ...DEFAULT_CONFIG,
     ...config,
+    secondary: config.secondary || undefined,
+    accent: config.accent || undefined,
     lockedIndices: Array.isArray(config.lockedIndices) ? config.lockedIndices : [],
     paletteOverrides: config.paletteOverrides ?? {},
     paletteSize: Math.min(10, Math.max(3, Math.round(config.paletteSize ?? DEFAULT_CONFIG.paletteSize))),
@@ -152,8 +152,8 @@ export function configFromParams(
 
   return {
     primary: primary ?? DEFAULT_CONFIG.primary,
-    secondary: secondary ?? DEFAULT_CONFIG.secondary,
-    accent: accent ?? DEFAULT_CONFIG.accent,
+    secondary: secondary ?? undefined,
+    accent: accent ?? undefined,
     paletteStrategy: strategy,
     paletteSize: parseSize(get("size")),
     lockedIndices: parseIndices(get("locked")),
@@ -185,12 +185,12 @@ function parseSize(value: string | null): number {
 export function paramsFromConfig(config: GeneratorConfig): Record<string, string> {
   const params: Record<string, string> = {
     primary: config.primary.replace("#", ""),
-    secondary: config.secondary.replace("#", ""),
-    accent: config.accent.replace("#", ""),
     strategy: config.paletteStrategy,
     radius: config.radiusStyle,
     ratio: String(config.typeRatio),
   };
+  if (config.secondary) params.secondary = config.secondary.replace("#", "");
+  if (config.accent) params.accent = config.accent.replace("#", "");
   if (config.lockedIndices.length) {
     params.locked = [...config.lockedIndices].sort((a, b) => a - b).join(",");
   }

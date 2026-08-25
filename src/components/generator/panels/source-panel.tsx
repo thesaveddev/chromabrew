@@ -23,13 +23,17 @@ export function SourcePanel({
   secondary,
   accent,
   onApply,
+  onRemoveSecondary,
+  onRemoveAccent,
   onRandomize,
 }: {
   primary: string;
-  secondary: string;
-  accent: string;
-  /** Commit a colour — the whole system updates instantly. */
+  secondary?: string;
+  accent?: string;
+  /** Commit a colour -- the whole system updates instantly. */
   onApply: (next: { primary?: string; secondary?: string; accent?: string }) => void;
+  onRemoveSecondary?: () => void;
+  onRemoveAccent?: () => void;
   onRandomize: () => void;
 }) {
   const [extracted, setExtracted] = useState<ExtractedColour[] | null>(null);
@@ -38,7 +42,7 @@ export function SourcePanel({
   const [activeSlot, setActiveSlot] = useState<SlotId>("primary");
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const values: Record<SlotId, string> = { primary, secondary, accent };
+  const values: Partial<Record<SlotId, string>> = { primary, secondary, accent };
 
   const applySlot = (slot: SlotId, hex: string) => {
     onApply({ [slot]: hex });
@@ -65,6 +69,9 @@ export function SourcePanel({
     }
   }
 
+  const hasSecondary = Boolean(secondary);
+  const hasAccent = Boolean(accent);
+
   return (
     <section aria-labelledby="source-heading" className="space-y-4">
       <div className="flex items-center justify-between">
@@ -90,16 +97,63 @@ export function SourcePanel({
 
       {/* Colour slots */}
       <div className="space-y-3">
-        {SLOT_META.map((slot) => (
+        <ColourSlot
+          {...SLOT_META[0]}
+          value={values.primary!}
+          isActive={activeSlot === "primary"}
+          onChange={(hex) => applySlot("primary", hex)}
+          onSelect={() => setActiveSlot("primary")}
+        />
+        {hasSecondary ? (
           <ColourSlot
-            key={slot.id}
-            {...slot}
-            value={values[slot.id]}
-            isActive={activeSlot === slot.id}
-            onChange={(hex) => applySlot(slot.id, hex)}
-            onSelect={() => setActiveSlot(slot.id)}
+            {...SLOT_META[1]}
+            value={secondary!}
+            isActive={activeSlot === "secondary"}
+            onChange={(hex) => applySlot("secondary", hex)}
+            onSelect={() => setActiveSlot("secondary")}
+            onRemove={onRemoveSecondary}
           />
-        ))}
+        ) : (
+          <button
+            type="button"
+            onClick={() => {
+              setActiveSlot("secondary");
+              onApply({ secondary: "#7c3aed" });
+            }}
+            className="flex w-full items-center gap-3 rounded-xl border border-dashed border-zinc-300 p-3 text-left text-sm text-zinc-500 transition-colors hover:border-zinc-400 hover:bg-zinc-50 hover:text-zinc-700 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-600 dark:hover:bg-zinc-800/50 dark:hover:text-zinc-300"
+          >
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-dashed border-zinc-300 text-lg dark:border-zinc-700">+</span>
+            <span>
+              <span className="font-medium">Add secondary</span>
+              <span className="block text-[11px]">Supporting colour for buttons and badges</span>
+            </span>
+          </button>
+        )}
+        {hasAccent ? (
+          <ColourSlot
+            {...SLOT_META[2]}
+            value={accent!}
+            isActive={activeSlot === "accent"}
+            onChange={(hex) => applySlot("accent", hex)}
+            onSelect={() => setActiveSlot("accent")}
+            onRemove={onRemoveAccent}
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={() => {
+              setActiveSlot("accent");
+              onApply({ accent: "#f59e0b" });
+            }}
+            className="flex w-full items-center gap-3 rounded-xl border border-dashed border-zinc-300 p-3 text-left text-sm text-zinc-500 transition-colors hover:border-zinc-400 hover:bg-zinc-50 hover:text-zinc-700 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-600 dark:hover:bg-zinc-800/50 dark:hover:text-zinc-300"
+          >
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-dashed border-zinc-300 text-lg dark:border-zinc-700">+</span>
+            <span>
+              <span className="font-medium">Add accent</span>
+              <span className="block text-[11px]">Highlight colour for CTAs and alerts</span>
+            </span>
+          </button>
+        )}
       </div>
 
       {/* Actions */}
@@ -119,7 +173,7 @@ export function SourcePanel({
 
       {busy ? (
         <p className="text-xs text-zinc-500" role="status">
-          Reading image…
+          Reading image...
         </p>
       ) : null}
       {imageError ? (
@@ -132,7 +186,7 @@ export function SourcePanel({
       {extracted ? (
         <fieldset className="rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
           <legend className="px-1 text-xs font-medium text-zinc-600 dark:text-zinc-400">
-            Dominant colours — filling: {activeSlot}
+            Dominant colours - filling: {activeSlot}
           </legend>
           <div className="mt-1 grid grid-cols-4 gap-2">
             {extracted.map((colour) => (
@@ -148,7 +202,6 @@ export function SourcePanel({
               </button>
             ))}
           </div>
-          {/* Slot selector for extracted colours */}
           <div className="mt-2 flex gap-1">
             {SLOT_META.map((slot) => (
               <button
@@ -185,6 +238,7 @@ function ColourSlot({
   isActive,
   onChange,
   onSelect,
+  onRemove,
 }: {
   label: string;
   description: string;
@@ -192,6 +246,7 @@ function ColourSlot({
   isActive: boolean;
   onChange: (hex: string) => void;
   onSelect: () => void;
+  onRemove?: () => void;
 }) {
   const [expanded, setExpanded] = useState(false);
 
@@ -203,48 +258,65 @@ function ColourSlot({
           : "border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50/60 dark:border-zinc-800 dark:hover:border-zinc-700 dark:hover:bg-zinc-800/30"
       }`}
     >
-      <button
-        type="button"
-        onClick={() => {
-          onSelect();
-          setExpanded(!expanded);
-        }}
-        aria-expanded={expanded}
-        className="flex w-full items-center gap-3"
-      >
-        <span className="relative shrink-0">
-          <span
-            className="block h-9 w-9 rounded-lg border border-black/10 dark:border-white/15"
-            style={{ backgroundColor: value }}
-          />
-          {isActive ? (
+      <div className="flex w-full items-center gap-3">
+        <button
+          type="button"
+          onClick={() => {
+            onSelect();
+            setExpanded(!expanded);
+          }}
+          aria-expanded={expanded}
+          className="flex flex-1 items-center gap-3 text-left"
+        >
+          <span className="relative shrink-0">
             <span
-              aria-hidden
-              className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full border-2 border-white dark:border-zinc-900"
+              className="block h-9 w-9 rounded-lg border border-black/10 dark:border-white/15"
               style={{ backgroundColor: value }}
             />
-          ) : null}
-        </span>
-        <span className="flex-1 text-left">
-          <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{label}</span>
-          <span className="block text-[11px] text-zinc-500 dark:text-zinc-400">{description}</span>
-        </span>
-        <span className="rounded-md bg-zinc-100 px-1.5 py-0.5 font-mono text-[11px] text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
-          {value.toUpperCase()}
-        </span>
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          className={`shrink-0 text-zinc-400 transition-transform ${expanded ? "rotate-180" : ""}`}
-          aria-hidden
-        >
-          <path d="M6 9l6 6 6-6" />
-        </svg>
-      </button>
+            {isActive ? (
+              <span
+                aria-hidden
+                className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full border-2 border-white dark:border-zinc-900"
+                style={{ backgroundColor: value }}
+              />
+            ) : null}
+          </span>
+          <span className="flex-1 text-left">
+            <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{label}</span>
+            <span className="block text-[11px] text-zinc-500 dark:text-zinc-400">{description}</span>
+          </span>
+          <span className="rounded-md bg-zinc-100 px-1.5 py-0.5 font-mono text-[11px] text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+            {value.toUpperCase()}
+          </span>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            className={`shrink-0 text-zinc-400 transition-transform ${expanded ? "rotate-180" : ""}`}
+            aria-hidden
+          >
+            <path d="M6 9l6 6 6-6" />
+          </svg>
+        </button>
+        {onRemove && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onRemove();
+            }}
+            title={`Remove ${label}`}
+            className="shrink-0 rounded-md p-1 text-zinc-400 transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/30 dark:hover:text-red-400"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
+          </button>
+        )}
+      </div>
 
       {expanded && (
         <div className="mt-3 border-t border-zinc-200 pt-3 dark:border-zinc-700">

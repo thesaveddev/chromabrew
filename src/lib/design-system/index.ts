@@ -24,14 +24,14 @@ export { ZERO_REFINEMENT, normaliseConfig };
 /** The refined seed colours actually driving generation. */
 export function refinedSeeds(config: GeneratorConfig): {
   primary: string;
-  secondary: string;
-  accent: string;
+  secondary: string | undefined;
+  accent: string | undefined;
 } {
   const r = config.refinement;
   return {
     primary: applyRefinement(config.primary, r),
-    secondary: applyRefinement(config.secondary, r),
-    accent: applyRefinement(config.accent, r),
+    secondary: config.secondary ? applyRefinement(config.secondary, r) : undefined,
+    accent: config.accent ? applyRefinement(config.accent, r) : undefined,
   };
 }
 
@@ -83,9 +83,10 @@ export function buildDesignSystem(input: GeneratorConfig): DesignSystem {
   });
 
   // Derive secondary and accent from the palette strategy when the user
-  // hasn't explicitly chosen them.
-  const secondaryHex = seeds.secondary;
-  const accentHex = seeds.accent;
+  // hasn't explicitly chosen them.  Use complementary hues from the palette
+  // so they are always visually distinct from the primary.
+  const secondaryHex = seeds.secondary ?? palette[1]?.hex ?? seeds.primary;
+  const accentHex = seeds.accent ?? palette[2]?.hex ?? palette[0]?.hex ?? seeds.primary;
 
   const themes = {
     light: generateTheme(
