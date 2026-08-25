@@ -30,7 +30,7 @@ export function SiteFooter() {
             © {new Date().getFullYear()} ChromaBrew. All color processing runs
             in your browser.
           </p>
-          <p className="text-xs text-zinc-500">Phase 1 — free design system generator</p>
+
         </div>
       </div>
     </footer>

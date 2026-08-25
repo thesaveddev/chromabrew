@@ -16,7 +16,7 @@ export interface ToolDefinition {
 }
 
 /**
- * Registry of Phase 1 free tools. Each entry maps to a route under /tools
+ * Registry of free tools. Each entry maps to a route under /tools
  * and must provide genuine, working functionality — never a thin page.
  */
 export const TOOLS: ToolDefinition[] = [
@@ -316,6 +316,98 @@ export const TOOLS: ToolDefinition[] = [
       {
         q: "Is the output production-ready?",
         a: "Yes — the CSS is clean, standard-compliant and ready to paste into any stylesheet. It includes fallback plain colors for older browsers when relevant.",
+      },
+    ],
+  },
+  {
+    href: "/tools/color-mixer",
+    navLabel: "Color mixer",
+    title: "Color mixer",
+    metaTitle: "Color Mixer — blend two colors at any ratio",
+    description:
+      "Blend two colors at any ratio with a live preview. Get HEX, RGB and HSL values for the mixed result, plus an 11-step blend scale. Free, instant, browser-only.",
+    blurb: "Blend two colors at any ratio.",
+    faqs: [
+      {
+        q: "How does color mixing work?",
+        a: "Each RGB channel is interpolated linearly between the two input colors. At 50% you get an equal blend; at 75% the result leans toward the second color.",
+      },
+      {
+        q: "What output formats are supported?",
+        a: "The mixed color is shown in HEX, RGB and HSL, each with a one-click copy button. An 11-step scale from 0% to 100% is also provided.",
+      },
+      {
+        q: "Can I use this to create color transitions?",
+        a: "Yes — the 11-step blend scale is useful for creating smooth gradients or hover state transitions between two brand colors.",
+      },
+    ],
+  },
+  {
+    href: "/tools/css-shadow-generator",
+    navLabel: "CSS shadow generator",
+    title: "CSS shadow generator",
+    metaTitle: "CSS Shadow Generator — box-shadow & text-shadow visually",
+    description:
+      "Build box-shadow and text-shadow CSS visually. Adjust offset, blur, spread, color and opacity with sliders, then copy production-ready CSS. Free, no sign-up, runs in your browser.",
+    blurb: "Visual box-shadow & text-shadow builder.",
+    faqs: [
+      {
+        q: "What shadow types are supported?",
+        a: "Box shadows (for elements) and text shadows (for text). Both support offset X/Y, blur radius, color and alpha. Box shadows also include spread radius.",
+      },
+      {
+        q: "Is the output production-ready?",
+        a: "Yes — the CSS uses standard rgba() color notation and is ready to paste into any stylesheet. It works in all modern browsers.",
+      },
+      {
+        q: "Can I create layered shadows?",
+        a: "This tool generates single shadows. For layered effects, generate multiple shadows and combine them with commas in your CSS.",
+      },
+    ],
+  },
+  {
+    href: "/tools/alpha-channel",
+    navLabel: "Alpha channel tool",
+    title: "Alpha channel tool",
+    metaTitle: "Alpha Channel Tool — HEX8, RGBA & opacity values",
+    description:
+      "Add transparency to any color. Get HEX8, RGBA and percentage opacity values with a live preview on white, gray and black backgrounds. Free, instant, browser-only.",
+    blurb: "HEX8, RGBA & opacity from any color.",
+    faqs: [
+      {
+        q: "What is HEX8?",
+        a: "HEX8 is an 8-digit hex code where the last two digits represent alpha (transparency). For example, #3a86ff80 is blue at 50% opacity.",
+      },
+      {
+        q: "How do I parse HEX8 back to a color?",
+        a: "The first 6 digits are the color, the last 2 are the alpha channel in hex. #ff000080 = red at 50% opacity (0x80 = 128, 128/255 ≈ 50%).",
+      },
+      {
+        q: "Why preview on multiple backgrounds?",
+        a: "Transparency looks different depending on what's behind it. Previewing on white, gray and black helps you catch contrast issues before shipping.",
+      },
+    ],
+  },
+  {
+    href: "/tools/wcag-palette-checker",
+    navLabel: "WCAG palette checker",
+    title: "WCAG color palette checker",
+    metaTitle: "WCAG Palette Checker — check entire palettes for contrast",
+    description:
+      "Check an entire color palette for WCAG contrast violations. See every foreground/background pair in a matrix, spot failures instantly, and fix them. Free, instant, browser-only.",
+    blurb: "Check full palettes for contrast issues.",
+    faqs: [
+      {
+        q: "How is this different from the contrast checker?",
+        a: "The contrast checker tests one pair at a time. This tool tests every combination in your palette at once, showing a matrix of contrast ratios and pass/fail grades.",
+      },
+      {
+        q: "What does AA and AAA mean?",
+        a: "WCAG AA requires 4.5:1 for normal text and 3:1 for large text. AAA requires 7:1 and 4.5:1. The matrix shows AA grades; hover for the full breakdown.",
+      },
+      {
+        q: "How many colors can I add?",
+        a: "As many as you need. The matrix scales automatically, though it becomes harder to read beyond about 8 colors.",
       },
     ],
   },
