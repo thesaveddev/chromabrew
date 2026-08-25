@@ -82,6 +82,16 @@ export function ToolShell({
 
       <div className="mt-8">{children}</div>
 
+      <div className="mt-8 rounded-xl border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-800/40">
+        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+          Want the full design system from a color?{" "}
+          <Link href="/design-system" className="font-medium text-zinc-900 dark:text-zinc-100 underline underline-offset-4">
+            Open the color palette generator
+          </Link>{" "}
+          to create accessible palettes, semantic tokens, light and dark themes, and production-ready CSS — all from a single color.
+        </p>
+      </div>
+
       {usage.length ? (
         <section aria-labelledby={`how-${anchor}`} className="mt-12 border-t border-zinc-200 pt-8 dark:border-zinc-800">
           <h2 id={`how-${anchor}`} className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">

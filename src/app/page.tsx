@@ -186,15 +186,78 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Use cases — keyword-rich copy for search engines */}
+      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
+        <h2 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
+          What you can do with ChromaBrew
+        </h2>
+        <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Generate a color palette from one color</h3>
+            <p className="mt-1.5 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+              Start with any HEX, RGB or HSL value and get complementary, analogous, triadic, split-complementary, monochromatic or tetradic palettes — all computed in OKLCH for perceptual consistency.
+            </p>
+            <Link href="/tools/color-palette-generator" className="mt-3 inline-block text-xs font-medium text-zinc-900 dark:text-zinc-100 underline underline-offset-4">
+              Try the color palette generator
+            </Link>
+          </div>
+          <div className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Extract colors from an image</h3>
+            <p className="mt-1.5 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+              Upload any photo and instantly get its dominant colors as a clean palette. Perfect for matching designs to photography or building brand palettes from reference images.
+            </p>
+            <Link href="/tools/image-color-extractor" className="mt-3 inline-block text-xs font-medium text-zinc-900 dark:text-zinc-100 underline underline-offset-4">
+              Try the image color extractor
+            </Link>
+          </div>
+          <div className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Check color contrast for accessibility</h3>
+            <p className="mt-1.5 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+              Verify any text/background pair against WCAG 2.x AA and AAA thresholds. When a combination fails, get a one-click fix that adjusts the color to meet the required ratio.
+            </p>
+            <Link href="/tools/contrast-checker" className="mt-3 inline-block text-xs font-medium text-zinc-900 dark:text-zinc-100 underline underline-offset-4">
+              Try the contrast checker
+            </Link>
+          </div>
+          <div className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Build Tailwind CSS color themes</h3>
+            <p className="mt-1.5 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+              Generate Tailwind CSS v4 @theme color variables from a single brand color. Get a full 50–950 perceptual scale ready to paste into your project.
+            </p>
+            <Link href="/tools/tailwind-color-generator" className="mt-3 inline-block text-xs font-medium text-zinc-900 dark:text-zinc-100 underline underline-offset-4">
+              Try the Tailwind color generator
+            </Link>
+          </div>
+          <div className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Create accessible dark themes</h3>
+            <p className="mt-1.5 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+              Turn any brand color into a proper dark mode with semantic tokens — never a mechanical inversion. Includes verified foreground/background pairs and WCAG contrast checks.
+            </p>
+            <Link href="/tools/dark-mode-generator" className="mt-3 inline-block text-xs font-medium text-zinc-900 dark:text-zinc-100 underline underline-offset-4">
+              Try the dark mode generator
+            </Link>
+          </div>
+          <div className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Simulate color blindness</h3>
+            <p className="mt-1.5 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+              See how your colors appear to people with protanopia, deuteranopia, tritanopia and achromatopsia. Build designs that work for the 8% of men with color vision deficiency.
+            </p>
+            <Link href="/tools/color-blindness-simulator" className="mt-3 inline-block text-xs font-medium text-zinc-900 dark:text-zinc-100 underline underline-offset-4">
+              Try the color blindness simulator
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Tools */}
       <section className="border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/60 py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <h2 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
-            Free color &amp; token tools
+            Free color &amp; design token tools
           </h2>
           <p className="mt-1 max-w-2xl text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-            The same engines behind the generator, available as focused
-            single-purpose tools.
+            The same engines behind the color palette generator, available as focused single-purpose tools.
+            Generate color palettes, extract colors from images, check WCAG contrast ratios, convert color formats, and build CSS gradients — all free, no sign-up required.
           </p>
           <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
             {TOOLS.map((tool) => (
@@ -220,11 +283,10 @@ export default function HomePage() {
       <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6">
         <div className="rounded-2xl bg-zinc-900 px-6 py-12 text-center sm:px-12">
           <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
-            One creative decision. Something you can ship.
+            Start with one color. Walk away with a design system.
           </h2>
           <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-zinc-300">
-            Pick a starting color and walk away with scales, tokens, themes,
-            accessibility results and framework-ready code.
+            Generate a complete color palette, semantic tokens, light and dark themes, and production-ready CSS — from a single HEX value. Free, no account required.
           </p>
           <div className="mt-6 flex justify-center">
             <HeroColourForm idPrefix="cta" />

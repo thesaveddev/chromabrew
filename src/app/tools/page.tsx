@@ -3,9 +3,9 @@ import Link from "next/link";
 import { TOOLS } from "@/lib/tools";
 
 export const metadata: Metadata = {
-  title: "Free color & design token tools",
+  title: "Free Color Tools — Palette Generator, Contrast Checker & More",
   description:
-    "Ten genuinely useful free tools for developers and designers: palette generation, perceptual shades, WCAG contrast checking, format converters and theme generators. No sign-up.",
+    "15+ free color tools for developers and designers: color palette generator, image color extractor, WCAG contrast checker, color blindness simulator, CSS gradient generator, Tailwind color generator, and more. No sign-up required.",
   alternates: { canonical: "/tools" },
 };
 
@@ -24,14 +24,15 @@ export default function ToolsIndexPage() {
           Free color &amp; design token tools
         </h1>
         <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-          Focused single-purpose tools powered by the same engines behind the{" "}
+          Focused single-purpose color tools powered by the same engines behind the{" "}
           <Link
             href="/design-system"
             className="font-medium text-zinc-900 dark:text-zinc-100 underline underline-offset-4"
           >
-            design system generator
+            color palette generator
           </Link>
-          . Everything runs locally in your browser.
+          . Generate color palettes, extract colors from images, check WCAG contrast ratios,
+          simulate color blindness, create CSS gradients, and build Tailwind CSS themes — all free, no sign-up.
         </p>
       </header>
 

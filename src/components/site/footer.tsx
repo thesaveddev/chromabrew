@@ -9,8 +9,8 @@ export function SiteFooter() {
           <div>
             <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">ChromaBrew</p>
             <p className="mt-2 max-w-xs text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-              Turn one color into an accessible, production-ready design
-              system. Free tools for developers and designers.
+              Free color palette generator, design system tool, and 15+ developer utilities.
+              Create accessible palettes, extract colors from images, check contrast ratios, and generate production-ready CSS — all in your browser.
             </p>
           </div>
           <nav aria-label="Free tools" className="grid grid-cols-2 gap-x-6 gap-y-2 sm:grid-cols-3">
