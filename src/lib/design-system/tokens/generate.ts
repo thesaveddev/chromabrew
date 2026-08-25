@@ -230,21 +230,23 @@ export function generateTheme(
 
   /* --- secondary ------------------------------------------------------ */
   // Respect the user's chosen hue AND chroma so picking a vibrant colour
-  // visibly changes the theme; only the lightness is normalised into a
-  // button-friendly band.
+  // visibly changes the theme.  Lightness is clamped into a button-friendly
+  // band but adapts to the seed so mid-tone picks aren't washed out.
   const secondarySeed = rgbToOklch(hexToRgb(secondarySeedHex));
   const secondaryHue = secondarySeed.c < 0.008 ? h : secondarySeed.h;
-  const secondaryChromaCap = mode === "light" ? 0.13 : 0.15;
+  const secondaryChromaCap = mode === "light" ? 0.16 : 0.18;
   const secondaryChroma = Math.min(
     secondaryChromaCap,
-    Math.max(0.02, secondarySeed.c),
+    Math.max(0.025, secondarySeed.c),
   );
-  const secondary = oklch(mode === "light" ? 0.9 : 0.3, secondaryChroma, secondaryHue);
-  const secondaryHover = oklch(
-    mode === "light" ? 0.855 : 0.35,
-    secondaryChroma,
-    secondaryHue,
-  );
+  const secondaryL =
+    mode === "light"
+      ? Math.min(0.92, Math.max(0.78, secondarySeed.l))
+      : Math.min(0.38, Math.max(0.24, secondarySeed.l));
+  const secondaryHoverL =
+    mode === "light" ? Math.max(0.72, secondaryL - 0.05) : Math.min(0.44, secondaryL + 0.06);
+  const secondary = oklch(secondaryL, secondaryChroma, secondaryHue);
+  const secondaryHover = oklch(secondaryHoverL, secondaryChroma, secondaryHue);
   const secondaryForeground =
     mode === "light" ? foreground : oklch(0.94, 0.02, secondaryHue);
 
