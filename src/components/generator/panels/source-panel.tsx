@@ -10,12 +10,6 @@ import { track } from "@/lib/analytics";
 import { Button } from "@/components/ui/primitives";
 import { ColourPicker } from "@/components/ui/colour-picker";
 
-interface ColourDrafts {
-  primary?: string;
-  secondary?: string;
-  accent?: string;
-}
-
 type SlotId = "primary" | "secondary" | "accent";
 
 const SLOT_META: Array<{ id: SlotId; label: string; description: string }> = [
@@ -34,39 +28,22 @@ export function SourcePanel({
   primary: string;
   secondary: string;
   accent: string;
-  /** Commit picked colours — the whole system updates instantly. */
-  onApply: (next: ColourDrafts) => void;
+  /** Commit a colour — the whole system updates instantly. */
+  onApply: (next: { primary?: string; secondary?: string; accent?: string }) => void;
   onRandomize: () => void;
 }) {
   const [extracted, setExtracted] = useState<ExtractedColour[] | null>(null);
   const [imageError, setImageError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [activeSlot, setActiveSlot] = useState<SlotId>("primary");
-  const [drafts, setDrafts] = useState<ColourDrafts>({});
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const values: Record<SlotId, string> = {
-    primary: drafts.primary ?? primary,
-    secondary: drafts.secondary ?? secondary,
-    accent: drafts.accent ?? accent,
-  };
-  const committed: Record<SlotId, string> = { primary, secondary, accent };
+  const values: Record<SlotId, string> = { primary, secondary, accent };
 
-  const dirty = (Object.keys(drafts) as SlotId[]).filter(
-    (slot) => drafts[slot] !== undefined && drafts[slot] !== committed[slot],
-  );
-
-  const setDraft = (slot: SlotId, hex: string) =>
-    setDrafts((prev) => ({ ...prev, [slot]: hex }));
-
-  const handleApply = () => {
-    if (dirty.length === 0) return;
-    onApply(drafts);
-    setDrafts({});
+  const applySlot = (slot: SlotId, hex: string) => {
+    onApply({ [slot]: hex });
     track("design_system_generated", { source: "picker" });
   };
-
-  const handleDiscard = () => setDrafts({});
 
   async function handleFile(file: File | undefined) {
     if (!file) return;
@@ -87,10 +64,6 @@ export function SourcePanel({
       if (fileRef.current) fileRef.current.value = "";
     }
   }
-
-  const handleExtractedColour = (colour: ExtractedColour) => {
-    setDraft(activeSlot, colour.hex);
-  };
 
   return (
     <section aria-labelledby="source-heading" className="space-y-4">
@@ -122,36 +95,12 @@ export function SourcePanel({
             key={slot.id}
             {...slot}
             value={values[slot.id]}
-            hasDraft={drafts[slot.id] !== undefined && drafts[slot.id] !== committed[slot.id]}
             isActive={activeSlot === slot.id}
-            onChange={(hex) => setDraft(slot.id, hex)}
+            onChange={(hex) => applySlot(slot.id, hex)}
             onSelect={() => setActiveSlot(slot.id)}
           />
         ))}
       </div>
-
-      {/* Apply / discard bar */}
-      {dirty.length > 0 ? (
-        <div
-          className="sticky bottom-3 z-10 flex items-center gap-2 rounded-xl border border-zinc-200 bg-white/95 p-2 shadow-lg backdrop-blur dark:border-zinc-700 dark:bg-zinc-900/95"
-          role="status"
-        >
-          <span className="pl-1 text-[11px] text-zinc-500 dark:text-zinc-400">
-            {dirty.length} colour{dirty.length > 1 ? "s" : ""} picked
-          </span>
-          <Button
-            type="button"
-            variant="secondary"
-            className="px-2.5 py-1 text-xs"
-            onClick={handleDiscard}
-          >
-            Discard
-          </Button>
-          <Button type="button" className="ml-auto px-3 py-1 text-xs" onClick={handleApply}>
-            Submit{dirty.length > 1 ? ` ${dirty.length}` : ""}
-          </Button>
-        </div>
-      ) : null}
 
       {/* Actions */}
       <div className="flex flex-wrap gap-2">
@@ -191,7 +140,7 @@ export function SourcePanel({
                 key={colour.hex}
                 type="button"
                 title={`${colour.hex} (${Math.round(colour.weight * 100)}% of image)`}
-                onClick={() => handleExtractedColour(colour)}
+                onClick={() => applySlot(activeSlot, colour.hex)}
                 className="group relative aspect-square rounded-md border-2 border-transparent transition-transform hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 dark:focus-visible:outline-zinc-100"
                 style={{ backgroundColor: colour.hex }}
               >
@@ -233,7 +182,6 @@ function ColourSlot({
   label,
   description,
   value,
-  hasDraft,
   isActive,
   onChange,
   onSelect,
@@ -241,7 +189,6 @@ function ColourSlot({
   label: string;
   description: string;
   value: string;
-  hasDraft: boolean;
   isActive: boolean;
   onChange: (hex: string) => void;
   onSelect: () => void;
@@ -267,9 +214,7 @@ function ColourSlot({
       >
         <span className="relative shrink-0">
           <span
-            className={`block h-9 w-9 rounded-lg border border-black/10 transition-shadow dark:border-white/15 ${
-              hasDraft ? "ring-2 ring-offset-1 ring-zinc-400 dark:ring-zinc-500 dark:ring-offset-zinc-900" : ""
-            }`}
+            className="block h-9 w-9 rounded-lg border border-black/10 dark:border-white/15"
             style={{ backgroundColor: value }}
           />
           {isActive ? (
@@ -281,14 +226,7 @@ function ColourSlot({
           ) : null}
         </span>
         <span className="flex-1 text-left">
-          <span className="flex items-center gap-1.5">
-            <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{label}</span>
-            {hasDraft ? (
-              <span className="rounded-full bg-amber-100 px-1.5 py-px text-[9px] font-semibold uppercase tracking-wide text-amber-800 dark:bg-amber-900/60 dark:text-amber-200">
-                picked
-              </span>
-            ) : null}
-          </span>
+          <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{label}</span>
           <span className="block text-[11px] text-zinc-500 dark:text-zinc-400">{description}</span>
         </span>
         <span className="rounded-md bg-zinc-100 px-1.5 py-0.5 font-mono text-[11px] text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
