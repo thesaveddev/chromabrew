@@ -49,7 +49,7 @@ export async function GET(request: Request) {
   `;
 
   return NextResponse.json({
-    totalViews: views.reduce((sum, v) => sum + Number(v._count.id), 0),
+    totalViews: views.reduce<number>((sum, v) => sum + Number(v._count.id), 0),
     topPages: views.map((v) => ({ path: v.path, views: Number(v._count.id) })),
     daily: daily.map((d) => ({ date: d.date, views: Number(d.count) })),
   });

@@ -28,7 +28,7 @@ export default async function ProjectsPage() {
     <div className="flex flex-1 flex-col px-4 py-12 sm:px-6">
       <div className="mx-auto w-full max-w-3xl">
         <ProjectsList
-          initialProjects={projects.map((p) => ({
+          initialProjects={projects.map((p: { id: string; name: string; description: string | null; visibility: "private" | "public"; createdAt: Date; updatedAt: Date }) => ({
             ...p,
             createdAt: p.createdAt.toISOString(),
             updatedAt: p.updatedAt.toISOString(),
