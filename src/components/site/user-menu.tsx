@@ -60,6 +60,13 @@ export function UserMenu({ user }: Props) {
             My projects
           </Link>
           <Link
+            href="/pricing"
+            className="block px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50 dark:text-zinc-300 dark:hover:bg-zinc-800"
+            onClick={() => setOpen(false)}
+          >
+            Pricing
+          </Link>
+          <Link
             href="/account"
             className="block px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50 dark:text-zinc-300 dark:hover:bg-zinc-800"
             onClick={() => setOpen(false)}

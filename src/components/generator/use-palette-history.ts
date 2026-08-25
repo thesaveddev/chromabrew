@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import type { GeneratorConfig } from "@/lib/design-system/types";
+import { FREE_HISTORY_LIMIT } from "@/lib/entitlements";
 
 export interface HistoryEntry {
   id: string;
@@ -10,7 +11,6 @@ export interface HistoryEntry {
 }
 
 const KEY = "chromabrew.history.v2";
-const MAX = 12;
 
 function samePalette(a: GeneratorConfig, b: GeneratorConfig): boolean {
   return (
@@ -26,7 +26,7 @@ function load(): HistoryEntry[] {
   try {
     const raw = window.localStorage.getItem(KEY);
     const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed.slice(0, MAX) : [];
+    return Array.isArray(parsed) ? parsed.slice(0, FREE_HISTORY_LIMIT) : [];
   } catch {
     return [];
   }
@@ -61,7 +61,7 @@ export function usePaletteHistory() {
       const next = [
         entry,
         ...prev.filter((e) => !samePalette(e.config, config)),
-      ].slice(0, MAX);
+      ].slice(0, FREE_HISTORY_LIMIT);
       persist(next);
       return next;
     });
@@ -76,5 +76,11 @@ export function usePaletteHistory() {
     }
   }, []);
 
-  return { history, record, clear };
+  return {
+    history,
+    record,
+    clear,
+    isCapped: history.length >= FREE_HISTORY_LIMIT,
+    limit: FREE_HISTORY_LIMIT,
+  };
 }

@@ -50,14 +50,22 @@ export function ProjectsList({ initialProjects }: Props) {
 
       {projects.length === 0 && !loading ? (
         <div className="rounded-xl border border-dashed border-zinc-300 py-16 text-center dark:border-zinc-700">
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            No projects found.
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
+            <svg className="h-6 w-6 text-zinc-400 dark:text-zinc-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden>
+              <path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+            </svg>
+          </div>
+          <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            No projects yet
+          </p>
+          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+            Build a design system in the generator, then save it here for later.
           </p>
           <Link
             href="/design-system"
-            className="mt-4 inline-block text-sm font-medium text-zinc-900 underline underline-offset-4 hover:no-underline dark:text-zinc-100"
+            className="mt-4 inline-block rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
           >
-            Create your first design system →
+            Open the generator
           </Link>
         </div>
       ) : (
