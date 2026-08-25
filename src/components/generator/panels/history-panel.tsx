@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import type { HistoryEntry } from "../use-palette-history";
 import { FREE_HISTORY_LIMIT } from "@/lib/entitlements";
 
@@ -72,13 +71,9 @@ export function HistoryPanel({
         ))}
       </ul>
       {atCap && (
-        <Link
-          href="/pricing"
-          className="block rounded-lg border border-dashed border-amber-300 bg-amber-50/60 p-3 text-center text-xs text-amber-700 transition-colors hover:bg-amber-50 dark:border-amber-700 dark:bg-amber-900/20 dark:text-amber-300 dark:hover:bg-amber-900/30"
-        >
-          History is full ({FREE_HISTORY_LIMIT} saved).{" "}
-          <span className="font-medium underline underline-offset-2">Upgrade for unlimited</span>
-        </Link>
+        <p className="rounded-lg border border-dashed border-zinc-200 bg-zinc-50/60 p-3 text-center text-xs text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800/40 dark:text-zinc-400">
+          History is full ({FREE_HISTORY_LIMIT} saved).
+        </p>
       )}
     </section>
   );

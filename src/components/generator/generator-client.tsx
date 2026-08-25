@@ -2,8 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, useDeferredValue } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { buildDesignSystem, normaliseConfig } from "@/lib/design-system";
 import {
   configFromParams,
@@ -60,7 +58,6 @@ const MODE_OPTIONS = [
 
 export function GeneratorWorkspace() {
   const { data: session } = useSession();
-  const router = useRouter();
   // Start from the default so the first client render matches the
   // server-rendered HTML; URL/project config is adopted post-hydration.
   const [config, setConfig] = useState<GeneratorConfig>(DEFAULT_CONFIG);
@@ -260,7 +257,6 @@ export function GeneratorWorkspace() {
   /* ---- save / update project ----------------------------------------- */
   const saveProject = useCallback(async () => {
     if (!session?.user?.id) {
-      router.push("/sign-in");
       return;
     }
     setSaving(true);
@@ -303,7 +299,7 @@ export function GeneratorWorkspace() {
       setSaving(false);
       window.setTimeout(() => setSaveMessage(""), 2000);
     }
-  }, [session, projectId, projectName, config, router]);
+  }, [session, projectId, projectName, config]);
 
   /* ---- palette with lock/edit state merged ---------------------------- */
   const refinedPrimary = useMemo(
@@ -388,14 +384,6 @@ export function GeneratorWorkspace() {
               >
                 {saving ? "Saving…" : saveMessage || "Save"}
               </Button>
-            )}
-            {!session?.user && (
-              <Link
-                href="/sign-in"
-                className="rounded-md px-2.5 py-1 text-xs font-medium text-zinc-500 transition-colors hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
-              >
-                Sign in to save
-              </Link>
             )}
             <Button type="button" variant="secondary" className="px-2.5 py-1 text-xs" onClick={copyShareLink}>
               {shareCopied ? "Link copied" : "Share link"}
