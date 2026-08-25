@@ -196,7 +196,7 @@ function HueSlider({ h, s, v, onChange }: { h: number; s: number; v: number; onC
       if (!track) return;
       const rect = track.getBoundingClientRect();
       const y = Math.max(0, Math.min(1, (clientY - rect.top) / rect.height));
-      onChange(hsvToHex(Math.round((1 - y) * 360) % 360, s, v));
+      onChange(hsvToHex(Math.round(y * 360) % 360, s, v));
     },
     [s, v, onChange],
   );
@@ -219,8 +219,8 @@ function HueSlider({ h, s, v, onChange }: { h: number; s: number; v: number; onC
       aria-valuenow={Math.round(h)}
       tabIndex={0}
       onKeyDown={(e) => {
-        if (e.key === "ArrowUp" || e.key === "ArrowRight") onChange(hsvToHex((h + 3) % 360, s, v));
-        if (e.key === "ArrowDown" || e.key === "ArrowLeft") onChange(hsvToHex((h + 357) % 360, s, v));
+        if (e.key === "ArrowUp" || e.key === "ArrowRight") onChange(hsvToHex((h + 357) % 360, s, v));
+        if (e.key === "ArrowDown" || e.key === "ArrowLeft") onChange(hsvToHex((h + 3) % 360, s, v));
       }}
       className="relative w-4 cursor-pointer overflow-hidden rounded-full border border-zinc-200 dark:border-zinc-700 select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 dark:focus-visible:outline-zinc-100"
       style={{ background: "linear-gradient(to bottom, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)" }}
@@ -229,7 +229,7 @@ function HueSlider({ h, s, v, onChange }: { h: number; s: number; v: number; onC
     >
       <div
         className="pointer-events-none absolute left-0 h-1 w-full -translate-y-1/2 rounded-full border border-white shadow-[0_0_2px_rgba(0,0,0,0.5)]"
-        style={{ top: `${100 - (h / 360) * 100}%`, backgroundColor: hsvToHex(h, 100, 100) }}
+        style={{ top: `${(h / 360) * 100}%`, backgroundColor: hsvToHex(h, 100, 100) }}
       />
     </div>
   );
