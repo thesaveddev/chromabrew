@@ -279,16 +279,16 @@ export const TOOLS: ToolDefinition[] = [
     title: "Color blindness simulator",
     metaTitle: "Color Blindness Simulator — see how colors look to everyone",
     description:
-      "Simulate how any color or palette appears to people with protanopia, deuteranopia, tritanopia and achromatopsia. Build truly accessible designs. Free, instant, browser-only.",
-    blurb: "Simulate protanopia, deuteranopia & tritanopia.",
+      "Simulate how any color or palette appears to people with protanopia, deuteranopia, tritanopia and achromatopsia. Check whether a text/background pair stays distinguishable. Free, instant, browser-only.",
+    blurb: "Simulate protanopia, deuteranopia & tritanopia, + pair check.",
     faqs: [
       {
         q: "What types of color blindness does this simulate?",
         a: "Four types: protanopia (no red cones), deuteranopia (no green cones), tritanopia (no blue cones), and achromatopsia (total color blindness). Each uses peer-reviewed transformation matrices.",
       },
       {
-        q: "How accurate is the simulation?",
-        a: "The matrices are based on published research from Machado et al. (2009) and are the same ones used by major accessibility tools. They model the most common forms of each condition.",
+        q: "Can I check if two colors are distinguishable?",
+        a: "Yes — alongside simulating a single color, you can check a foreground/background pair under each condition. The color difference score shows whether they stay distinguishable, which contrast ratio alone can't guarantee.",
       },
       {
         q: "Why does color accessibility matter?",
@@ -408,6 +408,33 @@ export const TOOLS: ToolDefinition[] = [
       {
         q: "How many colors can I add?",
         a: "As many as you need. The matrix scales automatically, though it becomes harder to read beyond about 8 colors.",
+      },
+    ],
+  },
+  {
+    href: "/tools/typography-scale-generator",
+    navLabel: "Typography scale generator",
+    title: "Typography scale generator",
+    metaTitle: "Typography Scale Generator — modular type scale in px & rem",
+    description:
+      "Generate a modular type scale from base size and ratio (1.2 / 1.25 / 1.333). Get px & rem sizes, line heights, letter spacing, font pairings, CSS variables and a live preview. Free, no sign-up.",
+    blurb: "Modular type scale with live preview & CSS.",
+    faqs: [
+      {
+        q: "What is a modular type scale?",
+        a: "It multiplies a base font size by a constant ratio to produce every step of the scale — so each size shares a geometric relationship instead of being picked at random. Common ratios are 1.200 (minor third), 1.250 (major third) and 1.333 (perfect fourth).",
+      },
+      {
+        q: "How do I choose a ratio?",
+        a: "Steeper ratios create stronger contrast between body and display text, which suits landing pages and editorial layouts. Gentler ratios (1.2) keep a tighter, denser system ideal for text-heavy apps and dashboards. Start with 1.25 and adjust.",
+      },
+      {
+        q: "Why output in rem instead of px?",
+        a: "rem units scale with the user's browser font-size setting, which is the accessible default. The px column shows the rendered size at your chosen base so you can check it matches your design.",
+      },
+      {
+        q: "Which font pairings are available?",
+        a: "Six curated heading/body pairings built only from widely available system fonts — System, Grotesque, Editorial, Humanist, Geometric and Technical. No webfont loading required, so the preview and output work everywhere.",
       },
     ],
   },
