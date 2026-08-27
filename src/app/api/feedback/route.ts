@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
+import { sendFeedbackEmail } from "@/lib/mail";
 
 export async function POST(request: Request) {
   const body = await request.json();
@@ -30,6 +31,19 @@ export async function POST(request: Request) {
       ip,
     },
   });
+
+  // Notify by email (no-op until RESEND_API_KEY is configured).
+  try {
+    await sendFeedbackEmail({
+      type: type ?? "comment",
+      message: message.trim(),
+      email: email?.trim(),
+      page: page?.trim(),
+      ip,
+    });
+  } catch {
+    // Email is best-effort; never fail the request because of it.
+  }
 
   return NextResponse.json({ ok: true });
 }
