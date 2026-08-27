@@ -30,7 +30,12 @@ export function SiteFooter() {
             © {new Date().getFullYear()} ChromaBrew. All color processing runs
             in your browser.
           </p>
-
+          <Link
+            href="/blog"
+            className="text-xs text-zinc-500 transition-colors hover:text-zinc-900 dark:text-zinc-500 dark:hover:text-zinc-100"
+          >
+            Blog &amp; guides
+          </Link>
         </div>
       </div>
     </footer>
