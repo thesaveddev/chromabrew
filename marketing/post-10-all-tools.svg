@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1350" viewBox="0 0 1080 1350">
+  <defs>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff006e"/>
+      <stop offset="50%" stop-color="#3a86ff"/>
+      <stop offset="100%" stop-color="#22c55e"/>
+    </linearGradient>
+    <radialGradient id="glow1" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#3a86ff" stop-opacity="0.05"/>
+      <stop offset="100%" stop-color="#3a86ff" stop-opacity="0"/>
+    </radialGradient>
+    <style>
+      .inter { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+      .mono { font-family: 'JetBrains Mono', 'SF Mono', monospace; }
+    </style>
+  </defs>
+
+  <rect width="1080" height="1350" fill="#0a0a0a"/>
+  <rect width="1080" height="1350" fill="url(#glow1)"/>
+
+  <!-- Logo -->
+  <rect x="72" y="72" width="48" height="48" rx="12" fill="#18181b"/>
+  <circle cx="96" cy="96" r="9" fill="#c87cb3"/>
+  <text x="136" y="102" fill="#fafafa" font-size="20" font-weight="700" class="inter" letter-spacing="-0.5">ChromaBrew</text>
+
+  <!-- Hero -->
+  <text x="72" y="230" fill="#fafafa" font-size="72" font-weight="900" class="inter" letter-spacing="-3">17 tools.</text>
+  <text x="72" y="310" font-size="72" font-weight="900" class="inter" letter-spacing="-3">
+    <tspan fill="url(#accentGrad)">Zero cost.</tspan>
+  </text>
+  <text x="72" y="388" fill="#fafafa" font-size="72" font-weight="900" class="inter" letter-spacing="-3">All free.</text>
+
+  <!-- Tool grid -->
+  <g transform="translate(72, 440)">
+    <!-- Row 1 -->
+    <rect x="0" y="0" width="176" height="80" rx="10" fill="#171717" stroke="#262626" stroke-width="1"/>
+    <text x="16" y="36" fill="#3a86ff" font-size="18" font-weight="700" class="inter">Palette</text>
+    <text x="16" y="56" fill="#525252" font-size="11" class="mono">6 harmonies</text>
+
+    <rect x="190" y="0" width="176" height="80" rx="10" fill="#171717" stroke="#262626" stroke-width="1"/>
+    <text x="206" y="36" fill="#3a86ff" font-size="18" font-weight="700" class="inter">Shades</text>
+    <text x="206" y="56" fill="#525252" font-size="11" class="mono">50–950 OKLCH</text>
+
+    <rect x="380" y="0" width="176" height="80" rx="10" fill="#171717" stroke="#262626" stroke-width="1"/>
+    <text x="396" y="36" fill="#3a86ff" font-size="18" font-weight="700" class="inter">Contrast</text>
+    <text x="396" y="56" fill="#525252" font-size="11" class="mono">WCAG AA/AAA</text>
+
+    <rect x="570" y="0" width="176" height="80" rx="10" fill="#171717" stroke="#262626" stroke-width="1"/>
+    <text x="586" y="36" fill="#3a86ff" font-size="18" font-weight="700" class="inter">Tailwind</text>
+    <text x="586" y="56" fill="#525252" font-size="11" class="mono">v4 @theme</text>
+
+    <rect x="760" y="0" width="176" height="80" rx="10" fill="#171717" stroke="#262626" stroke-width="1"/>
+    <text x="776" y="36" fill="#3a86ff" font-size="18" font-weight="700" class="inter">shadcn/ui</text>
+    <text x="776" y="56" fill="#525252" font-size="11" class="mono">oklch themes</text>
+
+    <!-- Row 2 -->
+    <rect x="0" y="96" width="176" height="80" rx="10" fill="#171717" stroke="#262626" stroke-width="1"/>
+    <text x="16" y="132" fill="#ff006e" font-size="18" font-weight="700" class="inter">Dark Mode</text>
+    <text x="16" y="152" fill="#525252" font-size="11" class="mono">semantic tokens</text>
+
+    <rect x="190" y="96" width="176" height="80" rx="10" fill="#171717" stroke="#262626" stroke-width="1"/>
+    <text x="206" y="132" fill="#ff006e" font-size="18" font-weight="700" class="inter">Tokens</text>
+    <text x="206" y="152" fill="#525252" font-size="11" class="mono">DTCG JSON</text>
+
+    <rect x="380" y="96" width="176" height="80" rx="10" fill="#171717" stroke="#262626" stroke-width="1"/>
+    <text x="396" y="132" fill="#ff006e" font-size="18" font-weight="700" class="inter">Gradient</text>
+    <text x="396" y="152" fill="#525252" font-size="11" class="mono">linear/radial/conic</text>
+
+    <rect x="570" y="96" width="176" height="80" rx="10" fill="#171717" stroke="#262626" stroke-width="1"/>
+    <text x="586" y="132" fill="#ff006e" font-size="18" font-weight="700" class="inter">Extract</text>
+    <text x="586" y="152" fill="#525252" font-size="11" class="mono">from images</text>
+
+    <rect x="760" y="96" width="176" height="80" rx="10" fill="#171717" stroke="#262626" stroke-width="1"/>
+    <text x="776" y="132" fill="#ff006e" font-size="18" font-weight="700" class="inter">Blindness</text>
+    <text x="776" y="152" fill="#525252" font-size="11" class="mono">CVD sim</text>
+
+    <!-- Row 3 -->
+    <rect x="0" y="192" width="176" height="80" rx="10" fill="#171717" stroke="#262626" stroke-width="1"/>
+    <text x="16" y="228" fill="#22c55e" font-size="18" font-weight="700" class="inter">Mixer</text>
+    <text x="16" y="248" fill="#525252" font-size="11" class="mono">blend colors</text>
+
+    <rect x="190" y="192" width="176" height="80" rx="10" fill="#171717" stroke="#262626" stroke-width="1"/>
+    <text x="206" y="228" fill="#22c55e" font-size="18" font-weight="700" class="inter">Shadow</text>
+    <text x="206" y="248" fill="#525252" font-size="11" class="mono">box + text</text>
+
+    <rect x="380" y="192" width="176" height="80" rx="10" fill="#171717" stroke="#262626" stroke-width="1"/>
+    <text x="396" y="228" fill="#22c55e" font-size="18" font-weight="700" class="inter">Alpha</text>
+    <text x="396" y="248" fill="#525252" font-size="11" class="mono">HEX8 + RGBA</text>
+
+    <rect x="570" y="192" width="176" height="80" rx="10" fill="#171717" stroke="#262626" stroke-width="1"/>
+    <text x="586" y="228" fill="#22c55e" font-size="18" font-weight="700" class="inter">HEX↔RGB</text>
+    <text x="586" y="248" fill="#525252" font-size="11" class="mono">converters</text>
+
+    <rect x="760" y="192" width="176" height="80" rx="10" fill="#171717" stroke="#262626" stroke-width="1"/>
+    <text x="776" y="228" fill="#22c55e" font-size="18" font-weight="700" class="inter">HEX↔HSL</text>
+    <text x="776" y="248" fill="#525252" font-size="11" class="mono">converters</text>
+
+    <!-- Row 4 -->
+    <rect x="0" y="288" width="176" height="80" rx="10" fill="#171717" stroke="#262626" stroke-width="1"/>
+    <text x="16" y="324" fill="#a855f7" font-size="18" font-weight="700" class="inter">Palette ✓</text>
+    <text x="16" y="344" fill="#525252" font-size="11" class="mono">WCAG checker</text>
+
+    <rect x="190" y="288" width="176" height="80" rx="10" fill="#171717" stroke="#262626" stroke-width="1"/>
+    <text x="206" y="324" fill="#a855f7" font-size="18" font-weight="700" class="inter">+ 2 more</text>
+    <text x="206" y="344" fill="#525252" font-size="11" class="mono">always adding</text>
+  </g>
+
+  <!-- Bottom -->
+  <text x="72" y="1280" fill="#fafafa" font-size="20" font-weight="600" class="inter" letter-spacing="-0.3">chromabrew.com</text>
+  <text x="1008" y="1280" text-anchor="end" fill="#525252" font-size="11" class="mono">ALL TOOLS OVERVIEW</text>
+</svg>

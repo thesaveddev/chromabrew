@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1350" viewBox="0 0 1080 1350">
+  <defs>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff006e"/>
+      <stop offset="100%" stop-color="#3a86ff"/>
+    </linearGradient>
+    <radialGradient id="glow1" cx="50%" cy="30%" r="45%">
+      <stop offset="0%" stop-color="#3a86ff" stop-opacity="0.07"/>
+      <stop offset="100%" stop-color="#3a86ff" stop-opacity="0"/>
+    </radialGradient>
+    <style>
+      .inter { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+      .mono { font-family: 'JetBrains Mono', 'SF Mono', monospace; }
+    </style>
+  </defs>
+
+  <rect width="1080" height="1350" fill="#0a0a0a"/>
+  <rect width="1080" height="1350" fill="url(#glow1)"/>
+
+  <!-- Logo -->
+  <rect x="72" y="72" width="48" height="48" rx="12" fill="#18181b"/>
+  <circle cx="96" cy="96" r="9" fill="#c87cb3"/>
+  <text x="136" y="102" fill="#fafafa" font-size="20" font-weight="700" class="inter" letter-spacing="-0.5">ChromaBrew</text>
+
+  <!-- Hero -->
+  <text x="72" y="240" fill="#fafafa" font-size="64" font-weight="900" class="inter" letter-spacing="-2">Stop Googling</text>
+  <text x="72" y="316" fill="#fafafa" font-size="64" font-weight="900" class="inter" letter-spacing="-2">"hex to rgb"</text>
+  <text x="72" y="400" font-size="64" font-weight="900" class="inter" letter-spacing="-2">
+    <tspan fill="url(#accentGrad)">every week.</tspan>
+  </text>
+
+  <!-- Before/After comparison -->
+  <g transform="translate(72, 460)">
+    <!-- Before: scattered tools -->
+    <rect x="0" y="0" width="440" height="300" rx="16" fill="#171717" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <text x="24" y="36" fill="#ef4444" font-size="13" font-weight="600" class="mono" letter-spacing="1">BEFORE</text>
+
+    <rect x="24" y="56" width="180" height="48" rx="8" fill="#262626"/>
+    <text x="114" y="86" text-anchor="middle" fill="#a3a3a3" font-size="12" class="inter">coolors.co</text>
+
+    <rect x="232" y="56" width="180" height="48" rx="8" fill="#262626"/>
+    <text x="322" y="86" text-anchor="middle" fill="#a3a3a3" font-size="12" class="inter">contrast-checker</text>
+
+    <rect x="24" y="116" width="180" height="48" rx="8" fill="#262626"/>
+    <text x="114" y="146" text-anchor="middle" fill="#a3a3a3" font-size="12" class="inter">webaim.org</text>
+
+    <rect x="232" y="116" width="180" height="48" rx="8" fill="#262626"/>
+    <text x="322" y="146" text-anchor="middle" fill="#a3a3a3" font-size="12" class="inter">realtime.colors</text>
+
+    <rect x="24" y="176" width="180" height="48" rx="8" fill="#262626"/>
+    <text x="114" y="206" text-anchor="middle" fill="#a3a3a3" font-size="12" class="inter">hexcolor.co</text>
+
+    <rect x="232" y="176" width="180" height="48" rx="8" fill="#262626"/>
+    <text x="322" y="206" text-anchor="middle" fill="#a3a3a3" font-size="12" class="inter">+ 4 more tabs</text>
+
+    <text x="24" y="260" fill="#ef4444" font-size="14" font-weight="500" class="inter">6 tools. 6 tabs. Inconsistent results.</text>
+
+    <!-- After: ChromaBrew -->
+    <rect x="468" y="0" width="440" height="300" rx="16" fill="#171717" stroke="#22c55e" stroke-width="1.5"/>
+    <text x="492" y="36" fill="#22c55e" font-size="13" font-weight="600" class="mono" letter-spacing="1">AFTER</text>
+
+    <rect x="492" y="56" width="400" height="180" rx="12" fill="#0a0a0a" stroke="#262626" stroke-width="1"/>
+    <rect x="492" y="56" width="400" height="36" rx="12" fill="#1e1e1e"/>
+    <rect x="492" y="80" width="400" height="12" fill="#1e1e1e"/>
+    <circle cx="512" cy="74" r="5" fill="#ef4444"/>
+    <circle cx="528" cy="74" r="5" fill="#eab308"/>
+    <circle cx="544" cy="74" r="5" fill="#22c55e"/>
+    <text x="600" y="78" fill="#525252" font-size="11" class="mono">chromabrew.com/design-system</text>
+
+    <!-- Mini tool UI inside -->
+    <rect x="512" y="104" width="80" height="80" rx="8" fill="#3a86ff"/>
+    <text x="552" y="150" text-anchor="middle" fill="white" font-size="11" class="mono">#3a86ff</text>
+
+    <rect x="604" y="104" width="268" height="24" rx="4" fill="#262626"/>
+    <rect x="604" y="136" width="200" height="16" rx="4" fill="#262626"/>
+    <rect x="604" y="160" width="240" height="16" rx="4" fill="#262626"/>
+
+    <text x="492" y="270" fill="#22c55e" font-size="14" font-weight="500" class="inter">1 tool. Everything you need.</text>
+  </g>
+
+  <!-- Bottom -->
+  <text x="72" y="1280" fill="#fafafa" font-size="20" font-weight="600" class="inter" letter-spacing="-0.3">chromabrew.com</text>
+  <text x="1008" y="1280" text-anchor="end" fill="#525252" font-size="11" class="mono">COMPARISON / CTA</text>
+</svg>

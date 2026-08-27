@@ -411,6 +411,29 @@ export const TOOLS: ToolDefinition[] = [
       },
     ],
   },
+  {
+    href: "/tools/svg-to-jpg",
+    navLabel: "SVG to JPG",
+    title: "SVG to JPG converter",
+    metaTitle: "SVG to JPG Converter — export SVGs as JPG at any scale",
+    description:
+      "Convert SVG images to JPG instantly. Upload or paste SVG code, preview live, then export at 1x, 2x, 3x or 4x resolution. Free, no sign-up, runs in your browser.",
+    blurb: "SVG → JPG at any scale.",
+    faqs: [
+      {
+        q: "How does SVG to JPG conversion work?",
+        a: "The SVG is rendered to an HTML Canvas element at your chosen scale, then exported as a JPEG at 92% quality. Everything happens in the browser — no server upload.",
+      },
+      {
+        q: "What scale should I choose?",
+        a: "1x is the original size. 2x doubles the dimensions (good for retina displays). 3x and 4x are for print or high-DPI use cases where you need extra sharpness.",
+      },
+      {
+        q: "Does it support transparent backgrounds?",
+        a: "JPG doesn't support transparency — the export adds a white background. If you need transparency, keep the SVG or export as PNG instead.",
+      },
+    ],
+  },
 ];
 
 export function findTool(href: string): ToolDefinition | undefined {

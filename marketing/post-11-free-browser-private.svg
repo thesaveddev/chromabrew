@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1350" viewBox="0 0 1080 1350">
+  <defs>
+    <radialGradient id="glow1" cx="50%" cy="40%" r="45%">
+      <stop offset="0%" stop-color="#22c55e" stop-opacity="0.05"/>
+      <stop offset="100%" stop-color="#22c55e" stop-opacity="0"/>
+    </radialGradient>
+    <style>
+      .inter { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+      .mono { font-family: 'JetBrains Mono', 'SF Mono', monospace; }
+    </style>
+  </defs>
+
+  <rect width="1080" height="1350" fill="#0a0a0a"/>
+  <rect width="1080" height="1350" fill="url(#glow1)"/>
+
+  <!-- Logo -->
+  <rect x="72" y="72" width="48" height="48" rx="12" fill="#18181b"/>
+  <circle cx="96" cy="96" r="9" fill="#c87cb3"/>
+  <text x="136" y="102" fill="#fafafa" font-size="20" font-weight="700" class="inter" letter-spacing="-0.5">ChromaBrew</text>
+
+  <!-- Hero -->
+  <text x="72" y="260" fill="#fafafa" font-size="80" font-weight="900" class="inter" letter-spacing="-3">Free.</text>
+  <text x="72" y="350" fill="#fafafa" font-size="80" font-weight="900" class="inter" letter-spacing="-3">Browser-first.</text>
+  <text x="72" y="440" fill="#fafafa" font-size="80" font-weight="900" class="inter" letter-spacing="-3">No tracking.</text>
+
+  <!-- Three pillars -->
+  <g transform="translate(72, 510)">
+    <!-- Free -->
+    <rect x="0" y="0" width="290" height="200" rx="16" fill="#171717" stroke="#262626" stroke-width="1"/>
+    <rect x="24" y="24" width="40" height="40" rx="10" fill="#22c55e" opacity="0.15"/>
+    <text x="44" y="52" fill="#22c55e" font-size="20" font-weight="700" class="inter">$</text>
+    <text x="24" y="96" fill="#fafafa" font-size="20" font-weight="700" class="inter">Free forever</text>
+    <text x="24" y="124" fill="#737373" font-size="14" class="inter">No credit card. No trial.</text>
+    <text x="24" y="148" fill="#737373" font-size="14" class="inter">No premium tier.</text>
+    <text x="24" y="176" fill="#525252" font-size="12" class="mono">Just open and use.</text>
+
+    <!-- Browser -->
+    <rect x="310" y="0" width="290" height="200" rx="16" fill="#171717" stroke="#262626" stroke-width="1"/>
+    <rect x="334" y="24" width="40" height="40" rx="10" fill="#3a86ff" opacity="0.15"/>
+    <text x="350" y="52" fill="#3a86ff" font-size="18" font-weight="700" class="inter">⌘</text>
+    <text x="334" y="96" fill="#fafafa" font-size="20" font-weight="700" class="inter">100% client-side</text>
+    <text x="334" y="124" fill="#737373" font-size="14" class="inter">All color math runs in</text>
+    <text x="334" y="148" fill="#737373" font-size="14" class="inter">your browser. Nothing</text>
+    <text x="334" y="176" fill="#525252" font-size="12" class="mono">leaves your machine.</text>
+
+    <!-- Private -->
+    <rect x="620" y="0" width="290" height="200" rx="16" fill="#171717" stroke="#262626" stroke-width="1"/>
+    <rect x="644" y="24" width="40" height="40" rx="10" fill="#a855f7" opacity="0.15"/>
+    <text x="660" y="52" fill="#a855f7" font-size="18" font-weight="700" class="inter">◈</text>
+    <text x="644" y="96" fill="#fafafa" font-size="20" font-weight="700" class="inter">Zero data collection</text>
+    <text x="644" y="124" fill="#737373" font-size="14" class="inter">No analytics. No cookies.</text>
+    <text x="644" y="148" fill="#737373" font-size="14" class="inter">No accounts required.</text>
+    <text x="644" y="176" fill="#525252" font-size="12" class="mono">Your colors stay yours.</text>
+  </g>
+
+  <!-- Bottom CTA -->
+  <text x="72" y="860" fill="#fafafa" font-size="28" font-weight="700" class="inter" letter-spacing="-0.5">Open chromabrew.com and start designing.</text>
+  <text x="72" y="900" fill="#22c55e" font-size="16" font-weight="500" class="mono" letter-spacing="1">NO SIGN-UP REQUIRED</text>
+
+  <!-- Bottom -->
+  <text x="72" y="1280" fill="#fafafa" font-size="20" font-weight="600" class="inter" letter-spacing="-0.3">chromabrew.com</text>
+  <text x="1008" y="1280" text-anchor="end" fill="#525252" font-size="11" class="mono">BRAND VALUES</text>
+</svg>
