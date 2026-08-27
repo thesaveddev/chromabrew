@@ -58,6 +58,7 @@ function buildSvg(pixels: string[][], width: number, height: number): string {
 export function JpgToSvgConverter() {
   const [preview, setPreview] = useState<string | null>(null);
   const [svgOutput, setSvgOutput] = useState<string | null>(null);
+  const [svgPreviewUrl, setSvgPreviewUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [converting, setConverting] = useState(false);
   const [colors, setColors] = useState(16);
@@ -140,12 +141,15 @@ export function JpgToSvgConverter() {
 
       const svg = buildSvg(pixels, width, height);
       setSvgOutput(svg);
+      if (svgPreviewUrl) URL.revokeObjectURL(svgPreviewUrl);
+      const blob = new Blob([svg], { type: "image/svg+xml" });
+      setSvgPreviewUrl(URL.createObjectURL(blob));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Conversion failed.");
     } finally {
       setConverting(false);
     }
-  }, [colors]);
+  }, [colors, svgPreviewUrl]);
 
   const downloadSvg = () => {
     if (!svgOutput) return;
@@ -212,7 +216,7 @@ export function JpgToSvgConverter() {
           id="color-count"
           type="range"
           min={4}
-          max={128}
+          max={64}
           value={colors}
           onChange={(e) => setColors(Number(e.target.value))}
           className="w-full accent-zinc-900 dark:accent-zinc-100"
@@ -239,10 +243,15 @@ export function JpgToSvgConverter() {
             <p className="text-xs text-zinc-400 font-mono">{fileSize} KB</p>
           </div>
           <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-            <div
-              className="mx-auto max-h-48"
-              dangerouslySetInnerHTML={{ __html: svgOutput }}
-            />
+            <div className="flex items-center justify-center overflow-hidden">
+              {svgPreviewUrl && (
+                <img
+                  src={svgPreviewUrl}
+                  alt="SVG preview"
+                  className="mx-auto max-h-48 w-auto max-w-full object-contain"
+                />
+              )}
+            </div>
           </div>
           <button
             type="button"
