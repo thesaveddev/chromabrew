@@ -434,6 +434,29 @@ export const TOOLS: ToolDefinition[] = [
       },
     ],
   },
+  {
+    href: "/tools/jpg-to-svg",
+    navLabel: "JPG to SVG",
+    title: "JPG to SVG converter",
+    metaTitle: "JPG to SVG Converter — raster to vector in your browser",
+    description:
+      "Convert JPG, PNG or any raster image to SVG using color quantization. Adjust the color count for quality vs file size. Free, no sign-up, runs in your browser.",
+    blurb: "Raster → SVG via color quantization.",
+    faqs: [
+      {
+        q: "How does JPG to SVG conversion work?",
+        a: "The image is read pixel-by-pixel on a canvas, then quantized to reduce the color palette. Adjacent pixels of the same color are merged into run-length rectangles, producing an optimized SVG.",
+      },
+      {
+        q: "Why would I convert a JPG to SVG?",
+        a: "SVGs scale infinitely without losing quality, load faster for simple graphics, and can be edited in design tools. Logos and icons benefit most — photos produce large files.",
+      },
+      {
+        q: "How many colors should I use?",
+        a: "Fewer colors (4–16) produce smaller files with visible banding — great for logos. More colors (32–128) preserve detail but create larger SVGs. Start with 16 and adjust.",
+      },
+    ],
+  },
 ];
 
 export function findTool(href: string): ToolDefinition | undefined {
