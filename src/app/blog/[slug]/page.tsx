@@ -112,6 +112,11 @@ export default async function BlogPostPage({ params }: Props) {
                 ))}
               </ul>
             )}
+            {section.code && (
+              <pre className="mt-4 overflow-x-auto rounded-lg border border-zinc-200 bg-zinc-900 p-4 text-xs leading-6 text-zinc-100 dark:border-zinc-700">
+                <code>{section.code}</code>
+              </pre>
+            )}
             {section.tip && (
               <div className="mt-3 rounded-lg border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-800/40">
                 <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">Tip</p>
