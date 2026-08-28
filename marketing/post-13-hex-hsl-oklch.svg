@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1350" viewBox="0 0 1080 1350">
+  <defs>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff006e"/>
+      <stop offset="100%" stop-color="#3a86ff"/>
+    </linearGradient>
+    <radialGradient id="glow1" cx="25%" cy="15%" r="45%">
+      <stop offset="0%" stop-color="#3a86ff" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#3a86ff" stop-opacity="0"/>
+    </radialGradient>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap');
+      .inter { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+      .mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace; }
+    </style>
+  </defs>
+
+  <rect width="1080" height="1350" fill="#0a0a0a"/>
+  <rect width="1080" height="1350" fill="url(#glow1)"/>
+
+  <!-- Logo -->
+  <rect x="72" y="72" width="56" height="56" rx="14" fill="#18181b"/>
+  <circle cx="100" cy="100" r="11" fill="#c87cb3"/>
+  <text x="144" y="108" fill="#fafafa" font-size="24" font-weight="700" class="inter" letter-spacing="-0.5">ChromaBrew</text>
+  <text x="1008" y="100" text-anchor="end" fill="#525252" font-size="13" font-weight="500" class="mono" letter-spacing="2">COLOR SPACES</text>
+
+  <!-- Hero -->
+  <text x="72" y="236" fill="#fafafa" font-size="76" font-weight="900" class="inter" letter-spacing="-3">HEX vs HSL</text>
+  <text x="72" y="318" font-size="76" font-weight="900" class="inter" letter-spacing="-3">
+    <tspan fill="url(#accentGrad)">vs OKLCH.</tspan>
+  </text>
+  <text x="72" y="380" fill="#737373" font-size="20" class="inter" letter-spacing="-0.2">Three ways to write the same color —</text>
+  <text x="72" y="410" fill="#737373" font-size="20" class="inter" letter-spacing="-0.2">each one for a different job.</text>
+
+  <!-- Color swatch row -->
+  <g transform="translate(72, 470)">
+    <rect x="0" y="0" width="300" height="330" rx="16" fill="#131316" stroke="#262626" stroke-width="1"/>
+    <rect x="20" y="20" width="260" height="150" rx="12" fill="#3a86ff"/>
+    <text x="20" y="212" fill="#fafafa" font-size="17" font-weight="700" class="inter">HEX</text>
+    <text x="20" y="240" fill="#a3a3a3" font-size="15" class="mono">#3a86ff</text>
+    <text x="20" y="270" fill="#525252" font-size="13" class="inter">Machine reference</text>
+    <text x="20" y="292" fill="#525252" font-size="13" class="inter">Exports · storage · sharing</text>
+
+    <rect x="340" y="0" width="300" height="330" rx="16" fill="#131316" stroke="#262626" stroke-width="1"/>
+    <rect x="360" y="20" width="260" height="150" rx="12" fill="#3a86ff"/>
+    <text x="360" y="212" fill="#fafafa" font-size="17" font-weight="700" class="inter">HSL</text>
+    <text x="360" y="240" fill="#a3a3a3" font-size="15" class="mono">hsl(210 100% 61%)</text>
+    <text x="360" y="270" fill="#525252" font-size="13" class="inter">Human reasoning</text>
+    <text x="360" y="292" fill="#525252" font-size="13" class="inter">Lightness &amp; hue edits</text>
+
+    <rect x="680" y="0" width="300" height="330" rx="16" fill="#131316" stroke="#262626" stroke-width="1"/>
+    <rect x="700" y="20" width="260" height="150" rx="12" fill="#3a86ff"/>
+    <text x="700" y="212" fill="#fafafa" font-size="17" font-weight="700" class="inter">OKLCH</text>
+    <text x="700" y="240" fill="#a3a3a3" font-size="15" class="mono">oklch(0.62 0.21 265)</text>
+    <text x="700" y="270" fill="#525252" font-size="13" class="inter">Perceptual uniform</text>
+    <text x="700" y="292" fill="#525252" font-size="13" class="inter">Scales &amp; design systems</text>
+  </g>
+
+  <!-- Tagline -->
+  <text x="72" y="876" fill="#fafafa" font-size="30" font-weight="700" class="inter" letter-spacing="-1">Not "which is better".</text>
+  <text x="72" y="912" fill="#fafafa" font-size="30" font-weight="700" class="inter" letter-spacing="-1">Which is the right tool for the job.</text>
+  <text x="72" y="958" fill="#737373" font-size="18" class="inter">ChromaBrew generates scales in OKLCH, then converts to whatever you need.</text>
+
+  <!-- Badge -->
+  <rect x="72" y="1000" width="430" height="48" rx="100" fill="#171717" stroke="#262626" stroke-width="1"/>
+  <circle cx="100" cy="1024" r="5" fill="#22c55e"/>
+  <text x="118" y="1029" fill="#a3a3a3" font-size="13" font-weight="500" class="inter">Free — runs entirely in your browser</text>
+
+  <!-- Bottom -->
+  <text x="72" y="1280" fill="#fafafa" font-size="20" font-weight="600" class="inter" letter-spacing="-0.3">chromabrew.com</text>
+  <text x="1008" y="1280" text-anchor="end" fill="#525252" font-size="11" class="mono">HEX → RGB → HSL</text>
+</svg>

@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1350" viewBox="0 0 1080 1350">
+  <defs>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff006e"/>
+      <stop offset="50%" stop-color="#3a86ff"/>
+      <stop offset="100%" stop-color="#8338ec"/>
+    </linearGradient>
+    <radialGradient id="glow1" cx="25%" cy="15%" r="45%">
+      <stop offset="0%" stop-color="#3a86ff" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#3a86ff" stop-opacity="0"/>
+    </radialGradient>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap');
+      .inter { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+      .mono { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace; }
+    </style>
+  </defs>
+
+  <rect width="1080" height="1350" fill="#0a0a0a"/>
+  <rect width="1080" height="1350" fill="url(#glow1)"/>
+
+  <!-- Logo -->
+  <rect x="72" y="72" width="56" height="56" rx="14" fill="#18181b"/>
+  <circle cx="100" cy="100" r="11" fill="#c87cb3"/>
+  <text x="144" y="108" fill="#fafafa" font-size="24" font-weight="700" class="inter" letter-spacing="-0.5">ChromaBrew</text>
+  <text x="1008" y="100" text-anchor="end" fill="#525252" font-size="13" font-weight="500" class="mono" letter-spacing="2">FULL LIBRARY</text>
+
+  <!-- Giant number -->
+  <text x="72" y="360" font-size="220" font-weight="900" class="inter" letter-spacing="-8">
+    <tspan fill="url(#accentGrad)">20</tspan>
+  </text>
+  <text x="72" y="470" fill="#fafafa" font-size="46" font-weight="800" class="inter" letter-spacing="-1.5">free color &amp; design tools</text>
+  <text x="72" y="520" fill="#737373" font-size="19" class="inter" letter-spacing="-0.2">No sign-up. Nothing to install. Runs in your browser.</text>
+
+  <!-- Tool grid -->
+  <g transform="translate(72, 580)">
+    <text x="0" y="0" fill="#525252" font-size="11" font-weight="500" class="mono" letter-spacing="1.5">EVERY TOOL AT A GLANCE</text>
+    <rect x="0" y="16" width="292" height="56" rx="10" fill="#131316" stroke="#262626" stroke-width="1"/>
+    <text x="16" y="50" fill="#fafafa" font-size="14" font-weight="600" class="inter">Palette generator</text>
+    <rect x="312" y="16" width="292" height="56" rx="10" fill="#131316" stroke="#262626" stroke-width="1"/>
+    <text x="328" y="50" fill="#fafafa" font-size="14" font-weight="600" class="inter">Shade generator</text>
+    <rect x="624" y="16" width="292" height="56" rx="10" fill="#131316" stroke="#262626" stroke-width="1"/>
+    <text x="640" y="50" fill="#fafafa" font-size="14" font-weight="600" class="inter">Contrast checker</text>
+
+    <rect x="0" y="88" width="292" height="56" rx="10" fill="#131316" stroke="#262626" stroke-width="1"/>
+    <text x="16" y="122" fill="#fafafa" font-size="14" font-weight="600" class="inter">Image extractor</text>
+    <rect x="312" y="88" width="292" height="56" rx="10" fill="#131316" stroke="#262626" stroke-width="1"/>
+    <text x="328" y="122" fill="#fafafa" font-size="14" font-weight="600" class="inter">Gradient generator</text>
+    <rect x="624" y="88" width="292" height="56" rx="10" fill="#131316" stroke="#262626" stroke-width="1"/>
+    <text x="640" y="122" fill="#fafafa" font-size="14" font-weight="600" class="inter">Color mixer</text>
+
+    <rect x="0" y="160" width="292" height="56" rx="10" fill="#131316" stroke="#262626" stroke-width="1"/>
+    <text x="16" y="194" fill="#fafafa" font-size="14" font-weight="600" class="inter">Converters · HEX · RGB · HSL</text>
+    <rect x="312" y="160" width="292" height="56" rx="10" fill="#131316" stroke="#262626" stroke-width="1"/>
+    <text x="328" y="194" fill="#fafafa" font-size="14" font-weight="600" class="inter">CVD simulator</text>
+    <rect x="624" y="160" width="292" height="56" rx="10" fill="#131316" stroke="#262626" stroke-width="1"/>
+    <text x="640" y="194" fill="#fafafa" font-size="14" font-weight="600" class="inter">Design tokens</text>
+
+    <rect x="0" y="232" width="292" height="56" rx="10" fill="#131316" stroke="#262626" stroke-width="1"/>
+    <text x="16" y="266" fill="#fafafa" font-size="14" font-weight="600" class="inter">Tailwind v4 themes</text>
+    <rect x="312" y="232" width="292" height="56" rx="10" fill="#131316" stroke="#262626" stroke-width="1"/>
+    <text x="328" y="266" fill="#fafafa" font-size="14" font-weight="600" class="inter">shadcn/ui themes</text>
+    <rect x="624" y="232" width="292" height="56" rx="10" fill="#131316" stroke="#262626" stroke-width="1"/>
+    <text x="640" y="266" fill="#fafafa" font-size="14" font-weight="600" class="inter">Dark mode</text>
+
+    <rect x="0" y="304" width="292" height="56" rx="10" fill="#131316" stroke="#262626" stroke-width="1"/>
+    <text x="16" y="338" fill="#fafafa" font-size="14" font-weight="600" class="inter">Shadows</text>
+    <rect x="312" y="304" width="292" height="56" rx="10" fill="#131316" stroke="#262626" stroke-width="1"/>
+    <text x="328" y="338" fill="#fafafa" font-size="14" font-weight="600" class="inter">Alpha channel</text>
+    <rect x="624" y="304" width="292" height="56" rx="10" fill="#131316" stroke="#262626" stroke-width="1"/>
+    <text x="640" y="338" fill="#fafafa" font-size="14" font-weight="600" class="inter">Palette checker</text>
+
+    <rect x="0" y="376" width="292" height="56" rx="10" fill="#131316" stroke="#262626" stroke-width="1"/>
+    <text x="16" y="410" fill="#fafafa" font-size="14" font-weight="600" class="inter">SVG → JPG</text>
+    <rect x="312" y="376" width="292" height="56" rx="10" fill="#131316" stroke="#262626" stroke-width="1"/>
+    <text x="328" y="410" fill="#fafafa" font-size="14" font-weight="600" class="inter">JPG → SVG</text>
+    <rect x="624" y="376" width="292" height="56" rx="10" fill="#131316" stroke="#262626" stroke-width="1"/>
+    <text x="640" y="410" fill="#fafafa" font-size="14" font-weight="600" class="inter">Type scale gen</text>
+  </g>
+
+  <!-- Badge -->
+  <rect x="72" y="1030" width="500" height="48" rx="100" fill="#171717" stroke="#262626" stroke-width="1"/>
+  <circle cx="100" cy="1054" r="5" fill="#22c55e"/>
+  <text x="118" y="1059" fill="#a3a3a3" font-size="13" font-weight="500" class="inter">100% free · no account · nothing uploaded</text>
+
+  <!-- Bottom -->
+  <text x="72" y="1280" fill="#fafafa" font-size="20" font-weight="600" class="inter" letter-spacing="-0.3">chromabrew.com</text>
+  <text x="1008" y="1280" text-anchor="end" fill="#525252" font-size="11" class="mono">/tools</text>
+</svg>
