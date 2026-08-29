@@ -399,6 +399,8 @@ export function GeneratorWorkspace() {
             primary={config.primary}
             secondary={config.secondary}
             accent={config.accent}
+            derivedSecondary={system.primitives.colors.palette?.[1]?.hex}
+            derivedAccent={system.primitives.colors.palette?.[2]?.hex}
             onApply={applyColours}
             onRemoveSecondary={removeSecondary}
             onRemoveAccent={removeAccent}

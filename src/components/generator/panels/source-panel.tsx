@@ -22,6 +22,8 @@ export function SourcePanel({
   primary,
   secondary,
   accent,
+  derivedSecondary,
+  derivedAccent,
   onApply,
   onRemoveSecondary,
   onRemoveAccent,
@@ -30,6 +32,9 @@ export function SourcePanel({
   primary: string;
   secondary?: string;
   accent?: string;
+  /** Auto-derived secondary/accent from the palette (when the user hasn't chosen one). */
+  derivedSecondary?: string;
+  derivedAccent?: string;
   /** Commit a colour -- the whole system updates instantly. */
   onApply: (next: { primary?: string; secondary?: string; accent?: string }) => void;
   onRemoveSecondary?: () => void;
@@ -113,6 +118,15 @@ export function SourcePanel({
             onSelect={() => setActiveSlot("secondary")}
             onRemove={onRemoveSecondary}
           />
+        ) : derivedSecondary ? (
+          <ColourSlot
+            {...SLOT_META[1]}
+            value={derivedSecondary}
+            isActive={activeSlot === "secondary"}
+            auto
+            onChange={(hex) => applySlot("secondary", hex)}
+            onSelect={() => setActiveSlot("secondary")}
+          />
         ) : (
           <button
             type="button"
@@ -137,6 +151,15 @@ export function SourcePanel({
             onChange={(hex) => applySlot("accent", hex)}
             onSelect={() => setActiveSlot("accent")}
             onRemove={onRemoveAccent}
+          />
+        ) : derivedAccent ? (
+          <ColourSlot
+            {...SLOT_META[2]}
+            value={derivedAccent}
+            isActive={activeSlot === "accent"}
+            auto
+            onChange={(hex) => applySlot("accent", hex)}
+            onSelect={() => setActiveSlot("accent")}
           />
         ) : (
           <button
@@ -236,6 +259,7 @@ function ColourSlot({
   description,
   value,
   isActive,
+  auto,
   onChange,
   onSelect,
   onRemove,
@@ -244,6 +268,8 @@ function ColourSlot({
   description: string;
   value: string;
   isActive: boolean;
+  /** When true, this value is auto-derived from the primary rather than user-picked. */
+  auto?: boolean;
   onChange: (hex: string) => void;
   onSelect: () => void;
   onRemove?: () => void;
@@ -282,8 +308,17 @@ function ColourSlot({
             ) : null}
           </span>
           <span className="flex-1 text-left">
-            <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{label}</span>
-            <span className="block text-[11px] text-zinc-500 dark:text-zinc-400">{description}</span>
+            <span className="flex items-center gap-1.5 text-sm font-medium text-zinc-900 dark:text-zinc-100">
+              {label}
+              {auto ? (
+                <span className="rounded bg-zinc-200/80 px-1 py-px text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:bg-zinc-700/60 dark:text-zinc-400">
+                  auto
+                </span>
+              ) : null}
+            </span>
+            <span className="block text-[11px] text-zinc-500 dark:text-zinc-400">
+              {auto ? "Derived from your primary — pick to override" : description}
+            </span>
           </span>
           <span className="rounded-md bg-zinc-100 px-1.5 py-0.5 font-mono text-[11px] text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
             {value.toUpperCase()}
