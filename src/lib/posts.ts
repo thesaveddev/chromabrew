@@ -295,6 +295,175 @@ export const BLOG_POSTS: BlogPost[] = [
       },
     ],
   },
+  {
+    slug: "build-a-typography-scale-from-scratch",
+    title: "Build a typography scale that actually keeps its rhythm",
+    metaTitle: "Build a Modular Typography Scale — Sizes, Ratios & Line Height",
+    description:
+      "How to design a modular typography scale from a base size and ratio: sizes, line heights, letter spacing, and the pairing choices that make a UI feel composed.",
+    excerpt:
+      "A type scale is more than a list of font sizes. Here's how to build one with a ratio, pair it well, and keep vertical rhythm across breakpoints.",
+    publishedAt: "2026-08-27",
+    category: "Design systems",
+    tags: ["typography", "type scale", "design tokens", "ui"],
+    relatedHrefs: ["/tools/typography-scale-generator", "/tools/design-token-generator"],
+    keyword: "typography scale",
+    sections: [
+      {
+        heading: "Start from one base size and a ratio",
+        body: [
+          "Typography scales work because they come from math instead of vibes. Pick a base size — your body text, usually 16px — and a ratio, then multiply up and down. A 1.25 ratio (the classic major third) gives you 16, 20, 25, 31, 39, 49, and so on. A 1.333 ratio (perfect fourth) is more dramatic: 16, 21, 28, 38, 50.",
+          "Which ratio? It's a tone decision. Monotonic, tight ratios feel editorial and dense; bigger ratios give you clear headline drama. The mistake to avoid is inventing seven arbitrary sizes. When every step follows the same multiplier, headings visually 'relate' to body text in a way the eye reads as intentional even if it can't say why.",
+          "Base comes first, always. If you set 16px as your body, then a 64px hero isn't a whim — it's two steps up a 1.333 scale and it will always sit comfortably above the 28px subheading below it.",
+        ],
+      },
+      {
+        heading: "Scale with line height, not just size",
+        body: [
+          "A larger font needs more generous line height, but not linearly. The rule of thumb that holds up: line-height should land in the 1.2–1.6 range, smaller for headings and larger for body. Body text at 1.5 to 1.6 stays comfortable over long paragraphs; a 20px heading is fine at 1.3.",
+          "What most systems get wrong is scaling line height separately from size so the two drift apart. If you generate scale steps that pair each size with its own line height and letter spacing, you end up with a rhythm — the gap between baselines stays composed from the smallest label to the largest hero instead of being a pile of lucky guesses.",
+        ],
+        tip: "For any size, a quick sanity check: if the line-height per step looks like it will collide or float, nudge letter-spacing on large headings down and on small uppercase labels slightly up. It's the fastest way to make a scale feel tighter.",
+      },
+      {
+        heading: "Pair typefaces with distinct jobs",
+        body: [
+          "Most sites don't need two fancy fonts — they need one workhorse for body and one that earns its keep on headings. Give each a clear job and let them share the scale you just built.",
+          "A common, reliable pairing is a neutral humanist sans for body paired with a more characterful display for headings. The body font should be invisible in the best way; the heading font carries the personality. Swap-in test: if you can't tell which font is doing which job, they're competing instead of complementing.",
+          "When you pair, keep the base size and ratio the same for both — the scale is shared, only the faces change. That's what makes a two-family system feel like one system instead of a typography grab bag.",
+        ],
+      },
+      {
+        heading: "Export scale steps as tokens",
+        body: [
+          "Once the scale feels right, the real work is making it reusable. Every step should be a token — --text-sm, --text-base, --text-lg, and so on — with its px size, line-height, and letter-spacing bundled together rather than three unrelated settings spread across components.",
+          "Generate the scale once, eyeball the preview, then pull the CSS variables out. When every text style references a token instead of a raw px, a global retheme is one file edit, and you never have to chase a stray 21px across a codebase again.",
+        ],
+      },
+    ],
+  },
+  {
+    slug: "mixing-colors-and-alpha-channel",
+    title: "Mix colors and use alpha without ruining your palette",
+    metaTitle: "Color Mixing & Alpha Channel — Transparency Without Muddying",
+    description:
+      "How to blend two colors at a ratio and use alpha/opacity correctly without washing out your palette or breaking text contrast.",
+    excerpt:
+      "Blending colors and adding transparency seem easy — until they turn your palette to mud. Here's the alpha-aware way to do both.",
+    publishedAt: "2026-08-26",
+    category: "Color theory",
+    tags: ["color mixing", "alpha", "opacity", "transparency"],
+    relatedHrefs: ["/tools/color-mixer", "/tools/alpha-channel", "/tools/contrast-checker"],
+    keyword: "mixing colors",
+    sections: [
+      {
+        heading: "Why naive mixing looks muddy",
+        body: [
+          "Mix two colors by taking a straight average and you get the obvious but wrong result: a flat, desaturated version of both. Blue averaged with orange doesn't give you a useful warm-neutral — it gives you grey with a hint of sadness. Averaging in RGB space treats color as if it were a set of three channels with equal perceptual weight, and it isn't.",
+          "Neatly, mixing in a perceptual space behaves like the real world. Each step toward the other color keeps both hues alive as long as possible, and the halfway point is properly neutral instead of prematurely grey. That's why a decent mixer doesn't just average RBG values.",
+          "Use a mixer that blends perceptually, and set it to a ratio. Even at 50/50 you want to preserve a hint of hue, not flush the whole thing down to earth.",
+        ],
+        tip: "When you want a lighter version of a color for a hover or surface, blend it with white at a ratio rather than lowering opacity over white. Blending gives you a real, solid color that behaves predictably in every context.",
+      },
+      {
+        heading: "Alpha is a tool, not a default",
+        body: [
+          "Transparency lets one element show what's behind it, which is genuinely useful: scrims over images, elevation hints in dark UIs, disabled states. The trouble starts when alpha is used as a lazy shortcut to 'make it lighter' or 'make it look softer.'",
+          "The reason that fails is readability. A 50% black text over a white card isn't actually grey once it sits on a textured or colored background — it picks up whatever is underneath. Two cards side by side can render the same 'grey' text as visibly different colors. AA contrast suddenly can't be trusted, because your color is whatever's behind it.",
+          "Rule of thumb: pick a solid color that already looks the way you want on your actual background, and reserve alpha for things that genuinely need to reveal content beneath — overlays, disabled UI, focus sheen. For text and elements that must meet a contrast target, prefer the solid version every time.",
+        ],
+      },
+      {
+        heading: "Working with 8-digit and rgba values",
+        body: [
+          "Modern CSS gives you options for alpha. There's rgba(r g b / 0.5), and there's the 8-digit hex — #3a86ff80, where the last two characters encode opacity (80 in hex is 50%). Both are fine; the hex8 form is handy for tokens because the whole value fits on one line.",
+          "Where it gets subtle is that opacity on a whole element (including its children) multiplies, while an alpha on the color itself only affects that fill. An 80% opaque button dims its label too; a button with an 80%-alpha fill leaves the label at full strength. They look different, and you often want the second one.",
+        ],
+      },
+      {
+        heading: "Convert and verify before you ship",
+        body: [
+          "Authoring alpha is easier with a tool that shows you the rgba(), hex8, and a plain opacity slider for the same color, so you can compare the actual result instead of estimating. Set your color, dial the opacity, and copy the exact value you need.",
+          "Then run the finished element through a contrast check against its real background. If it's a text or icon that has to stay readable, confirm the effective color — the alpha composited over where it sits — actually passes. Nothing about transparency excuses you from the contrast conversation.",
+        ],
+      },
+    ],
+  },
+  {
+    slug: "pull-a-palette-from-a-photo",
+    title: "Turn a photo into a working color palette",
+    metaTitle: "How to Extract a Color Palette From a Photo",
+    description:
+      "A short lesson: use an image's dominant colors as the starting point for a brand or UI palette — and how to keep it consistent.",
+    excerpt:
+      "Your brand color might already be hiding in a photo you love. Here's how to pull a palette from any image.",
+    publishedAt: "2026-08-23",
+    category: "Short lessons",
+    tags: ["image", "palette"],
+    relatedHrefs: ["/tools/image-color-extractor", "/tools/color-palette-generator"],
+    keyword: "photo palette",
+    sections: [
+      {
+        heading: "Start with the dominant colors",
+        body: [
+          "Open any image and the extractor lists its most-used colors with how much of the frame each covers. That's your starting set — but it's raw material, not a finished palette.",
+          "The common move is to take the three or four most dominant colors and treat them as a seed: pick the strongest as your primary, use one secondary for support, and save the highest-contrast one as your accent. Then generate proper even scales from each so you get tints and shades you can actually use.",
+          "Dominant colors are usually mid-tone and earthy, which means they tend toward medium contrast. That's fine for surfaces — just make sure your text colors get their own contrast pass, because the photo's mood colors and legible-on-top colors are rarely the same thing.",
+        ],
+        tip: "Photos with too much similar tone (a golden-hour shot, say) collapse to one hue. If extraction gives you a nearly monochrome set, flip to a photo with more color range, or force a hue shift to find your accent.",
+      },
+    ],
+  },
+  {
+    slug: "shadows-that-suggest-elevation",
+    title: "Shadows that suggest elevation, not blur",
+    metaTitle: "Designing UI Shadows for Real Elevation",
+    description:
+      "A short lesson: how to design box shadows that read as depth with layered offsets, blur and low opacity — instead of a single muddy blur.",
+    excerpt:
+      "A good shadow is layered, directional and subtle. Here's the elevation recipe most UIs are missing.",
+    publishedAt: "2026-08-19",
+    category: "Short lessons",
+    tags: ["shadow", "elevation", "ui"],
+    relatedHrefs: ["/tools/css-shadow-generator", "/tools/design-token-generator"],
+    keyword: "UI shadows",
+    sections: [
+      {
+        heading: "Layers beat a single blur",
+        body: [
+          "A realistic shadow is rarely one shadow. A soft ambient shadow plus a tighter, darker shadow close to the surface reads as depth; a single fat blur reads as dirt. Design systems usually ship two or three layers per elevation level.",
+          "The typical composition: a small offset shadow close in (low blur, moderate opacity) for contact, and a larger, softer shadow further out (high blur, low opacity) for ambient fill. Together they make a card feel a few pixels off the page instead of behind smudged glass.",
+          "Opacity is where most people overdo it. Real shadows are nearly transparent — 10–20% at most for a mid elevation in light mode, and lower or softer in dark mode, where the surface itself is already dark.",
+        ],
+        tip: "Shadows are easier to judge with a live preview over a real background, and they harden into tokens fast: define shadow-sm / shadow / shadow-lg from elevation levels once, and reference the token everywhere.",
+      },
+    ],
+  },
+  {
+    slug: "gradients-that-dont-look-cheap",
+    title: "Gradients that don't look cheap",
+    metaTitle: "Designing Gradients That Stay Tasteful",
+    description:
+      "A short lesson: the difference between a muddy two-stop gradient and a rich, stretched one — lightness contrast and perceptual spacing.",
+    excerpt:
+      "Most gradients look muddy because both stops are too similar. Here's what actually makes a gradient read as rich.",
+    publishedAt: "2026-08-17",
+    category: "Short lessons",
+    tags: ["gradient", "css", "color"],
+    relatedHrefs: ["/tools/css-gradient-generator", "/tools/color-mixer"],
+    keyword: "CSS gradients",
+    sections: [
+      {
+        heading: "Give the stops some contrast",
+        body: [
+          "A gradient between two colors that are too similar in lightness and hue is where cheap-looking gradients come from — it reads as a smudge. The fix is contrast: a real difference in lightness, or a real difference in hue, or both.",
+          "Two reliable directions: a same-hue gradient that moves clearly from light to dark (good for buttons and surfaces), or a two-hue gradient between colors that sit apart on the wheel (good for hero backgrounds and brand accents). The moment two stops are both mid-tone and similar, the gradient starts to look like a rendering bug.",
+          "Direction and stretch matter too. A gradient that's allowed to breathe across a full container looks expensive; a tight 45-degree sweep that barely shifts looks accidental. Know which of the two you want.",
+        ],
+        tip: "When a gradient looks off but you can't place it, drop one stop's lightness instead of reaching for a third color — three stops rarely rescue a pairing that two proper stops was too lazy to nail.",
+      },
+    ],
+  },
 ];
 
 export function findPost(slug: string): BlogPost | undefined {
