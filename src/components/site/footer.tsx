@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { TOOLS } from "@/lib/tools";
+import { ProductHuntBadge } from "./product-hunt-badge";
 
 export function SiteFooter() {
   return (
@@ -25,7 +26,7 @@ export function SiteFooter() {
             ))}
           </nav>
         </div>
-        <div className="mt-10 flex flex-col gap-2 border-t border-zinc-200 pt-6 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-10 flex flex-col gap-4 border-t border-zinc-200 pt-6 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs text-zinc-500 dark:text-zinc-500">
             © {new Date().getFullYear()} ChromaBrew. All color processing runs
             in your browser.
@@ -36,6 +37,9 @@ export function SiteFooter() {
           >
             Blog &amp; guides
           </Link>
+          <div className="flex justify-center">
+            <ProductHuntBadge />
+          </div>
         </div>
       </div>
     </footer>
