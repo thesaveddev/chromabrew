@@ -15,7 +15,7 @@ export function ProductHuntBadge() {
       aria-label="Leave a review for ChromaBrew on Product Hunt"
     >
       <img
-        src="https://api.producthunt.com/widgets/embed-image/v1/product_review.svg?product_id=1304742&theme=light"
+        src="/product-hunt-badge.svg"
         alt="ChromaBrew — Free Design System Tool - Turn one brand color into a complete design system. | Product Hunt"
         width={250}
         height={54}
