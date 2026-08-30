@@ -464,6 +464,49 @@ export const BLOG_POSTS: BlogPost[] = [
       },
     ],
   },
+  {
+    slug: "free-ai-generated-images-with-svg",
+    title: "Free AI images using an AI coding tool + SVG",
+    metaTitle: "Generate Free AI Images with SVG and a Coding Assistant",
+    description:
+      "Generate AI images for free by having a coding assistant like opencode write SVG, then convert it to JPG with ChromaBrew's SVG-to-JPG tool. What works, what doesn't.",
+    excerpt:
+      "You can get genuinely free AI images: ask a coding assistant to write SVG, then convert it to JPG. Here's the workflow and its honest limits.",
+    publishedAt: "2026-08-28",
+    category: "Short lessons",
+    tags: ["svg", "ai", "images", "workflow"],
+    relatedHrefs: ["/tools/svg-to-jpg", "/tools/jpg-to-svg"],
+    keyword: "free AI images",
+    sections: [
+      {
+        heading: "Turn a model that writes code into an image tool",
+        body: [
+          "Coding assistants aren't image models, but they all know how to write SVG. And SVG is a genuine image format — logos, icons, charts, flat illustrations, badges, social graphics. So you can get unlimited free AI images without paying an image API: have the assistant generate SVG, then rasterize it to JPG when you need a pixel file.",
+          "The workflow is short. Tell the assistant what you want and that it should be SVG — something like 'make an SVG logo for a coffee brand, 1080 by 1350, flat, two colors.' It writes the SVG. You paste that into ChromaBrew's SVG→JPG converter (or save the file and convert), pick a scale, and export a JPEG ready to post, email, or embed.",
+          "Because SVG is plain text, you can iterate cheaply: ask for a flatter color, a bigger icon, a different hue, and re-render. No generations consumed, no API credits, no watermarks. It's the closest thing to a free image generator that still gives you moderately useful results.",
+        ],
+        tip: "Open the SVG in a browser to preview before converting to JPG. Most assistants get the markup right first try but the scale and aspect ratio are worth checking before you export.",
+      },
+      {
+        heading: "Honestly: what it can and can't do",
+        body: [
+          "The catch is real, and it's a shapes-catch, not a limit of the tool. SVG is built from paths, rectangles, circles, gradients and text. That's perfect for flat, geometric, logo-style images — and completely wrong for photorealistic scenes.",
+          "You won't get a realistic landscape, a person's face, soft photographic lighting, or complex textures. Try that and you'll get a cartoonish approximation with primitive shapes, or the model will refuse and say it's not that kind of generator. The sweet spot is everything designers produce as vectors anyway: brand marks, buttons, banners, infographics, simple product illustrations, poster layouts.",
+          "So treat it as a free logo-and-flat-illustration generator, not a Midjourney replacement. Within that lane it's genuinely useful and costs nothing. The SVG→JPG step also means you can use the finished images anywhere that insists on a raster file — social media and most email clients reject raw SVG uploads.",
+        ],
+        tip: "Give the assistant explicit geometry: the aspect ratio (e.g. 1080 x 1350 for a post), the color palette, and 'flat' or 'minimalist' to keep it in its lane. Vague requests produce vague SVG.",
+      },
+      {
+        heading: "Convert and ship",
+        body: [
+          "Once you have SVG you're happy with, converting is a formality. Paste the code into ChromaBrew's SVG→JPG converter, or upload the file. Choose 1x for on-screen use or 2x–4x if you need extra sharpness for retina or print — SVG scales without losing anything, so you can always render larger.",
+          "One gotcha: JPG has no transparency, so the export sits on a white background. For solid-color logos and post graphics that's usually fine. If you absolutely need a transparent background, keep the SVG (or export to PNG) and only drop to JPG where a raster file is required.",
+          "That's it — a free pipeline from an idea to a finished JPG image, using tools you probably already have. Useful enough to live in your workflow for all the flat, vector-style graphics you'd otherwise pay an image service for.",
+        ],
+        tip: "Keep the original SVG alongside your JPG. If a social network crunches the JPG, you can re-export any time at any size without losing quality.",
+      },
+    ],
+  },
 ];
 
 export function findPost(slug: string): BlogPost | undefined {
