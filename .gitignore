@@ -44,5 +44,9 @@ next-env.d.ts
 /test-results
 /playwright-report
 
+# marketing assets (never deployed)
+/marketing
+/scripts
+
 
 /src/generated/prisma

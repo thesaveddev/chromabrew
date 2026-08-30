@@ -9,6 +9,7 @@ import { LinkButton } from "@/components/ui/primitives";
 import { TOOLS } from "@/lib/tools";
 import { siteUrl } from "@/lib/site-url";
 import { JsonLd } from "@/components/site/json-ld";
+import { ProductHuntBadge } from "@/components/site/product-hunt-badge";
 
 export const metadata: Metadata = {
   title: "ChromaBrew — Free Color Palette Generator & Design System Tool",
@@ -129,6 +130,9 @@ export default function HomePage() {
             </Link>
             .
           </p>
+          <div className="mt-6">
+            <ProductHuntBadge />
+          </div>
         </div>
       </section>
 
