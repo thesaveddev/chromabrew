@@ -36,7 +36,7 @@ export function MarketingPreview({ system }: { system: DesignSystem }) {
           This hero demonstrates your generated typography scale, foreground
           tokens and primary call to action.
         </p>
-        <form className="mx-auto mt-6 flex max-w-sm flex-col gap-2 sm:flex-row" onSubmit={(e) => e.preventDefault()}>
+        <form className="mx-auto mt-6 flex max-w-md flex-col gap-2 sm:flex-row" onSubmit={(e) => e.preventDefault()}>
           <input
             type="email"
             placeholder="you@example.com"
@@ -46,6 +46,9 @@ export function MarketingPreview({ system }: { system: DesignSystem }) {
           />
           <button className="rounded-[var(--ds-radius-lg)] bg-[var(--ds-primary)] px-4 py-2 text-sm font-medium text-[var(--ds-primary-foreground)] transition-colors hover:bg-[var(--ds-primary-hover)]">
             Start free
+          </button>
+          <button className="rounded-[var(--ds-radius-lg)] bg-[var(--ds-secondary)] px-4 py-2 text-sm font-medium text-[var(--ds-secondary-foreground)] transition-colors hover:bg-[var(--ds-secondary-hover)]">
+            Book a demo
           </button>
         </form>
       </section>

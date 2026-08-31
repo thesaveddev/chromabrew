@@ -44,12 +44,12 @@ export function MobilePreview({ system }: { system: DesignSystem }) {
         </section>
 
         {/* Segmented control */}
-        <div className="mx-4 mt-4 grid grid-cols-3 gap-1 rounded-[var(--ds-radius-lg)] bg-[var(--ds-secondary)] p-1 text-[11px]" role="tablist" aria-label="Transaction filters">
+        <div className="mx-4 mt-4 grid grid-cols-3 gap-1 rounded-[var(--ds-radius-lg)] bg-[var(--ds-background-subtle)] p-1 text-[11px]" role="tablist" aria-label="Transaction filters">
           {["All", "Sent", "Received"].map((tab, i) => (
             <span
               key={tab}
               className={`rounded-[var(--ds-radius-md)] py-1 text-center ${
-                i === 0 ? "bg-[var(--ds-surface-raised)] font-semibold text-[var(--ds-foreground)] shadow-[var(--ds-shadow-sm)]" : "text-[var(--ds-foreground-muted)]"
+                i === 0 ? "bg-[var(--ds-secondary)] font-semibold text-[var(--ds-secondary-foreground)] shadow-[var(--ds-shadow-sm)]" : "text-[var(--ds-foreground-muted)]"
               }`}
             >
               {tab}

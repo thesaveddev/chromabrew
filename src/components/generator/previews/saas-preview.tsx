@@ -29,8 +29,8 @@ export function SaasPreview({ system }: { system: DesignSystem }) {
               key={label as string}
               className={`flex items-center justify-between rounded-[var(--ds-radius-md)] px-2.5 py-1.5 ${
                 active
-                  ? "bg-[var(--ds-primary)] font-medium text-[var(--ds-primary-foreground)]"
-                  : "text-[var(--ds-foreground-muted)] hover:bg-[var(--ds-secondary-hover)]"
+                  ? "bg-[var(--ds-secondary)] font-medium text-[var(--ds-secondary-foreground)]"
+                  : "text-[var(--ds-foreground-muted)] hover:bg-[var(--ds-background-subtle)]"
               }`}
             >
               {label}
@@ -47,7 +47,7 @@ export function SaasPreview({ system }: { system: DesignSystem }) {
           <p className="mt-0.5 text-xs text-[var(--ds-foreground-muted)]">
             Demo data only
           </p>
-          <button className="mt-2 w-full rounded-[var(--ds-radius-md)] border border-[var(--ds-input-border)] bg-[var(--ds-surface-raised)] px-2 py-1 text-xs font-medium hover:bg-[var(--ds-secondary-hover)]">
+          <button className="mt-2 w-full rounded-[var(--ds-radius-md)] bg-[var(--ds-secondary)] px-2 py-1 text-xs font-medium text-[var(--ds-secondary-foreground)] hover:bg-[var(--ds-secondary-hover)]">
             Manage plan
           </button>
         </div>
@@ -190,7 +190,7 @@ export function SaasPreview({ system }: { system: DesignSystem }) {
               <h3 className="mb-2 font-semibold">Dropdown menu</h3>
               <div className="rounded-[var(--ds-radius-lg)] border border-[var(--ds-border-muted)] bg-[var(--ds-surface-raised)] p-1 shadow-[var(--ds-shadow-sm)]">
                 {["Duplicate", "Archive", "Export CSV"].map((item) => (
-                  <span key={item} className="block rounded-[var(--ds-radius-md)] px-2.5 py-1.5 text-xs hover:bg-[var(--ds-secondary-hover)]">
+                  <span key={item} className="block rounded-[var(--ds-radius-md)] px-2.5 py-1.5 text-xs hover:bg-[var(--ds-background-subtle)]">
                     {item}
                   </span>
                 ))}
@@ -209,7 +209,7 @@ export function SaasPreview({ system }: { system: DesignSystem }) {
                 <button className="rounded-[var(--ds-radius-md)] bg-[var(--ds-danger)] px-3 py-1.5 text-xs font-medium text-[var(--ds-danger-foreground)] hover:brightness-95">
                   Delete
                 </button>
-                <button className="rounded-[var(--ds-radius-md)] border border-[var(--ds-input-border)] bg-[var(--ds-surface)] px-3 py-1.5 text-xs font-medium hover:bg-[var(--ds-secondary-hover)]">
+                <button className="rounded-[var(--ds-radius-md)] border border-[var(--ds-input-border)] bg-[var(--ds-surface)] px-3 py-1.5 text-xs font-medium hover:bg-[var(--ds-background-subtle)]">
                   Cancel
                 </button>
               </div>

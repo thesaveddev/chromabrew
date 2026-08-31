@@ -27,7 +27,7 @@ export function EcommercePreview({ system }: { system: DesignSystem }) {
           <span>Bestsellers</span>
           <span>Sale</span>
         </nav>
-        <button className="relative rounded-[var(--ds-radius-md)] border border-[var(--ds-input-border)] px-2.5 py-1.5 text-xs font-medium hover:bg-[var(--ds-secondary-hover)]">
+        <button className="relative rounded-[var(--ds-radius-md)] border border-[var(--ds-input-border)] px-2.5 py-1.5 text-xs font-medium hover:bg-[var(--ds-background-subtle)]">
           Cart
           <span className="absolute -right-1.5 -top-1.5 grid h-4 w-4 place-items-center rounded-full bg-[var(--ds-primary)] text-[10px] font-semibold text-[var(--ds-primary-foreground)]">
             2
@@ -131,7 +131,7 @@ export function EcommercePreview({ system }: { system: DesignSystem }) {
                     key={size}
                     className={`grid h-7 w-7 place-items-center rounded-[var(--ds-radius-md)] border text-xs ${
                       i === 1
-                        ? "border-[var(--ds-primary)] bg-[var(--ds-primary)] font-medium text-[var(--ds-primary-foreground)]"
+                        ? "border-[var(--ds-secondary)] bg-[var(--ds-secondary)] font-medium text-[var(--ds-secondary-foreground)]"
                         : "border-[var(--ds-border-strong)]"
                     }`}
                   >
