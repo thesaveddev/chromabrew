@@ -131,11 +131,15 @@ export function DownloadButton({
   content,
   label = "Download",
   className = "",
+  binary = false,
+  mimeType = "text/plain;charset=utf-8",
 }: {
   filename: string;
   content: string;
   label?: string;
   className?: string;
+  binary?: boolean;
+  mimeType?: string;
 }) {
   return (
     <Button
@@ -143,7 +147,9 @@ export function DownloadButton({
       variant="secondary"
       className={className}
       onClick={() => {
-        const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+        const blob = binary
+          ? base64ToBlob(content, mimeType)
+          : new Blob([content], { type: mimeType });
         const url = URL.createObjectURL(blob);
         const anchor = document.createElement("a");
         anchor.href = url;
@@ -157,6 +163,15 @@ export function DownloadButton({
       {label}
     </Button>
   );
+}
+
+function base64ToBlob(base64: string, mimeType: string): Blob {
+  const bytes = atob(base64);
+  const arr = new Uint8Array(bytes.length);
+  for (let i = 0; i < bytes.length; i++) {
+    arr[i] = bytes.charCodeAt(i);
+  }
+  return new Blob([arr], { type: mimeType });
 }
 
 /* ------------------------------------------------------------------ */

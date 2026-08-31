@@ -8,6 +8,9 @@ import { muiAdapter } from "./mui";
 import { antdAdapter } from "./antd";
 import { chakraAdapter } from "./chakra";
 import { figmaAdapter } from "./figma";
+import { w3cAdapter } from "./w3c";
+import { penpotAdapter } from "./penpot";
+import { bundleAdapter } from "./bundle";
 import { reactNativeAdapter } from "./react-native";
 import { flutterAdapter } from "./flutter";
 import { iosAdapter } from "./ios";
@@ -23,6 +26,9 @@ export const EXPORT_ADAPTERS: ExportAdapter[] = [
   antdAdapter,
   chakraAdapter,
   figmaAdapter,
+  w3cAdapter,
+  penpotAdapter,
+  bundleAdapter,
   reactNativeAdapter,
   flutterAdapter,
   iosAdapter,
@@ -39,6 +45,9 @@ export {
   antdAdapter,
   chakraAdapter,
   figmaAdapter,
+  w3cAdapter,
+  penpotAdapter,
+  bundleAdapter,
   reactNativeAdapter,
   flutterAdapter,
   iosAdapter,

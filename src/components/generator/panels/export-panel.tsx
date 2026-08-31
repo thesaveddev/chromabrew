@@ -25,7 +25,9 @@ const ADAPTER_GROUPS: AdapterGroup[] = [
   },
   {
     label: "Design Tools",
-    adapters: EXPORT_ADAPTERS.filter((a) => ["figma"].includes(a.id)),
+    adapters: EXPORT_ADAPTERS.filter((a) =>
+      ["figma", "w3c", "penpot", "zip"].includes(a.id),
+    ),
   },
 ];
 
@@ -41,6 +43,9 @@ const ADAPTER_EVENT: Record<string, AnalyticsEvent> = {
   antd: "antd_exported",
   chakra: "chakra_exported",
   figma: "figma_exported",
+  w3c: "w3c_exported",
+  penpot: "penpot_exported",
+  zip: "design_system_zip_exported",
   "react-native": "react_native_exported",
   flutter: "flutter_exported",
   "ios-swift": "ios_exported",
@@ -59,15 +64,19 @@ export function ExportPanel({ system }: { system: DesignSystem }) {
           Export
         </h2>
         <div className="flex items-center gap-2">
-          <CopyButton
-            value={result.code}
-            label={`Copy ${adapter.name}`}
-            onCopied={() => track(ADAPTER_EVENT[adapter.id])}
-            className="px-2.5 py-1 text-xs"
-          />
+          {!result.binary && (
+            <CopyButton
+              value={result.code}
+              label={`Copy ${adapter.name}`}
+              onCopied={() => track(ADAPTER_EVENT[adapter.id])}
+              className="px-2.5 py-1 text-xs"
+            />
+          )}
           <DownloadButton
             filename={result.suggestedFilename}
             content={result.code}
+            binary={result.binary}
+            mimeType={result.mimeType ?? "text/plain;charset=utf-8"}
             className="px-2.5 py-1 text-xs"
           />
         </div>
@@ -101,9 +110,26 @@ export function ExportPanel({ system }: { system: DesignSystem }) {
 
       <p className="text-xs text-zinc-500">{adapter.description}</p>
 
-      <pre className="max-h-96 overflow-auto rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-950 p-4 text-[11px] leading-5 text-zinc-100">
-        <code>{result.code}</code>
-      </pre>
+      {result.binary ? (
+        <div className="flex items-center justify-between gap-3 rounded-xl border border-dashed border-zinc-300 bg-zinc-50 px-4 py-4 dark:border-zinc-700 dark:bg-zinc-800/40">
+          <p className="text-xs text-zinc-600 dark:text-zinc-300">
+            <span className="font-medium">{adapter.name}</span> — one download
+            containing every format, ready to share with your team.
+          </p>
+          <DownloadButton
+            filename={result.suggestedFilename}
+            content={result.code}
+            binary
+            mimeType="application/zip"
+            className="shrink-0 px-3 py-1.5 text-xs"
+            label="Download .zip"
+          />
+        </div>
+      ) : (
+        <pre className="max-h-96 overflow-auto rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-950 p-4 text-[11px] leading-5 text-zinc-100">
+          <code>{result.code}</code>
+        </pre>
+      )}
     </section>
   );
 }
