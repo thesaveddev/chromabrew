@@ -23,6 +23,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: post.metaTitle,
     description: post.description,
     alternates: { canonical: `/blog/${post.slug}` },
+    ...(post.image
+      ? { openGraph: { images: [{ url: `${siteUrl}${post.image}`, width: 1200, height: 630, alt: post.imageAlt ?? post.title }] } }
+      : {}),
   };
 }
 
@@ -47,6 +50,7 @@ export default async function BlogPostPage({ params }: Props) {
           author: { "@type": "Organization", name: "ChromaBrew", url: siteUrl },
           publisher: { "@type": "Organization", name: "ChromaBrew", url: siteUrl },
           mainEntityOfPage: url,
+          ...(post.image ? { image: [`${siteUrl}${post.image}`] } : {}),
         }}
       />
       {post.sections.length > 0 && (
@@ -94,10 +98,29 @@ export default async function BlogPostPage({ params }: Props) {
         <p className="mt-3 text-base leading-7 text-zinc-600 dark:text-zinc-400">{post.description}</p>
       </header>
 
+      {post.image && (
+        <div className="mt-8 overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800">
+          <img
+            src={post.image}
+            alt={post.imageAlt ?? post.title}
+            className="h-auto w-full"
+            width={1200}
+            height={630}
+          />
+        </div>
+      )}
+
       <div className="prose dark:prose-invert mt-8 max-w-none">
         {post.sections.map((section) => (
           <section key={section.heading} className="mt-8">
             <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">{section.heading}</h2>
+            {section.image && (
+              <img
+                src={section.image}
+                alt={section.imageAlt ?? ""}
+                className="mt-3 h-auto w-full rounded-lg border border-zinc-200 dark:border-zinc-800"
+              />
+            )}
             {section.body.map((paragraph) => (
               <p key={paragraph} className="mt-3 text-sm leading-7 text-zinc-600 dark:text-zinc-400">
                 {paragraph}
@@ -105,17 +128,41 @@ export default async function BlogPostPage({ params }: Props) {
             ))}
             {section.bullets && (
               <ul className="mt-3 list-disc space-y-1.5 pl-5">
-                {section.bullets.map((item) => (
-                  <li key={item} className="text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                    {item}
-                  </li>
-                ))}
+                {section.bullets.map((item) =>
+                  typeof item === "string" ? (
+                    <li key={item} className="text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+                      {item}
+                    </li>
+                  ) : (
+                    <li key={item.href} className="text-sm leading-6">
+                      <Link
+                        href={item.href}
+                        className="font-medium text-zinc-900 underline underline-offset-4 dark:text-zinc-100"
+                      >
+                        {item.label} →
+                      </Link>
+                    </li>
+                  )
+                )}
               </ul>
             )}
             {section.code && (
               <pre className="mt-4 overflow-x-auto rounded-lg border border-zinc-200 bg-zinc-900 p-4 text-xs leading-6 text-zinc-100 dark:border-zinc-700">
                 <code>{section.code}</code>
               </pre>
+            )}
+            {section.links && (
+              <div className="mt-4 flex flex-wrap gap-2">
+                {section.links.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+                  >
+                    {link.label} →
+                  </Link>
+                ))}
+              </div>
             )}
             {section.tip && (
               <div className="mt-3 rounded-lg border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-800/40">

@@ -8,6 +8,13 @@ export function PostCard({ post }: { post: BlogPost }) {
       href={`/blog/${post.slug}`}
       className="group block h-full rounded-xl border border-zinc-200 bg-white p-5 transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-600 dark:focus-visible:outline-zinc-100"
     >
+      {post.image && (
+        <img
+          src={post.image}
+          alt={post.imageAlt ?? ""}
+          className="mb-3 h-28 w-full rounded-lg border border-zinc-200 object-cover dark:border-zinc-800"
+        />
+      )}
       <div className="flex items-center gap-2 text-[11px] text-zinc-400">
         <span className="font-medium uppercase tracking-wider text-zinc-500">{post.category}</span>
         <span aria-hidden>·</span>
