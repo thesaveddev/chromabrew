@@ -758,14 +758,7 @@ export const BLOG_POSTS: BlogPost[] = [
           "Swap the slate seed for any hue you like — the monochromatic strategy and round radius do the rest of the styling. What you must not do is let the muted surface drag text below contrast. Run every foreground/background pair through the checker, and if a pair fails, lift lightness on the OKLCH axis rather than pumping saturation back in, which quietly undoes the whole effect.",
         ],
       },
-      {
-        heading: "Prompt for an AI builder",
-        body: [
-          "Hand this to a coding assistant as a starting brief:",
-        ],
-        code: "Design a focused interface using neomorphism: a restrained neutral surface, controls raised or inset through paired light and dark shadows, generous rounded corners, minimal color. Keep text high-contrast, use visible focus indicators, never rely on shadow alone for state. Include hover, pressed, disabled, error, and mobile states.",
-      },
-    ],
+      ],
   },
   {
     slug: "material-design-system-preset",
@@ -802,14 +795,7 @@ export const BLOG_POSTS: BlogPost[] = [
           "Drop your own hue into primary and the system re-derives the family around it; the pink and amber stay only where you want support and status. Then walk the four previews looking for state, not color: every button needs hover, pressed and disabled versions, and every surface needs visible elevation. That's the Material test that screenshots never pass.",
         ],
       },
-      {
-        heading: "Prompt for an AI builder",
-        body: [
-          "A starting brief for a coding assistant:",
-        ],
-        code: "Build a Material-inspired interface: surfaces at distinct elevations communicated by shadow and lightness, a bold primary color for emphasized actions, a supporting secondary, a restrained accent for status and selection, explicit hover/pressed/disabled states, and a structured responsive grid.",
-      },
-    ],
+      ],
   },
   {
     slug: "paper-ui-design-system",
@@ -846,14 +832,7 @@ export const BLOG_POSTS: BlogPost[] = [
           "Swap the clay for a deeper forest or a cooler slate ink if your publication leans that way, but keep the hue warm in body copy or the editorial mood dies. The gener-ous type ratio is doing much of the work here — keep it, and let the ruled-line simplicity carry any interface clutter you add.",
         ],
       },
-      {
-        heading: "Prompt for an AI builder",
-        body: [
-          "A starting brief for a coding assistant:",
-        ],
-        code: "Design a warm paper-like interface: an off-white stock background, dark warm ink typography, hairline ruled borders, layered sheets for depth, and muted warm accent colors. Keep an editorial type rhythm, generous whitespace, and legible contrast on every tinted surface.",
-      },
-    ],
+      ],
   },
   {
     slug: "retro-ui-design-system",
@@ -890,14 +869,7 @@ export const BLOG_POSTS: BlogPost[] = [
           "If the teal isn't yours, any period-correct industrial hue (battleship blue, café orange, sage) drops in — keep sat low and let the steel grey carry the chrome. Add compact density to the four previews by treating the marketing preview as the one page that gets to relax; the desktop feel belongs in the SaaS and mobile tools.",
         ],
       },
-      {
-        heading: "Prompt for an AI builder",
-        body: [
-          "A starting brief:",
-        ],
-        code: "Design a 1990s desktop-inspired interface: beveled window chrome, compact and dense layouts, title bars and status bars, a limited teal-grey palette with a single brass highlight. Keep text readable, states explicit (beveled up for enabled, beveled down for pressed, greyed for disabled), and use no modern flat-ui gestures.",
-      },
-    ],
+      ],
   },
   {
     slug: "bento-grid-design-system",
@@ -934,14 +906,7 @@ export const BLOG_POSTS: BlogPost[] = [
           "Treat the SaaS preview as the bento home and push your own brand hue into primary. Keep cyan and rose only if they earn their place; muted brands can drop to a single accent and use surface lightness instead. After the hue swap, check the smallest tile text — compact summaries are where contrast quietly fails.",
         ],
       },
-      {
-        heading: "Prompt for an AI builder",
-        body: [
-          "A starting brief:",
-        ],
-        code: "Design a bento-grid dashboard: aligned tiles of mixed span and size, compact summaries, strong shared alignment, and a restrained color system where one primary colors the featured tile, a neutral surface colors the rest, and a single accent marks live status. Keep small text readable and spacing rhythm consistent.",
-      },
-    ],
+      ],
   },
   {
     slug: "terminal-ui-design-system",
@@ -978,14 +943,7 @@ export const BLOG_POSTS: BlogPost[] = [
           "Swap the phosphor for any terminal-era hue — amber-on-black, green-on-black, terminus blue — the technical font pairing and solid black dark mode carry the identity. Keep status colors semantic and identical across the light and dark themes; nothing about a command console should change meaning between modes.",
         ],
       },
-      {
-        heading: "Prompt for an AI builder",
-        body: [
-          "A starting brief:",
-        ],
-        code: "Design a dark command-line interface: near-black surface, monospace typography, a command field at the focal point, process logs and status metrics, and semantic status colors (success, warning, error, offline). Use a single luminous accent for live activity, keep body text highly readable, and make focus and keyboard navigation fully visible.",
-      },
-    ],
+      ],
   },
   {
     slug: "skeuomorphism-design-system",
@@ -1022,14 +980,7 @@ export const BLOG_POSTS: BlogPost[] = [
           "Swap the tan for a walnut, an espresso, or a brushed olive to change the 'material' instantly; saturation delivery keeps the warmth. The previews show where metaphor is affordable: buttons and toggles can carry dimensional treatment; paragraphs and density should stay flat and readable.",
         ],
       },
-      {
-        heading: "Prompt for an AI builder",
-        body: [
-          "A starting brief:",
-        ],
-        code: "Design a skeuomorphic interface around believable materials: dimensional controls with highlight and shadow, physical metaphors for primary actions (knobs, levers, panels), and a restrained warm material palette. Keep text flat and high-contrast, make focus visible, and avoid texture overload — metaphor belongs on controls, not content.",
-      },
-    ],
+      ],
   },
   {
     slug: "claymorphism-design-system",
@@ -1066,14 +1017,7 @@ export const BLOG_POSTS: BlogPost[] = [
           "The pastel trio is the whole personality; swap in your brand's hue family and keep saturation high but controlled. Walk the four previews looking at text-on-filled-card pairs specifically, and let the dark theme's chroma step down — inflated pastels read as radioactive on near-black if left alone.",
         ],
       },
-      {
-        heading: "Prompt for an AI builder",
-        body: [
-          "A starting brief:",
-        ],
-        code: "Design a claymorphic interface: inflated, rounded components with soft directional shadows, saturated pastel surfaces, and a playful low-stakes tone. Keep text and icons in genuine contrast, make focus visible, and provide pressed and hover states that respect the inflated geometry. Avoid photorealism in light sources.",
-      },
-    ],
+      ],
   },
   {
     slug: "bauhaus-design-system",
@@ -1110,14 +1054,7 @@ export const BLOG_POSTS: BlogPost[] = [
           "The bold trio is the point, so resist the urge to mute it — if a muted brand needs Bauhaus structure, keep the geometry and drop a single hue. Sharp radius and the geometric pairing do the structural work; let the shapes the previews lay out speak, and keep body copy on white or near-white for contrast.",
         ],
       },
-      {
-        heading: "Prompt for an AI builder",
-        body: [
-          "A starting brief:",
-        ],
-        code: "Design a Bauhaus-inspired interface: primary geometry used functionally, a disciplined palette of a few saturated hues (red, blue, yellow), bold sans-serif display type, asymmetric but balanced composition, and sharp corners. Keep body text high-contrast and confirm meaning doesn't rely on color alone.",
-      },
-    ],
+      ],
   },
   {
     slug: "art-deco-design-system",
@@ -1154,14 +1091,7 @@ export const BLOG_POSTS: BlogPost[] = [
           "Swap the navy for emerald, burgundy, or royal purple and the ceremony survives; keep the gold accent regardless, since it is doing the metallic identity. The dark theme should be the default here — open the previews in dark mode first, then make sure the light theme isn't an afterthought.",
         ],
       },
-      {
-        heading: "Prompt for an AI builder",
-        body: [
-          "A starting brief:",
-        ],
-        code: "Design an Art Deco-inspired interface on a midnight navy base: stepped geometry, strong axial symmetry, metallic gold accents used for linework and ornament, and a refined display serif. Keep body text on readable contrast, reserve pure gold for non-text elements, and treat the dark theme as the primary experience.",
-      },
-    ],
+      ],
   },
   {
     slug: "memphis-design-system",
@@ -1198,14 +1128,7 @@ export const BLOG_POSTS: BlogPost[] = [
           "Any bright triad you love works — just keep the three hues evenly separated so they keep that deliberate clang. Let the previews place color sparingly: primary for the featured action, accent for the doodles, and the neutral surfaces doing the heavy lifting. Check text pairs after every hue swap.",
         ],
       },
-      {
-        heading: "Prompt for an AI builder",
-        body: [
-          "A starting brief:",
-        ],
-        code: "Design a Memphis-inspired interface: playful geometry and pattern mixing (dots, squiggles, confetti accents), a bright three-hue palette on a clean neutral base, and relaxed but intentional composition. Keep text high-contrast, use color sparingly per screen, and confirm meaning doesn't depend on hue alone.",
-      },
-    ],
+      ],
   },
   {
     slug: "cyberpunk-interface-design-system",
@@ -1242,14 +1165,7 @@ export const BLOG_POSTS: BlogPost[] = [
           "Any high-intensity duo works — amber-and-green terminal, ice-blue-and-red — keep the black base and sharp radius and the identity is intact. Prefer the dark theme as the default and the light theme as a concession; then confirm both pass the same contrast report, because neon on white behaves differently.",
         ],
       },
-      {
-        heading: "Prompt for an AI builder",
-        body: [
-          "A starting brief:",
-        ],
-        code: "Create an original cyberpunk interface using dark high-contrast surfaces, a limited set of luminous accents, angular framing, technical microcopy and a disciplined information grid. Keep body text highly readable, make focus visible, avoid rapid flicker, and define low-glow, reduced-motion, mobile, warning, error and offline states. Do not use franchise marks or copied game HUD elements.",
-      },
-    ],
+      ],
   },
   {
     slug: "biomorphic-design-system",
@@ -1286,14 +1202,7 @@ export const BLOG_POSTS: BlogPost[] = [
           "Swap the sage for clay, moss, or sea-grey and the natural mood follows; the analogous strategy keeps whatever family you choose grounded. In the previews, let the round radius and humanist pairing do the organic work — layering actual irregular shapes into the UI is where this style quietly turns into a rendering bug, especially in the ecommerce view.",
         ],
       },
-      {
-        heading: "Prompt for an AI builder",
-        body: [
-          "A starting brief:",
-        ],
-        code: "Design a biomorphic interface using organic silhouettes, flowing region boundaries, and earth-derived muted colors (sage, clay, moss). Keep rounded, natural shapes on components while preserving text readability on calm light surfaces. Use soft asymmetry, visible focus, and a restrained palette so the interface still reads as an interface.",
-      },
-    ],
+      ],
   },
   {
     slug: "maximalist-editorial-design-system",
@@ -1330,14 +1239,7 @@ export const BLOG_POSTS: BlogPost[] = [
           "Any crimson-family brand works; the anchoring move is keeping the dominant hue dominant. Use the marketing preview to judge headline scale, the SaaS preview to confirm the density stays usable in a working tool, and the generous ratio across all four — then shave the palette down rather than up if the previews feel frantic.",
         ],
       },
-      {
-        heading: "Prompt for an AI builder",
-        body: [
-          "A starting brief:",
-        ],
-        code: "Design a maximalist editorial interface where hierarchy is the experience: oversized layered display type, dense editorial rhythm, vivid color blocks, and confident scale shifts. Keep one hue dominant, place body copy on calm light surfaces, ensure headlines hold contrast over color, and retain usable hierarchy for content-heavy screens.",
-      },
-    ],
+      ],
   },
 ];
 
