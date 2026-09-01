@@ -592,6 +592,84 @@ export const BLOG_POSTS: BlogPost[] = [
       },
     ],
   },
+  {
+    slug: "secondary-and-accent-colors-in-a-design-system",
+    title: "Secondary and accent colors in a design system: what they're for",
+    metaTitle: "Secondary & Accent Colors in a Design System: How to Choose",
+    description:
+      "Secondary and accent colors are what give a design system its hierarchy. Learn what each role is for, how to choose a good one from your primary color, and how the best design systems keep them under control.",
+    excerpt:
+      "Primary color gets the credit, but secondary and accent colors carry the hierarchy. Here's what each is for and how to choose them without breaking your palette.",
+    publishedAt: "2026-09-01",
+    category: "Design systems",
+    tags: ["design system", "secondary color", "accent color", "color roles", "palette"],
+    relatedHrefs: ["/tools/color-palette-generator", "/tools/design-token-generator", "/tools/contrast-checker"],
+    keyword: "design system",
+    sections: [
+      {
+        heading: "Every color in a design system has a job",
+        body: [
+          "When people first build a design system, they usually start with the brand color and stop there. A working system needs more than that. Aside from the primary, it needs a secondary color that shares the visual language, and an accent color that knows when to speak. Together the three create the hierarchy that tells a user what is the main action, what supports it, and what deserves a moment of attention. That hierarchy is the actual product — the colors are just how it shows up.",
+          "It's useful to think of the roles the way a theater casts a play. The primary is the lead, on stage for every scene and carrying the bulk of the action. The secondary is the reliable supporting role, always present but never crowding the lead. The accent is the guest star: rare, high-impact, careful about when it appears. A system where all three behave is one you can reason about — which is why the best design systems read, at a glance, as obviously coherent.",
+          "Most of the work is not in finding three colors. It's in making them relate to each other, and then keeping every other color in the palette derived from the same seed. The moment colors stop relating, the UI starts broadcasting that different people made these screens.",
+        ],
+      },
+      {
+        heading: "Design system examples: the same three roles, every time",
+        body: [
+          "Look at the design system examples that get talked about — the large corporate and open-source ones — and you'll spot the same pattern beneath different aesthetics. Material Design carries a primary family plus supporting and emphasis colors. IBM's Carbon and the Atlassian system both keep one hue for their main actions and a second, distinctly different hue for emphasis and status. They don't share a style at all. They share a grammar.",
+          "That consistency isn't imitation; it's that interfaces have the same structural needs. Actions need one clear tier. Secondary interactions need a quieter tier. Alerts, selection and special emphasis need a tier that can bend attention without stealing the whole screen. Whatever you call the three, the jobs exist in every web design system worth copying, which is why planning the roles before picking hexes pays off.",
+        ],
+      },
+      {
+        heading: "Secondary color: the quiet workhorse",
+        body: [
+          "The secondary color is the primary's partner. In a typical design system UI it covers the second tier of the interface: secondary buttons, the active state in a sidebar, hover fills, supporting surfaces, tags that shouldn't compete with primary. If the primary is your call-to-action, the secondary is everything one step removed from it — necessary, present, polite.",
+          "Because it sits so close to the primary in everyday use, the secondary should feel related rather than random. Two reliable routes exist: keep it near the primary on the hue wheel for a calm, cohesive product, or set it far across the wheel for energy when the product is meant to feel bold. The key test is always the same — put a primary button and a secondary button next to each other. If you can't instantly tell which is which, the pair needs more separation in lightness or chroma, not just a different hex.",
+          "The failure to avoid is a secondary that is basically a stranger's color — beautiful on its own, unrelated to everything else. Relatedness is the requirement, and it's exactly why generative approaches derive the secondary from the primary instead of choosing it in a swatch vacuum.",
+        ],
+      },
+      {
+        heading: "Accent color: rare and loud, on purpose",
+        body: [
+          "The accent color has the smallest job and the biggest temptation. It exists for moments of emphasis: a promotion banner, a new-feature badge, a chart series, a notification dot, a highlighted phrase on a dark surface. The accent is where a design system is allowed to feel alive, and it earns that by being used on only a small fraction of the interface — never by default.",
+          "As a rule of thumb, if the accent appears in every component, it isn't an accent anymore; it's a second primary wearing inappropriate clothes. The best design systems keep accent coverage low by deliberate policy: charts and status belong to it, everything routinized stays in the primary and secondary family. The payoff is that when the accent does appear, it genuinely lands.",
+          "The accent also has the most license to be playful — high chroma, slightly off-palette. But when it carries text it still has to meet the same accessibility bar as everything else, which is where its pairing with the surface it sits on gets checked rather than assumed.",
+        ],
+      },
+      {
+        heading: "How to choose a good secondary color",
+        body: [
+          "Start from the primary and decide, in one sentence, what kind of energy the product needs. Calm and trustworthy? Keep the secondary adjacent to the primary — analogous hues at similar lightness. Bold and playful? Send it across the wheel, roughly complementary, where it creates contrast without fighting the primary. Products in between do well with triadic or split-complementary selections, which keep separation while staying balanced.",
+          "Whichever direction you take, finish with a visual check in context. Drop the secondary onto a button beside a primary button, onto an active nav item, and onto a hover fill. It should survive all three without ever looking like it's competing for the main-action job. If the two hues are too close in both lightness and chroma, the UI goes monochrome in the worst way — a page where nothing rises above the noise. If they're too far apart in hue alone, it feels like two brands argued over one screen.",
+        ],
+      },
+      {
+        heading: "How to choose a good accent color",
+        body: [
+          "Where the secondary clings to the primary's neighborhood, the accent usually lives further away and brighter. A good starting point: pick the hue that best expresses the emotion the product needs in small doses, then push its chroma up and hold its lightness so it still reads on both your darkest and lightest surfaces.",
+          "Test the accent the way it will actually be used — a badge dot next to its label, a link on a dark card, one series inside a chart. Tiny patches are merciless; an accent that looks fine as a sixteen-pixel swatch can vibrate at full size. And when the accent carries text, run it through the same WCAG contrast check you ran on the primary. An accent that only passes on white but fails on the surface it's destined for is not finished.",
+          "Remember the accent changes in dark mode. Its chroma spikes against a near-black surface, so most systems dial it down a step or two in the dark theme. If your design system ships light and dark, the accent gets evaluated twice, not once.",
+        ],
+      },
+      {
+        heading: "Audit like the best design systems do",
+        body: [
+          "The fastest way to test whether your roles are working is to look at a full screen, not the swatch row. Cover the primary, then ask what lost the most meaning — that's what the secondary should have carried. Then count how many times the accent appears. If the number is high or the rhythm is chaotic, tighten the policy, not the color.",
+          "In ChromaBrew the whole thing is a single flow: pick a primary, and the generator auto-fills a secondary and accent from a strategy you choose — complementary, analogous, triadic, split-complementary or monochromatic. You can lock and tune any swatch, watch the roles live across SaaS, marketing, mobile and storefront previews, run the WCAG report, and export tokens as CSS, JSON, Tailwind, shadcn, MUI, or a Figma-ready tokens file when the hierarchy finally behaves.",
+          "None of it requires assembling a separate design system template by hand. One seed, three roles, a contrast pass, and the exports your team actually consumes.",
+        ],
+        code: `:root {
+  --primary: #3a86ff;
+  --secondary: #7a5af0;
+  --accent: #ff7a00;
+  --background: #ffffff;
+  --surface: #fafafa;
+}`,
+        tip: "Define roles before hexes. Name the token first (--primary, --secondary, --accent), decide what each is allowed to be used for, then fill in values. A token that stops you using the wrong color on the wrong screen is a role doing its job.",
+      },
+    ],
+  },
 ];
 
 export function findPost(slug: string): BlogPost | undefined {
