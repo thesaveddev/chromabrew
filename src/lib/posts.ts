@@ -507,6 +507,91 @@ export const BLOG_POSTS: BlogPost[] = [
       },
     ],
   },
+  {
+    slug: "one-color-to-a-working-design-system",
+    title: "One color to a working design system",
+    metaTitle: "How to Turn One Color Into a Working Design System",
+    description:
+      "From a single brand color to a full design system in one pass: palette strategies, OKLCH scales, semantic tokens, typography, dark mode, WCAG checks, and exports to CSS, Tailwind, shadcn, MUI and Figma.",
+    excerpt:
+      "Pick a color, and in one session have a design system that ships: scales, tokens, dark mode, a contrast pass, and exports your engineers can actually use.",
+    publishedAt: "2026-09-01",
+    category: "Design systems",
+    tags: ["design system", "design tokens", "figma", "workflow"],
+    relatedHrefs: ["/tools/color-palette-generator", "/tools/design-token-generator", "/tools/wcag-palette-checker"],
+    keyword: "working design system",
+    sections: [
+      {
+        heading: "The whole system from one seed",
+        body: [
+          "A design system sounds like a big-company project — a design team, a roadmap, months of decisions. Strip it down and it isn't. A system is just a set of values that agree with each other: colors that relate, type that scales, spacing that steps evenly. And the fastest way to get that agreement is to stop choosing values one at a time and start from a single seed color that everything else is derived from.",
+          "That's the loop ChromaBrew is built around. Drop in a primary color, pick a strategy, and the generator derives the rest — a secondary that lives nicely beside the primary, an accent for highlights, a neutral scale for greys and text, then typography, spacing, radius and shadows on top. You're not assembling a palette anymore; you're generating the skeleton of an entire UI in one pass, light and dark included.",
+          "The seed matters more than anything else you'll do, so pick it on purpose. Mid-lightness, vivid colors work best. A primary that's already nearly black or nearly white drags everything derived from it off-balance, and you'll spend the rest of the session fighting it.",
+        ],
+      },
+      {
+        heading: "Choose a strategy, get a color family",
+        body: [
+          "Before the math runs, you tell the generator how the palette should behave. The default is complementary: the secondary hue sits opposite the primary on the color wheel, reads as energetic, and hands you an easy CTA/accent pairing. If the product is calmer, analogous keeps the palette to neighboring hues and reads quiet and cohesive. Triadic and split-complementary sit in between — balanced and vibrant. Monochromatic is the disciplined one: a single hue explored through lightness alone, which looks expensive and rarely offends.",
+          "There's also an auto-fill option that decides the secondary and accent for you using the same strategy. Most people start with the default and never move it, and that's honestly fine — a family derived from one hue tends to at least hang together, which is more than most hand-picked palettes manage.",
+        ],
+        bullets: [
+          "Complementary — secondary opposite the primary; energetic, good for CTAs",
+          "Analogous — neighboring hues; calm and cohesive",
+          "Triadic — three evenly spaced hues; balanced and vibrant",
+          "Monochromatic — one hue through lightness; disciplined and confident",
+        ],
+      },
+      {
+        heading: "Scales that stay honest: OKLCH math",
+        body: [
+          "Each hue then gets an eleven-step scale from 50 to 950, and this is where the quality is won. The steps are computed in OKLCH, a color space engineered around how humans actually perceive lightness, so an equal step in number is an equal step to the eye. Scales built that way stay bright at the top and rich in the darks; the old way — hand-mixing white and black into a hex — goes grey and mushy in predictable places.",
+          "The 500 step is the brand base. Tints climb toward 50 to serve as backgrounds and soft surfaces; shades deepen toward 950 for text and high-contrast accents. You can lock a swatch you don't like and nudge it manually while the rest keep their relationships — the generator keeps the math honest, you keep the taste calls. That's the whole division of labor.",
+          "The same seeds produce the light and dark themes together, which means dark mode isn't a second theme you design later. It's an output of the one you already made. Export one set of tokens and a .dark override, and the theme switch is a class swap.",
+        ],
+      },
+      {
+        heading: "Colors are half the system",
+        body: [
+          "Colors are what people picture when they hear design system, but the rest of the generator is where it turns useful. Typography ships as a paired font stack and a modular type scale built from a base size and a ratio, so every heading relates to body text in a way the eye reads as deliberate. Spacing steps evenly. Radius inherits the shape language you pick. Shadows are layered into elevation levels instead of one muddy blur.",
+          "And every one of those values is a token before it's a pixel. Page, surface, primary, border, input, status — components reference a role, and each role references a value. You can feel the difference in the built-in previews: the SaaS, marketing, mobile and storefront previews all render from your tokens in both themes. When something's off, you see a UI problem, not a swatch problem.",
+        ],
+      },
+      {
+        heading: "Make it readable: the contrast pass",
+        body: [
+          "Before exporting anything, run the accessibility report and actually look at it. It checks text and interactive pairs against WCAG AA, and it surfaces the combinations you'd never think to check — accent on a muted surface, a primary used as small body text, a status color doing double duty as text. These are exactly the pairs that ship broken because they look fine as separate swatches.",
+          "Failures are fixable inside the system. Swap in a different foreground from the approved scale, or let the generator nudge the offending value along the OKLCH lightness axis so the hue survives the fix. Getting the pairings green here — instead of after someone files a bug — is the difference between a palette that passes on paper and a product people can actually read.",
+        ],
+      },
+      {
+        heading: "Export it, hand it over, stop retyping",
+        body: [
+          "When the previews look right, the exports are the payoff. Everything drops out as files: CSS variables that become your :root tokens, JSON for a token pipeline, a Tailwind v4 @theme block with brand-50 through brand-950 ready to paste, shadcn/ui, Material UI, Ant Design, Bootstrap, Chakra. Native teams aren't left at the door either — Flutter, iOS Swift, and Android XML + Compose all export.",
+          "The part most generators skip is the design-tools side. When the system has to live inside a design tool, you export W3C Design Tokens, a Figma Tokens file, or a Penpot-native file and import straight from the export panel. Want to hand everything over in one artifact? Grab the .zip bundle — CSS, JSON, Tailwind, Figma, W3C and Penpot files together, plus a short readme.",
+          "And because the whole state of the system lives in the URL, you can also just send a link. Whoever opens it sees the same previews, the same tokens, the same exports — nothing uploaded, nothing installed, everything in the browser.",
+        ],
+        code: `:root {
+  --background: #ffffff;
+  --foreground: #18181b;
+  --surface: #fafafa;
+  --primary: #3a86ff;
+  --secondary: #9c66ff;
+  --accent: #ff7a00;
+}
+
+.dark {
+  --background: #0a0a0a;
+  --foreground: #fafafa;
+  --surface: #18181b;
+  --primary: #6ba3ff;
+  --secondary: #bd9aff;
+  --accent: #ff9a45;
+}`,
+        tip: "Keep the .zip in your repo and treat it as the handoff artifact. Engineering pulls from one file, designers pull from the W3C or Figma export, and the tokens stay a single source of truth instead of drifting across tools.",
+      },
+    ],
+  },
 ];
 
 export function findPost(slug: string): BlogPost | undefined {
