@@ -670,6 +670,675 @@ export const BLOG_POSTS: BlogPost[] = [
       },
     ],
   },
+  {
+    slug: "design-system-styles-you-can-generate-with-one-link",
+    title: "Fourteen design system styles you can generate with one link",
+    metaTitle: "14 Design System Styles You Can Generate With One Link",
+    description:
+      "Neomorphism, Material, bento grid, cyberpunk, art deco and more — pick a visual style and open a preset link that generates the whole system: colors, tokens, dark mode, four previews and exports.",
+    excerpt:
+      "A visual style is just a set of structural settings. Here are fourteen of them, encoded as generator links that build the entire system — not just a screenshot.",
+    publishedAt: "2026-09-01",
+    category: "Design styles",
+    tags: ["design system", "visual styles", "presets", "theming"],
+    relatedHrefs: ["/tools/color-palette-generator", "/tools/design-token-generator", "/tools/shade-generator"],
+    keyword: "design system styles",
+    sections: [
+      {
+        heading: "A style is a configuration you can share",
+        body: [
+          "Most visual-style collections stop at a screenshot and a paragraph of adjectives. But a style is really a set of structural decisions — how much contrast, what shape language, which type personality, which color strategy — and those are exactly the inputs a design system generator runs on. ChromaBrew encodes every one of those decisions in the URL, so a style can be a link that opens a fully working system.",
+          "The knobs: your seed colors, the palette strategy that decides how the rest of the palette is derived, the corner radius style, the type ratio, the font pairing, and the dark-mode background, plus explicit overrides for secondary and accent. Change any of them and the whole system recomputes — scales, semantic tokens, light and dark themes, four live previews, and every export. Which means a style is never a locked-in look; it's a starting configuration.",
+        ],
+      },
+      {
+        heading: "The fourteen styles",
+        body: [
+          "Each link below opens the generator with that style's structural settings preloaded. Open it, look at the previews, then start pushing your own brand color into it.",
+        ],
+        bullets: [
+          "Neomorphism — soft extruded controls on a single material surface: /design-system?primary=718096&strategy=monochromatic&radius=round&sat=-12",
+          "Material — bold color roles on elevated surfaces: /design-system?primary=3f51b5&secondary=ff4081&accent=ffab40&strategy=complementary&radius=soft",
+          "Paper UI — warm stock, ink typography, ruled layers: /design-system?primary=b4552d&secondary=8a5a2b&strategy=analogous&radius=sharp&fonts=editorial&ratio=1.333&sat=5",
+          "Retro UI — beveled 90s desktop chrome in limited teal-grey: /design-system?primary=0f766e&secondary=8a99a6&accent=c9a227&strategy=split-complementary&radius=sharp&sat=-8",
+          "Bento Grid — vivid modular tiles with a strong axis: /design-system?primary=6366f1&secondary=22d3ee&accent=fb7185&strategy=split-complementary&radius=round&fonts=grotesque",
+          "Terminal UI — monospace, command-first, status colors: /design-system?primary=00b894&accent=00cec9&strategy=monochromatic&radius=sharp&fonts=technical&dbg=solid-black",
+          "Skeuomorphism — warm materials and dimensional controls: /design-system?primary=8d5524&secondary=6f4e2b&strategy=analogous&radius=round&fonts=humanist&sat=8",
+          "Claymorphism — inflated pastels and soft volume: /design-system?primary=f472b6&secondary=a78bfa&accent=fbbf24&strategy=analogous&radius=round&fonts=grotesque&sat=10",
+          "Bauhaus — primary geometry, bold type, hard edges: /design-system?primary=ff4d00&secondary=1d4ed8&accent=ffc400&strategy=triadic&radius=sharp&fonts=geometric",
+          "Art Deco — midnight navy, metallic gold, refined serif: /design-system?primary=1f2a44&accent=caa04f&strategy=analogous&radius=sharp&fonts=editorial&ratio=1.333&dbg=solid-black&sat=-5&bright=5",
+          "Memphis — playful pattern mixing in bright triads: /design-system?primary=ff6b6b&secondary=4ecdc4&accent=ffe66d&strategy=triadic&radius=round&fonts=grotesque&sat=12",
+          "Cyberpunk — dark high contrast, luminous cyan and magenta: /design-system?primary=06b6d4&secondary=ff2d95&accent=8b5cf6&strategy=split-complementary&radius=sharp&fonts=technical&dbg=solid-black&sat=12",
+          "Biomorphic — organic silhouettes and earth colors: /design-system?primary=6f9f6e&strategy=analogous&radius=round&fonts=humanist&sat=-5",
+          "Maximalist Editorial — vivid color blocks and dramatic type: /design-system?primary=e11d48&secondary=2563eb&accent=f59e0b&strategy=split-complementary&radius=sharp&fonts=editorial&ratio=1.333",
+        ],
+      },
+      {
+        heading: "Make any of them yours",
+        body: [
+          "Every preset is a starting point, not a verdict. Keep the structural pieces that make the style recognizable — the radius, the font pairing, the strategy — and swap the primary hue for your brand. Re-run the four previews and the WCAG report after the swap; a style that looks cohesive in its native palette can drift the moment you push an alien hue into it.",
+          "The dark-theme pass matters twice as much here. Luminous styles (terminal, cyberpunk) are built around the dark background; cuddly ones (clay, paper) assume a light surface. Dress the accent for both themes before you export.",
+        ],
+        tip: "Keep these links somewhere handy. A folder of prebuilt geometry — strategy, radius, fonts — is the fastest way to try a brand color across fourteen distinct looks in about a minute flat.",
+      },
+    ],
+  },
+  {
+    slug: "neomorphism-design-system",
+    title: "Neomorphism: a design system that feels carved out of one surface",
+    metaTitle: "Neomorphism Design System — Generate the Soft UI Style",
+    description:
+      "What neomorphism is, how to recognize it, and a ChromaBrew preset that generates a soft-UI design system — plus the accessibility rules that keep it usable.",
+    excerpt:
+      "Soft, extruded controls, paired shadows, one material surface. Here's the neomorphism design system preset — and the contrast rules it needs to survive.",
+    publishedAt: "2026-09-01",
+    category: "Design styles",
+    tags: ["neomorphism", "soft ui", "design system", "shadows"],
+    relatedHrefs: ["/tools/color-palette-generator", "/tools/contrast-checker", "/tools/design-token-generator"],
+    keyword: "neomorphism design system",
+    sections: [
+      {
+        heading: "What neomorphism actually is",
+        body: [
+          "Neomorphism is the style where controls look pressed out of the page itself. A raised button has a light shadow on one side and a dark shadow on the other; an inset field is the same shape pushed the opposite way. Everything shares one background material, so there are few hard borders and lots of gentle, rounded volume.",
+          "Recognize it by four tells: low contrast everywhere, paired light-and-dark shadows, generously rounded controls, and a tactile depth that makes you want to poke the screen. It reads premium and quiet — popular for finance dashboards, wallets, and anywhere a calm, physical surface feels trustworthy. The weakness is the same thing that makes it pretty: contrast is low by design, so text and interactive states need deliberate protection.",
+        ],
+      },
+      {
+        heading: "The neomorphism preset",
+        body: [
+          "The style demands a muted, single-hue palette — the whole surface is one material, and loud multi-color systems break the illusion. The preset locks a desaturated slate blue, stays monochromatic so every hue match, and pulls saturation down further with the refinement dial. Radius goes round for that soft extruded feel:",
+        ],
+        code: "/design-system?primary=718096&strategy=monochromatic&radius=round&sat=-12",
+        tip: "Neomorphism relies on shadow to show depth, but shadow is not an accessible state indicator. Keep text at real contrast, show focus with a visible ring, and give pressed and disabled states more than a shadow tweak.",
+      },
+      {
+        heading: "Make it yours and keep it readable",
+        body: [
+          "Swap the slate seed for any hue you like — the monochromatic strategy and round radius do the rest of the styling. What you must not do is let the muted surface drag text below contrast. Run every foreground/background pair through the checker, and if a pair fails, lift lightness on the OKLCH axis rather than pumping saturation back in, which quietly undoes the whole effect.",
+        ],
+      },
+      {
+        heading: "Prompt for an AI builder",
+        body: [
+          "Hand this to a coding assistant as a starting brief:",
+        ],
+        code: "Design a focused interface using neomorphism: a restrained neutral surface, controls raised or inset through paired light and dark shadows, generous rounded corners, minimal color. Keep text high-contrast, use visible focus indicators, never rely on shadow alone for state. Include hover, pressed, disabled, error, and mobile states.",
+      },
+    ],
+  },
+  {
+    slug: "material-design-system-preset",
+    title: "The Material design system: bold color roles on elevated surfaces",
+    metaTitle: "Material Design System Preset — Generate Material-Inspired Theme",
+    description:
+      "What makes a Material-style design system tick: elevation, color roles, clear states. Plus a ChromaBrew preset that generates a Material-inspired theme from three hues.",
+    excerpt:
+      "Elevation, color roles, clear states — Material's ideas, applied through the generator. Here's the preset and how to bend it to a brand.",
+    publishedAt: "2026-09-01",
+    category: "Design styles",
+    tags: ["material design", "design system", "elevation", "tokens"],
+    relatedHrefs: ["/tools/color-palette-generator", "/tools/design-token-generator", "/tools/contrast-checker"],
+    keyword: "material design system",
+    sections: [
+      {
+        heading: "The ideas, not the widgets",
+        body: [
+          "Material Design gets remembered for its widgets, but its real contribution is structural: surfaces sit at different elevations, color has defined roles, and states are explicit. A card is a raised surface, a dialog floats higher, and each step of elevation is communicated by shadow and surface lightness rather than a border. Color roles — primary, secondary, accent, surface, error — do the communicating.",
+          "Recognize a genuine Material-derived system by elevation and role discipline: layered surfaces, a bold primary family doing the action work, a supporting hue for secondary interactions, and clear hover/pressed/disabled states on everything. It's the default grid-walking visual language of the last decade for a reason.",
+        ],
+      },
+      {
+        heading: "The Material preset",
+        body: [
+          "The generator's four previews already think in elevation and color roles, so the preset mostly picks the palette. The classic trio is indigo for primary, a pink for the secondary/support role, and an amber accent for status and highlight. Complementary strategy gives the primary a real opposite hue to work against, radius stays soft, and the dark theme comes free:", 
+        ],
+        code: "/design-system?primary=3f51b5&secondary=ff4081&accent=ffab40&strategy=complementary&radius=soft",
+        tip: "In a Material-style system the primary belongs to emphasized actions and the secondary to everything one step below. Keep accent coverage small — status, selection, special emphasis — or the hierarchy blurs.",
+      },
+      {
+        heading: "Bend it toward a brand",
+        body: [
+          "Drop your own hue into primary and the system re-derives the family around it; the pink and amber stay only where you want support and status. Then walk the four previews looking for state, not color: every button needs hover, pressed and disabled versions, and every surface needs visible elevation. That's the Material test that screenshots never pass.",
+        ],
+      },
+      {
+        heading: "Prompt for an AI builder",
+        body: [
+          "A starting brief for a coding assistant:",
+        ],
+        code: "Build a Material-inspired interface: surfaces at distinct elevations communicated by shadow and lightness, a bold primary color for emphasized actions, a supporting secondary, a restrained accent for status and selection, explicit hover/pressed/disabled states, and a structured responsive grid.",
+      },
+    ],
+  },
+  {
+    slug: "paper-ui-design-system",
+    title: "Paper UI: a design system built from warm stock and ink",
+    metaTitle: "Paper UI Design System — Warm, Editorial Interface Style",
+    description:
+      "Paper UI explained: layered sheets, ink typography, ruled details. Generate the warm editorial style with a ChromaBrew preset and keep it legible.",
+    excerpt:
+      "Warm paper, ink text, ruled details. The paper UI style reads like print — here's how to generate the system and keep the ink readable.",
+    publishedAt: "2026-09-01",
+    category: "Design styles",
+    tags: ["paper ui", "editorial", "design system", "warm palette"],
+    relatedHrefs: ["/tools/color-palette-generator", "/tools/typography-scale-generator", "/tools/design-token-generator"],
+    keyword: "paper ui",
+    sections: [
+      {
+        heading: "Print that happens to be digital",
+        body: [
+          "Paper UI borrows the grammar of print. Instead of dark-on-white software chrome you get a warm stock background, ink-toned typography, thin ruled lines doing the work of borders, and layers that read like stacked sheets rather than floating cards. It's the style for anything that wants to feel like a well-made publication: editorial sites, docs, portfolios, journals.",
+          "Recognize it by temperature and texture: warm off-white surfaces, dark warm ink rather than pure black, hairline rules, and an editorial rhythm where type leads and color follows. The entire effect depends on warmth being consistent — the moment one surface goes grey-blue, the paper illusion breaks.",
+        ],
+      },
+      {
+        heading: "The paper UI preset",
+        body: [
+          "The preset starts from a burned-clay ink on warm stock, keeps the family analogous so nothing argues with the paper, and flips the structural dials toward print: sharp radius for ruled details, an editorial serif pairing for headings, and a generous type ratio for display scale. A small saturation lift keeps the stock feeling warm rather than dusty:",
+        ],
+        code: "/design-system?primary=b4552d&secondary=8a5a2b&strategy=analogous&radius=sharp&fonts=editorial&ratio=1.333&sat=5",
+        tip: "Ink on warm stock has forgiving but not automatic contrast. Text that sits on the lightest tint (your paper) will pass easily; text on the darker tints is where pairs sneak under 4.5:1 — check them all.",
+      },
+      {
+        heading: "Adapt it",
+        body: [
+          "Swap the clay for a deeper forest or a cooler slate ink if your publication leans that way, but keep the hue warm in body copy or the editorial mood dies. The gener-ous type ratio is doing much of the work here — keep it, and let the ruled-line simplicity carry any interface clutter you add.",
+        ],
+      },
+      {
+        heading: "Prompt for an AI builder",
+        body: [
+          "A starting brief for a coding assistant:",
+        ],
+        code: "Design a warm paper-like interface: an off-white stock background, dark warm ink typography, hairline ruled borders, layered sheets for depth, and muted warm accent colors. Keep an editorial type rhythm, generous whitespace, and legible contrast on every tinted surface.",
+      },
+    ],
+  },
+  {
+    slug: "retro-ui-design-system",
+    title: "Retro UI: the 90s desktop as a design system",
+    metaTitle: "Retro UI Design System — 1990s Desktop-Inspired Theme",
+    description:
+      "Retro UI explained: beveled chrome, window metaphors, compact density, a limited teal-grey palette. Generate the nostalgic style with a ChromaBrew preset.",
+    excerpt:
+      "Beveled buttons, steel teal-grey, window chrome. Here's the retro 90s-desktop style as a working design system preset.",
+    publishedAt: "2026-09-01",
+    category: "Design styles",
+    tags: ["retro ui", "90s desktop", "design system", "nostalgia"],
+    relatedHrefs: ["/tools/color-palette-generator", "/tools/shade-generator", "/tools/design-token-generator"],
+    keyword: "retro ui",
+    sections: [
+      {
+        heading: "Windows you remember, not the ones you have",
+        body: [
+          "Retro UI reaches for the early desktop metaphor: beveled window chrome, chunky controls with highlight-and-shadow edges, compact toolbars, and a disciplined teal-grey palette. It reads as deliberately nostalgic — project management tools, developer utilities, and anything playing up its own earnestness use it to signal a simpler, more solid era.",
+          "Recognize it by chrome and restraint: beveled, dimensional controls; dense, compact layout; window metaphors like title bars, panes and status bars; and a limited palette where no more than two or three hues exist at all. The constraint is the charm — this style quietly dies the moment you add a modern rainbow accent wave.",
+        ],
+      },
+      {
+        heading: "The retro UI preset",
+        body: [
+          "The preset stays true to the era: a utilitarian teal, a steel grey for chrome, a restrained brass gold for the rare highlight, split-complementary so the teal has one real opponent, sharp radius for crisp bevels, and saturation dialed down so nothing glows. System fonts keep the terminal-office authenticity:",
+        ],
+        code: "/design-system?primary=0f766e&secondary=8a99a6&accent=c9a227&strategy=split-complementary&radius=sharp&sat=-8",
+        tip: "Bevels imply depth; they also demand contrast. Make sure beveled buttons stay clearly distinguishable from beveled inputs — same chamfer, opposite affordance confuses people — and give disabled chrome a real state difference, not just a grey tint.",
+      },
+      {
+        heading: "Adapt it",
+        body: [
+          "If the teal isn't yours, any period-correct industrial hue (battleship blue, café orange, sage) drops in — keep sat low and let the steel grey carry the chrome. Add compact density to the four previews by treating the marketing preview as the one page that gets to relax; the desktop feel belongs in the SaaS and mobile tools.",
+        ],
+      },
+      {
+        heading: "Prompt for an AI builder",
+        body: [
+          "A starting brief:",
+        ],
+        code: "Design a 1990s desktop-inspired interface: beveled window chrome, compact and dense layouts, title bars and status bars, a limited teal-grey palette with a single brass highlight. Keep text readable, states explicit (beveled up for enabled, beveled down for pressed, greyed for disabled), and use no modern flat-ui gestures.",
+      },
+    ],
+  },
+  {
+    slug: "bento-grid-design-system",
+    title: "Bento grid: a design system built from modular tiles",
+    metaTitle: "Bento Grid Design System — Modular Tile UI Theme",
+    description:
+      "The bento grid as a design language: mixed-span tiles, strong alignment, compact summaries. Generate a vibrant bento-ready theme with a ChromaBrew preset.",
+    excerpt:
+      "The bento grid is a layout discipline and a color discipline. Here's the preset that keeps varied tiles feeling like one system.",
+    publishedAt: "2026-09-01",
+    category: "Design styles",
+    tags: ["bento grid", "dashboard", "design system", "modular layout"],
+    relatedHrefs: ["/tools/color-palette-generator", "/tools/contrast-checker", "/tools/design-token-generator"],
+    keyword: "bento grid design",
+    sections: [
+      {
+        heading: "A grid that acts like a dashboard",
+        body: [
+          "A bento grid is the modular layout where tiles of different sizes sit in aligned rows — a big hero tile here, four small status tiles there, a tall one beside a wide one — all held together by invisible column lines. It turns mixed content, stats and actions into a compact overview, which is why dashboards, launchers and settings screens love it.",
+          "Recognize it by modularity and rhythm: varied tile spans, strong shared alignment, compact summaries inside each tile, and a color system that keeps tiles differentiated without shouting. That color discipline is the part people miss — a bento grid with six hero colors is a jumble; a bento grid with two surfaces plus a few role colors is a system.",
+        ],
+      },
+      {
+        heading: "The bento grid preset",
+        body: [
+          "Bento thrives on a bright, modern trio: an indigo primary for the tiles that matter, a cyan for emphasis surfaces, and a rose accent for status and mixed data. Split-complementary keeps those relationships honest, round radius softens the tiles, and a grotesque pairing gives the compact summaries the slight technical edge they want:",
+        ],
+        code: "/design-system?primary=6366f1&secondary=22d3ee&accent=fb7185&strategy=split-complementary&radius=round&fonts=grotesque",
+        tip: "In a bento system, tile differentiation should come from token roles — surface for the quiet tiles, primary for the featured one, accent for live status — so a tile swap never means a color decision.",
+      },
+      {
+        heading: "Adapt it",
+        body: [
+          "Treat the SaaS preview as the bento home and push your own brand hue into primary. Keep cyan and rose only if they earn their place; muted brands can drop to a single accent and use surface lightness instead. After the hue swap, check the smallest tile text — compact summaries are where contrast quietly fails.",
+        ],
+      },
+      {
+        heading: "Prompt for an AI builder",
+        body: [
+          "A starting brief:",
+        ],
+        code: "Design a bento-grid dashboard: aligned tiles of mixed span and size, compact summaries, strong shared alignment, and a restrained color system where one primary colors the featured tile, a neutral surface colors the rest, and a single accent marks live status. Keep small text readable and spacing rhythm consistent.",
+      },
+    ],
+  },
+  {
+    slug: "terminal-ui-design-system",
+    title: "Terminal UI: a design system for the keyboard crowd",
+    metaTitle: "Terminal UI Design System — Monospace, Command-First Theme",
+    description:
+      "Terminal UI explained: monospace hierarchy, command patterns, semantic status colors. Generate the dark command-line style with a ChromaBrew preset.",
+    excerpt:
+      "Monospace, command-first, all-dark. Here's the terminal UI style as a design system you can generate — and keep readable.",
+    publishedAt: "2026-09-01",
+    category: "Design styles",
+    tags: ["terminal ui", "monospace", "dark mode", "developer tools"],
+    relatedHrefs: ["/tools/contrast-checker", "/tools/dark-mode-generator", "/tools/design-token-generator"],
+    keyword: "terminal ui",
+    sections: [
+      {
+        heading: "The interface as a console",
+        body: [
+          "Terminal UI borrows the vital signs of a command prompt: monospace text everywhere, a command field you could actually run, process logs and metrics, and a strict set of semantic status colors for success, warning and error. It signals precision and developer-friendliness — DevOps consoles, release dashboards and deploy tools use it to say 'this is real machinery'.",
+          "Recognize it by monospace hierarchy and restraint: a dark near-black surface, a single luminous accent reserved for the command and key metrics, status colors doing exactly their jobs, and a keyboard-first flow that treats the mouse as optional. The charm is discipline — a terminal UI with decorative flourishes stops being a terminal.",
+        ],
+      },
+      {
+        heading: "The terminal UI preset",
+        body: [
+          "The preset pairs a phosphor teal-green with a cyan for the live-command accent, stays monochromatic so every hue already agrees, uses sharp radius to echo hard-edged console chrome, and — the crucial piece — sets the dark background to solid black rather than tinted, the way real emulators sit:",
+        ],
+        code: "/design-system?primary=00b894&accent=00cec9&strategy=monochromatic&radius=sharp&fonts=technical&dbg=solid-black",
+        tip: "Dark surfaces give text headroom, but the luminous accent and status colors are where terminal themes fail — a bright green 'all good' and an amber warning both need to pass AA against near-black, and they often don't.",
+      },
+      {
+        heading: "Adapt it",
+        body: [
+          "Swap the phosphor for any terminal-era hue — amber-on-black, green-on-black, terminus blue — the technical font pairing and solid black dark mode carry the identity. Keep status colors semantic and identical across the light and dark themes; nothing about a command console should change meaning between modes.",
+        ],
+      },
+      {
+        heading: "Prompt for an AI builder",
+        body: [
+          "A starting brief:",
+        ],
+        code: "Design a dark command-line interface: near-black surface, monospace typography, a command field at the focal point, process logs and status metrics, and semantic status colors (success, warning, error, offline). Use a single luminous accent for live activity, keep body text highly readable, and make focus and keyboard navigation fully visible.",
+      },
+    ],
+  },
+  {
+    slug: "skeuomorphism-design-system",
+    title: "Skeuomorphism: a design system that feels like real materials",
+    metaTitle: "Skeuomorphism Design System — Material Metaphors, Explained",
+    description:
+      "Skeuomorphism explained: physical metaphors, believable materials, dimensional controls. Generate the warm material style with a ChromaBrew preset.",
+    excerpt:
+      "Wood, leather, brass — skeuomorphism makes digital controls feel physical. Here's how to generate the material style and keep it from looking like a museum.",
+    publishedAt: "2026-09-01",
+    category: "Design styles",
+    tags: ["skeuomorphism", "materials", "design system", "depth"],
+    relatedHrefs: ["/tools/shade-generator", "/tools/color-palette-generator", "/tools/design-token-generator"],
+    keyword: "skeuomorphism",
+    sections: [
+      {
+        heading: "When the button is made of something",
+        body: [
+          "Skeuomorphism gives digital controls physical metaphors — a knob that turns like a knob, a panel that reads as brushed metal, a page that sits on wood grain. Its comeback in niche product domains trades on instant legibility: people understand a lever before they read a label. Audio gear, instruments and artisan tools love it.",
+          "Recognize it by materials, not decoration: believable textures and gradients, dimensional controls with highlight and shadow, and realistic feedback like a click that looks pressed. The trap is doing it richly everywhere — a skeuomorphic system with a real job keeps the metaphor for the controls and lets everything else recede.",
+        ],
+      },
+      {
+        heading: "The skeuomorphism preset",
+        body: [
+          "The preset builds on warm, material- believable tones: a leather tan for primary, a darker saddle brown for depth, an analogous strategy so the wood family stays in one hue neighborhood, and a rounder radius with a humanist pairing so the interface feels handled rather than machined: ",
+        ],
+        code: "/design-system?primary=8d5524&secondary=6f4e2b&strategy=analogous&radius=round&fonts=humanist&sat=8",
+        tip: "Materials are communicated by temperature and shadow, not by texture overload. In a generated system, let the warm palette read as the material and reserve gradient-style detailing for actual controls.",
+      },
+      {
+        heading: "Adapt it",
+        body: [
+          "Swap the tan for a walnut, an espresso, or a brushed olive to change the 'material' instantly; saturation delivery keeps the warmth. The previews show where metaphor is affordable: buttons and toggles can carry dimensional treatment; paragraphs and density should stay flat and readable.",
+        ],
+      },
+      {
+        heading: "Prompt for an AI builder",
+        body: [
+          "A starting brief:",
+        ],
+        code: "Design a skeuomorphic interface around believable materials: dimensional controls with highlight and shadow, physical metaphors for primary actions (knobs, levers, panels), and a restrained warm material palette. Keep text flat and high-contrast, make focus visible, and avoid texture overload — metaphor belongs on controls, not content.",
+      },
+    ],
+  },
+  {
+    slug: "claymorphism-design-system",
+    title: "Claymorphism: soft, inflated, playful",
+    metaTitle: "Claymorphism Design System — Inflated Pastel UI Theme",
+    description:
+      "Claymorphism explained: inflated forms, saturated pastels, directional shadows. Generate the playful soft-volume style with a ChromaBrew preset.",
+    excerpt:
+      "Inflated cards, saturated pastels, directional shadows. Here's the claymorphism style as a design system — and where its contrast gets fragile.",
+    publishedAt: "2026-09-01",
+    category: "Design styles",
+    tags: ["claymorphism", "pastels", "design system", "playful ui"],
+    relatedHrefs: ["/tools/color-palette-generator", "/tools/contrast-checker", "/tools/design-token-generator"],
+    keyword: "claymorphism",
+    sections: [
+      {
+        heading: "UI that looks squeezed and squishy",
+        body: [
+          "Claymorphism is the softened cousin of neomorphism: inflated, rounded volumes with directional shadows, saturated pastels, and a general sense that each card was squeezed out of a tube. It reads playful and tactile — kid-focused tools, wellness apps and creative products use it to feel approachable.",
+          "Recognize it by volume and color: forms that look puffed up, soft directional shading that suggests a light source, saturated pastel hues, and an overall low-stakes friendliness. The tension is built in — pastel saturation is exactly where text contrast quietly dies, so the style works hardest to stay usable.",
+        ],
+      },
+      {
+        heading: "The claymorphism preset",
+        body: [
+          "The preset picks a saturated pink family with a violet support and an amber highlight, keeps the hues near-neighbors through an analogous strategy, rounds the radius to fully accommodate the inflated look, and pushes saturation up so the pastels actually read as clay rather than washed-out grey. A grotesque pairing keeps the cuteness from sliding into cartoon:",
+        ],
+        code: "/design-system?primary=f472b6&secondary=a78bfa&accent=fbbf24&strategy=analogous&radius=round&fonts=grotesque&sat=10",
+        tip: "Pastel text on a pastel surface is this style's signature failure. Every typographic pair needs the same 4.5:1 you'd demand on any other style — the volume does the smiling, the text still has to work.",
+      },
+      {
+        heading: "Adapt it",
+        body: [
+          "The pastel trio is the whole personality; swap in your brand's hue family and keep saturation high but controlled. Walk the four previews looking at text-on-filled-card pairs specifically, and let the dark theme's chroma step down — inflated pastels read as radioactive on near-black if left alone.",
+        ],
+      },
+      {
+        heading: "Prompt for an AI builder",
+        body: [
+          "A starting brief:",
+        ],
+        code: "Design a claymorphic interface: inflated, rounded components with soft directional shadows, saturated pastel surfaces, and a playful low-stakes tone. Keep text and icons in genuine contrast, make focus visible, and provide pressed and hover states that respect the inflated geometry. Avoid photorealism in light sources.",
+      },
+    ],
+  },
+  {
+    slug: "bauhaus-design-system",
+    title: "Bauhaus: primary geometry, bold type, hard edges",
+    metaTitle: "Bauhaus Design System — Geometric, Avant-Garde UI Theme",
+    description:
+      "Bauhaus-inspired interface design: primary geometry, assertive type, asymmetric balance. Generate the avant-garde style with a ChromaBrew preset.",
+    excerpt:
+      "Red, blue, yellow, geometry. The Bauhaus approach to interface design is discipline disguised as play — here's the preset.",
+    publishedAt: "2026-09-01",
+    category: "Design styles",
+    tags: ["bauhaus", "geometric", "design system", "avant-garde"],
+    relatedHrefs: ["/tools/color-palette-generator", "/tools/color-blindness-simulator", "/tools/contrast-checker"],
+    keyword: "bauhaus design",
+    sections: [
+      {
+        heading: "Form follows function, loudly",
+        body: [
+          "Bauhaus design leans on primary geometry and primary color: circles, squares and straight lines, red, blue and yellow, bold sans-serif type, and asymmetric compositions that stay balanced through relation rather than symmetry. As an interface language it says audacious and modern — portfolio sites, studios and creative-tool products wear it well.",
+          "Recognize it by commitment: hard-edged shapes used functionally rather than decoratively, a few saturated hues with no greys in between, assertive display type, and compositions whose imbalance is clearly intentional. The discipline is that everything geometric is doing layout work — nothing is ornament for ornament's sake.",
+        ],
+      },
+      {
+        heading: "The Bauhaus preset",
+        body: [
+          "The preset goes full Bauhaus: a vermillion primary, a strong blue secondary and a signal-yellow accent, a triadic strategy that keeps all three hues evenly apart on the wheel, sharp radius for honest right angles, and a geometric type pairing with the display personality the movement demands:",
+        ],
+        code: "/design-system?primary=ff4d00&secondary=1d4ed8&accent=ffc400&strategy=triadic&radius=sharp&fonts=geometric",
+        tip: "Red/blue/yellow is also the exact scheme most people with color-vision deficiency confuse. Run the palette through the color-blindness simulator before shipping — functionality shouldn't depend on distinguishing yellow from red.",
+      },
+      {
+        heading: "Adapt it",
+        body: [
+          "The bold trio is the point, so resist the urge to mute it — if a muted brand needs Bauhaus structure, keep the geometry and drop a single hue. Sharp radius and the geometric pairing do the structural work; let the shapes the previews lay out speak, and keep body copy on white or near-white for contrast.",
+        ],
+      },
+      {
+        heading: "Prompt for an AI builder",
+        body: [
+          "A starting brief:",
+        ],
+        code: "Design a Bauhaus-inspired interface: primary geometry used functionally, a disciplined palette of a few saturated hues (red, blue, yellow), bold sans-serif display type, asymmetric but balanced composition, and sharp corners. Keep body text high-contrast and confirm meaning doesn't rely on color alone.",
+      },
+    ],
+  },
+  {
+    slug: "art-deco-design-system",
+    title: "Art Deco: midnight, gold, and symmetry",
+    metaTitle: "Art Deco Design System — Metallic, Ceremonial UI Theme",
+    description:
+      "Art Deco interface design: stepped geometry, strong symmetry, metallic accents, refined display type. Generate the ceremonial style with a ChromaBrew preset.",
+    excerpt:
+      "Midnight navy, gold linework, symmetry. The Art Deco style turns an interface into a ceremony — here's the preset.",
+    publishedAt: "2026-09-01",
+    category: "Design styles",
+    tags: ["art deco", "gold", "design system", "luxury"],
+    relatedHrefs: ["/tools/color-palette-generator", "/tools/shade-generator", "/tools/design-token-generator"],
+    keyword: "art deco design",
+    sections: [
+      {
+        heading: "The interface as a gilded hall",
+        body: [
+          "Art Deco draws from the 1920s: stepped and fan-shaped geometry, strong symmetry, metallic gold accents and refined display serifs. Used digitally it reads ceremonial and precise — luxury brands, galas, ticketing and heritage properties reach for it to say 'this is an occasion'.",
+          "Recognize it by restraint and symmetry: a dark jewel-toned base, gold or brass doing all the metallic work, stepped lines echoing architecture, and centered, confident compositions. Every trait depends on the others; gold without symmetry is just expensive-looking, and symmetry without gold is plain brown.",
+        ],
+      },
+      {
+        heading: "The Art Deco preset",
+        body: [
+          "The preset sets a midnight navy as the base — dark enough for the gold to glow — keeps the family analogous so the navy stays deep and rich, uses a refined editorial serif and a generous ratio for that ceremonial display scale, sharpens the radius to fit stepped geometry, and locks the dark background to solid black. A tiny brightness lift keeps the navy from crushing:",
+        ],
+        code: "/design-system?primary=1f2a44&accent=caa04f&strategy=analogous&radius=sharp&fonts=editorial&ratio=1.333&dbg=solid-black&sat=-5&bright=5",
+        tip: "Gold on midnight is beautiful but universally tight on contrast. Where gold carries text, tune it down into a softer champagne tone; keep pure gold for linework and ornaments, and put text on navy or white instead.",
+      },
+      {
+        heading: "Adapt it",
+        body: [
+          "Swap the navy for emerald, burgundy, or royal purple and the ceremony survives; keep the gold accent regardless, since it is doing the metallic identity. The dark theme should be the default here — open the previews in dark mode first, then make sure the light theme isn't an afterthought.",
+        ],
+      },
+      {
+        heading: "Prompt for an AI builder",
+        body: [
+          "A starting brief:",
+        ],
+        code: "Design an Art Deco-inspired interface on a midnight navy base: stepped geometry, strong axial symmetry, metallic gold accents used for linework and ornament, and a refined display serif. Keep body text on readable contrast, reserve pure gold for non-text elements, and treat the dark theme as the primary experience.",
+      },
+    ],
+  },
+  {
+    slug: "memphis-design-system",
+    title: "Memphis: postmodern geometry and deliberate imbalance",
+    metaTitle: "Memphis Design System — Playful Pattern-Mixing UI Theme",
+    description:
+      "Memphis-style interface design: playful geometry, pattern mixing, bright accents. Generate the postmodern style with a ChromaBrew preset.",
+    excerpt:
+      "Dots, squiggles, loud triads. The Memphis style is play with a point — here's the design system preset with its restraint built in.",
+    publishedAt: "2026-09-01",
+    category: "Design styles",
+    tags: ["memphis", "postmodern", "design system", "playful"],
+    relatedHrefs: ["/tools/color-palette-generator", "/tools/color-blindness-simulator", "/tools/contrast-checker"],
+    keyword: "memphis design",
+    sections: [
+      {
+        heading: "Playfulness with a grid underneath",
+        body: [
+          "Memphis launched as a rebellion against minimalism in the eighties: squiggles, dots, confetti and loud color clashing on purpose. As an interface language it's youthful and expressive — creative studios, events and content products use it to say 'not corporate', often paired with a straight-laced layout underneath so the play has structure.",
+          "Recognize it by tone and tension: playful geometry and pattern mixing, bright accent colors against a plain base, and a casual imbalance that never reads as careless. The serious part is the foundation — a Memphis system is disciplined layout wearing colorful sunglasses, and the restraint is what keeps it from becoming noise.",
+        ],
+      },
+      {
+        heading: "The Memphis preset",
+        body: [
+          "The preset picks a loud coral-teal-yellow triad — evenly spaced hues so the clashing reads as intentional — rounds the radius to match the doodle energy, uses a grotesque pairing for bold attitude, and pushes saturation up the way the movement demands:",
+        ],
+        code: "/design-system?primary=ff6b6b&secondary=4ecdc4&accent=ffe66d&strategy=triadic&radius=round&fonts=grotesque&sat=12",
+        tip: "A triad this loud makes text its own casualty. Design a neutral base into the system and let one hue at a time carry color — the moment all three saturate the same screen, contrast and calm both leave.",
+      },
+      {
+        heading: "Adapt it",
+        body: [
+          "Any bright triad you love works — just keep the three hues evenly separated so they keep that deliberate clang. Let the previews place color sparingly: primary for the featured action, accent for the doodles, and the neutral surfaces doing the heavy lifting. Check text pairs after every hue swap.",
+        ],
+      },
+      {
+        heading: "Prompt for an AI builder",
+        body: [
+          "A starting brief:",
+        ],
+        code: "Design a Memphis-inspired interface: playful geometry and pattern mixing (dots, squiggles, confetti accents), a bright three-hue palette on a clean neutral base, and relaxed but intentional composition. Keep text high-contrast, use color sparingly per screen, and confirm meaning doesn't depend on hue alone.",
+      },
+    ],
+  },
+  {
+    slug: "cyberpunk-interface-design-system",
+    title: "Cyberpunk interface: dark, luminous, technical",
+    metaTitle: "Cyberpunk UI Design System — Neon, Dark Theme",
+    description:
+      "Cyberpunk interface design: dark high-contrast surfaces, luminous accents, angular frames. Generate the neon future style with a ChromaBrew preset.",
+    excerpt:
+      "Cyan and magenta on near-black, angular panels, dense labels. Here's the cyberpunk interface style as a working design system.",
+    publishedAt: "2026-09-01",
+    category: "Design styles",
+    tags: ["cyberpunk", "dark mode", "neon", "design system"],
+    relatedHrefs: ["/tools/dark-mode-generator", "/tools/contrast-checker", "/tools/design-token-generator"],
+    keyword: "cyberpunk interface",
+    sections: [
+      {
+        heading: "Speculative technology, legible enough to use",
+        body: [
+          "Cyberpunk interface design imagines technology as dense and slightly hostile: near-black surfaces, luminous cyan and magenta accents, angular frames and panels, and technical microcopy everywhere — speculation numbers, status labels, node graphs. It signals powerful, futuristic utility: analytics tools, AI products and game-adjacent software love it.",
+          "Recognize it by contrast and framing: dark high-contrast base, a small set of luminous accents doing real work, sharp angular or clipped panels, and text that reads technical even when it's marketing copy. The discipline is that despite the mood, everything stays readable — a proper cyberpunk system is a dark theme that passes accessibility, not a neon poster.",
+        ],
+      },
+      {
+        heading: "The cyberpunk preset",
+        body: [
+          "The preset builds the classic trio — cyan primary, magenta secondary, violet accent — as a split-complementary family so the neon hues feel related rather than random, sets sharp radius for the angular panel language, pairs a technical monospace for the dense label mood, locks the dark background to solid black, and pushes saturation up so the accents genuinely glow: ",
+        ],
+        code: "/design-system?primary=06b6d4&secondary=ff2d95&accent=8b5cf6&strategy=split-complementary&radius=sharp&fonts=technical&dbg=solid-black&sat=12",
+        tip: "Luminous accents sharpen against black, which is exactly when they blow past usable. Body text should never run in cyan or magenta — reserve them for the frames, the primary action and status, and keep copy in the near-whites.",
+      },
+      {
+        heading: "Adapt it",
+        body: [
+          "Any high-intensity duo works — amber-and-green terminal, ice-blue-and-red — keep the black base and sharp radius and the identity is intact. Prefer the dark theme as the default and the light theme as a concession; then confirm both pass the same contrast report, because neon on white behaves differently.",
+        ],
+      },
+      {
+        heading: "Prompt for an AI builder",
+        body: [
+          "A starting brief:",
+        ],
+        code: "Create an original cyberpunk interface using dark high-contrast surfaces, a limited set of luminous accents, angular framing, technical microcopy and a disciplined information grid. Keep body text highly readable, make focus visible, avoid rapid flicker, and define low-glow, reduced-motion, mobile, warning, error and offline states. Do not use franchise marks or copied game HUD elements.",
+      },
+    ],
+  },
+  {
+    slug: "biomorphic-design-system",
+    title: "Biomorphic: organic shapes and earth colors",
+    metaTitle: "Biomorphic Design System — Organic, Natural UI Theme",
+    description:
+      "Biomorphic interface design: organic silhouettes, flowing boundaries, earth-derived colors. Generate the calming natural style with a ChromaBrew preset.",
+    excerpt:
+      "Leaf forms, flowing edges, sage and clay. The biomorphic style softens the grid — here's the design system preset and its limits.",
+    publishedAt: "2026-09-01",
+    category: "Design styles",
+    tags: ["biomorphic", "organic", "design system", "natural"],
+    relatedHrefs: ["/tools/color-palette-generator", "/tools/design-token-generator", "/tools/contrast-checker"],
+    keyword: "biomorphic design",
+    sections: [
+      {
+        heading: "Where the grid loosens up",
+        body: [
+          "Biomorphic design takes cues from living forms — irregular silhouettes, flowing boundaries, rounded organic edges — and pairs them with earth-derived colors: sage, clay, moss, driftwood. It softens the hard grid of typical interface design and reads calm and natural: wellbeing apps, environmental products and elegant calm brands use it.",
+          "Recognize it by shape and palette: organic silhouettes that avoid straight edges, flowing boundaries between regions, earth-toned color with low-to-moderate saturation, and a soft asymmetry built around natural balance rather than strict centering. The risk is the opposite of maximalism: too organic, and a screen stops feeling like an interface and starts feeling vague.",
+        ],
+      },
+      {
+        heading: "The biomorphic preset",
+        body: [
+          "The preset starts from a sage green — the most earth-believable base — keeps the family analogous so the palette stays in a natural neighborhood, rounds the radius to soften corners into flowing edges, pairs a humanist typeface for warmth, and drops saturation so tones read like pigment rather than plastic:",
+        ],
+        code: "/design-system?primary=6f9f6e&strategy=analogous&radius=round&fonts=humanist&sat=-5",
+        tip: "Organic shapes love muted color, and muted color loves to fail contrast. Keep body text on the lightest natural surface and let the organic flourish live in cards and buttons — not under paragraphs.",
+      },
+      {
+        heading: "Adapt it",
+        body: [
+          "Swap the sage for clay, moss, or sea-grey and the natural mood follows; the analogous strategy keeps whatever family you choose grounded. In the previews, let the round radius and humanist pairing do the organic work — layering actual irregular shapes into the UI is where this style quietly turns into a rendering bug, especially in the ecommerce view.",
+        ],
+      },
+      {
+        heading: "Prompt for an AI builder",
+        body: [
+          "A starting brief:",
+        ],
+        code: "Design a biomorphic interface using organic silhouettes, flowing region boundaries, and earth-derived muted colors (sage, clay, moss). Keep rounded, natural shapes on components while preserving text readability on calm light surfaces. Use soft asymmetry, visible focus, and a restrained palette so the interface still reads as an interface.",
+      },
+    ],
+  },
+  {
+    slug: "maximalist-editorial-design-system",
+    title: "Maximalist editorial: type as the loudest element",
+    metaTitle: "Maximalist Editorial Design System — Dramatic Type Theme",
+    description:
+      "Maximalist editorial interface design: dramatic scale, layered typography, dense rhythm, vivid color blocks. Generate the bold style with a ChromaBrew preset.",
+    excerpt:
+      "Oversized headlines, layered type, color blocks. The maximalist editorial style makes hierarchy the experience — here's the preset.",
+    publishedAt: "2026-09-01",
+    category: "Design styles",
+    tags: ["maximalist", "editorial", "typography", "design system"],
+    relatedHrefs: ["/tools/typography-scale-generator", "/tools/color-palette-generator", "/tools/design-token-generator"],
+    keyword: "maximalist editorial",
+    sections: [
+      {
+        heading: "When hierarchy is the content",
+        body: [
+          "Maximalist editorial turns the hierarchy itself into the experience: oversized headlines that dominate the viewport, layered and overlapping typography, dense rhythmic layouts, and vivid color blocks slammed against each other. It's magazine energy — culture brands, media companies and loud portfolios use it to feel alive and opinionated.",
+          "Recognize it by scale and density: dramatic type that breaks the grid, nested layers of text and shape, tight editorial rhythm where every inch is doing something, and color blocks used with confidence. The hidden rule is that drama needs a reference point — a layer of calm text and whitespace underneath is what makes the loud parts loud.",
+        ],
+      },
+      {
+        heading: "The maximalist editorial preset",
+        body: [
+          "The preset sets a vivid crimson as the master headline hue, a strong blue and an amber for the block-and-accent work, keeps the family related through split-complementary strategy, sharpens the radius so color blocks land as hard slabs, and pairs an editorial serif with the most generous type ratio in the generator — because this style is nearly all type: ",
+        ],
+        code: "/design-system?primary=e11d48&secondary=2563eb&accent=f59e0b&strategy=split-complementary&radius=sharp&fonts=editorial&ratio=1.333",
+        tip: "Layered type over color blocks is where reading collapses. Give headlines a legible background or real contrast step, keep body text on solid light surfaces, and let one hue dominate while the other two stay accents — three full-strength blocks at once is noise.",
+      },
+      {
+        heading: "Adapt it",
+        body: [
+          "Any crimson-family brand works; the anchoring move is keeping the dominant hue dominant. Use the marketing preview to judge headline scale, the SaaS preview to confirm the density stays usable in a working tool, and the generous ratio across all four — then shave the palette down rather than up if the previews feel frantic.",
+        ],
+      },
+      {
+        heading: "Prompt for an AI builder",
+        body: [
+          "A starting brief:",
+        ],
+        code: "Design a maximalist editorial interface where hierarchy is the experience: oversized layered display type, dense editorial rhythm, vivid color blocks, and confident scale shifts. Keep one hue dominant, place body copy on calm light surfaces, ensure headlines hold contrast over color, and retain usable hierarchy for content-heavy screens.",
+      },
+    ],
+  },
 ];
 
 export function findPost(slug: string): BlogPost | undefined {
