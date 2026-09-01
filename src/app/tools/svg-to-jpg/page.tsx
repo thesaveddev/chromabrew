@@ -13,9 +13,9 @@ export default function Page() {
     <ToolShell
       tool={TOOL}
       usage={[
-        "Upload an SVG file or paste SVG code.",
-        "Preview the image live.",
-        "Choose a scale (1x–4x) and download the JPG.",
+        "Upload one or more SVG files — or paste SVG code to add it to the batch.",
+        "Choose a scale (1x–4x) applied to every file.",
+        "Convert them all at once and download each JPG or all as a .zip.",
       ]}
     >
       <SvgToJpgConverter />

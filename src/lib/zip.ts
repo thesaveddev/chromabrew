@@ -45,13 +45,15 @@ interface ZipEntry {
 export interface ZipSource {
   /** File path inside the archive, e.g. "tokens/design-tokens.json". */
   path: string;
-  content: string;
+  /** Text content (UTF-8 encoded) or raw bytes for binary files. */
+  content: string | Uint8Array;
 }
 
-export function createZip(files: ZipSource[]): Uint8Array {
+export function createZip(files: ZipSource[]): Uint8Array<ArrayBuffer> {
   const entries: ZipEntry[] = files.map((file) => {
     const name = enc.encode(file.path);
-    const data = enc.encode(file.content);
+    const data =
+      typeof file.content === "string" ? enc.encode(file.content) : file.content;
     return { name, data, crc: crc32(data), header: 0 };
   });
 

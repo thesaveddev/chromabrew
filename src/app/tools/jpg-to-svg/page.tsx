@@ -13,9 +13,9 @@ export default function Page() {
     <ToolShell
       tool={TOOL}
       usage={[
-        "Upload a JPG, PNG or any raster image.",
+        "Upload one or more JPG, PNG or raster images.",
         "Adjust the color count to balance quality and file size.",
-        "Download the resulting SVG.",
+        "Convert them all at once and download each SVG or all as a .zip.",
       ]}
     >
       <JpgToSvgConverter />
