@@ -2,88 +2,10 @@
 
 import { useMemo, useState } from "react";
 import { parseColour, formatRgb, formatHsl, formatOklch, toColourValue } from "@/lib/design-system/colour/convert";
+import { contrastRatio } from "@/lib/design-system/colour/contrast";
+import { CVD_TYPES, simulateCvd, differenceScore } from "@/lib/design-system/colour/cvd";
 import { ColourInput } from "@/components/ui/colour";
 import { CopyButton } from "@/components/ui/primitives";
-/**
- * Color blindness simulation matrices.
- * Based on Machado, Oliveira & Fernandes (2009) — the standard
- * matrices used by major accessibility tools.
- */
-const MATRICES: Record<string, number[][]> = {
-  normal: [
-    [1, 0, 0],
-    [0, 1, 0],
-    [0, 0, 1],
-  ],
-  protanopia: [
-    [0.152286, 1.052583, -0.204868],
-    [0.114503, 0.786281, 0.099216],
-    [-0.003882, -0.048116, 1.051998],
-  ],
-  deuteranopia: [
-    [0.367322, 0.860646, -0.227968],
-    [0.280085, 0.672501, 0.047413],
-    [-0.011820, 0.042940, 0.968881],
-  ],
-  tritanopia: [
-    [1.255528, -0.076749, -0.178779],
-    [-0.078411, 0.930809, 0.147602],
-    [0.004733, 0.691367, 0.303900],
-  ],
-  achromatopsia: [
-    [0.2126, 0.7152, 0.0722],
-    [0.2126, 0.7152, 0.0722],
-    [0.2126, 0.7152, 0.0722],
-  ],
-};
-
-const TYPES = [
-  { id: "normal", label: "Normal vision", desc: "Full trichromatic color vision" },
-  { id: "protanopia", label: "Protanopia", desc: "No red cones (~1.3% of males)" },
-  { id: "deuteranopia", label: "Deuteranopia", desc: "No green cones (~1.2% of males)" },
-  { id: "tritanopia", label: "Tritanopia", desc: "No blue cones (~0.01% of population)" },
-  { id: "achromatopsia", label: "Achromatopsia", desc: "Total color blindness (~0.003%)" },
-] as const;
-
-function simulate(hex: string, type: string): string {
-  const m = MATRICES[type] ?? MATRICES.normal;
-  const v = toColourValue(hex);
-  const rn = v.rgb.r / 255;
-  const gn = v.rgb.g / 255;
-  const bn = v.rgb.b / 255;
-  const sr = Math.round(Math.max(0, Math.min(1, m[0][0] * rn + m[0][1] * gn + m[0][2] * bn)) * 255);
-  const sg = Math.round(Math.max(0, Math.min(1, m[1][0] * rn + m[1][1] * gn + m[1][2] * bn)) * 255);
-  const sb = Math.round(Math.max(0, Math.min(1, m[2][0] * rn + m[2][1] * gn + m[2][2] * bn)) * 255);
-  return `#${[sr, sg, sb].map((c) => c.toString(16).padStart(2, "0")).join("")}`;
-}
-
-function toRgb(hex: string): [number, number, number] {
-  const n = parseInt(hex.replace("#", ""), 16);
-  return [(n >> 16) & 0xff, (n >> 8) & 0xff, n & 0xff];
-}
-
-/** WCAG 2.x contrast ratio between two hex colors. */
-function contrastRatio(a: string, b: string): number {
-  const luma = (hex: string) => {
-    const [r, g, b] = toRgb(hex).map((c) => c / 255).map((c) =>
-      c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4),
-    );
-    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  };
-  const l1 = luma(a);
-  const l2 = luma(b);
-  const lighter = Math.max(l1, l2);
-  const darker = Math.min(l1, l2);
-  return (lighter + 0.05) / (darker + 0.05);
-}
-
-/** Perceptual difference score 0–100 between two hex colors. */
-function differenceScore(a: string, b: string): number {
-  const [ar, ag, ab] = toRgb(a);
-  const [br, bg, bb] = toRgb(b);
-  const dist = Math.sqrt((ar - br) ** 2 + (ag - bg) ** 2 + (ab - bb) ** 2);
-  return Math.min(100, (dist / 441) * 100);
-}
 
 export function ColorBlindnessSimulator({ initial = "#47003a" }: { initial?: string }) {
   const [raw, setRaw] = useState(initial);
@@ -95,7 +17,7 @@ export function ColorBlindnessSimulator({ initial = "#47003a" }: { initial?: str
   }, [color]);
 
   const simulations = useMemo(
-    () => TYPES.map((t) => ({ ...t, hex: simulate(color, t.id) })),
+    () => CVD_TYPES.map((t) => ({ ...t, hex: simulateCvd(color, t.id) })),
     [color],
   );
 
@@ -194,9 +116,9 @@ function ColorPairChecker({
 
   const pairs = useMemo(() => {
     if (!validA || !validB) return null;
-    return TYPES.map((t) => {
-      const simA = simulate(a, t.id);
-      const simB = simulate(b, t.id);
+    return CVD_TYPES.map((t) => {
+      const simA = simulateCvd(a, t.id);
+      const simB = simulateCvd(b, t.id);
       const diff = differenceScore(simA, simB);
       return {
         ...t,

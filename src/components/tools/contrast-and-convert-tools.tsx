@@ -9,7 +9,7 @@ import {
   toColourValue,
 } from "@/lib/design-system/colour/convert";
 import { contrastRatio, fixContrast, grade } from "@/lib/design-system/colour/contrast";
-import { Button, CopyButton } from "@/components/ui/primitives";
+import { Button, CopyButton, LinkButton } from "@/components/ui/primitives";
 import { ColourInput } from "@/components/ui/colour";
 import { SingleColourForm } from "./shared-tool-ui";
 
@@ -180,37 +180,29 @@ export function ContrastTool({
 /* Converters                                                          */
 /* ------------------------------------------------------------------ */
 
-export type ConverterMode = "hex-to-rgb" | "rgb-to-hex" | "hex-to-hsl";
-
-export function ConverterTool({ mode }: { mode: ConverterMode }) {
+export function ColourConverter() {
   const [raw, setRaw] = useState("#47003a");
   const resolved = parseColour(raw);
   const value = resolved ? toColourValue(resolved) : null;
 
-  const output = useMemo(() => {
-    if (!value) return null;
-    switch (mode) {
-      case "hex-to-rgb":
-        return formatRgb(value.rgb);
-      case "hex-to-hsl":
-        return formatHsl(value.hsl);
-      default:
-        return value.hex.toUpperCase();
-    }
-  }, [value, mode]);
-
-  const inputLabel =
-    mode === "rgb-to-hex" ? "RGB color (e.g. rgb(71, 0, 58))" : "HEX color";
+  const rows = value
+    ? [
+        { format: "HEX", code: value.hex.toUpperCase() },
+        { format: "RGB", code: formatRgb(value.rgb) },
+        { format: "HSL", code: formatHsl(value.hsl) },
+        { format: "OKLCH", code: formatOklch(value.oklch) },
+      ]
+    : [];
 
   return (
     <div className="space-y-5">
       <ColourInput
-        id={`converter-${mode}`}
-        label={inputLabel}
+        id="colour-converter-input"
+        label="Color to convert"
         size="lg"
         value={raw}
         invalid={!resolved && raw.trim().length > 0}
-        errorMessage="That doesn't look like a valid color."
+        errorMessage="That doesn't look like a valid color. Try #47003A, rgb(71, 0, 58) or hsl(326, 100%, 14%)."
         onChange={(next) => {
           setRaw(next);
           // Live-convert valid input without requiring submit.
@@ -219,19 +211,49 @@ export function ConverterTool({ mode }: { mode: ConverterMode }) {
         }}
       />
 
-      {output ? (
-        <div className="flex items-center justify-between gap-3 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4">
-          <div className="min-w-0">
-            <p className="text-xs uppercase tracking-wide text-zinc-400">Result</p>
-            <code className="block truncate font-mono text-base text-zinc-900 dark:text-zinc-100">{output}</code>
-            {value ? (
-              <p className="mt-1 truncate font-mono text-[11px] text-zinc-400">
-                {formatOklch(value.oklch)}
-              </p>
-            ) : null}
+      {value ? (
+        <>
+          <div className="flex flex-col gap-3 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3">
+              <span
+                className="h-11 w-11 shrink-0 rounded-lg border border-black/10 dark:border-white/10"
+                style={{ backgroundColor: value.hex }}
+                aria-hidden
+              />
+              <div className="min-w-0">
+                <p className="text-xs uppercase tracking-wide text-zinc-400">Live preview</p>
+                <code className="block truncate font-mono text-base text-zinc-900 dark:text-zinc-100">
+                  {value.hex.toUpperCase()}
+                </code>
+              </div>
+            </div>
+            <LinkButton
+              href={`/design-system?primary=${value.hex.slice(1)}`}
+              variant="secondary"
+              className="shrink-0"
+            >
+              Use in the design system generator
+            </LinkButton>
           </div>
-          <CopyButton value={output} label="Copy result" />
-        </div>
+
+          <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {rows.map((row) => (
+              <div key={row.format} className="rounded-xl border border-zinc-200 dark:border-zinc-800 p-4">
+                <dt className="flex items-center justify-between text-xs font-medium text-zinc-500">
+                  {row.format}
+                  <CopyButton
+                    value={row.code}
+                    label="Copy"
+                    className="!px-2 !py-1 text-[11px]"
+                  />
+                </dt>
+                <dd className="mt-2 truncate font-mono text-sm text-zinc-900 dark:text-zinc-100">
+                  {row.code}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </>
       ) : null}
     </div>
   );

@@ -30,7 +30,7 @@ function medianCut(pixels: [number, number, number][], n: number): Swatch[] {
     return [bucket.slice(0, mid), bucket.slice(mid)];
   }
 
-  let buckets: [number, number, number][][] = [pixels];
+  const buckets: [number, number, number][][] = [pixels];
   while (buckets.length < n) {
     const longest = buckets.reduce((best, b, i) =>
       b.length > (buckets[best]?.length ?? 0) ? i : best, 0);

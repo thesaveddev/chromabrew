@@ -1,24 +1,15 @@
 import type { Metadata } from "next";
-import { findTool } from "@/lib/tools";
-import { ToolShell } from "@/components/tools/tool-shell";
-import { ConverterTool } from "@/components/tools/contrast-and-convert-tools";
-import { toolMetadata } from "@/components/tools/tool-metadata";
+import { permanentRedirect } from "next/navigation";
 
-export const metadata: Metadata = toolMetadata("/tools/hex-to-hsl");
-
-const TOOL = findTool("/tools/hex-to-hsl")!;
+export const metadata: Metadata = {
+  title: "HEX to HSL converter",
+  description:
+    "Convert HEX to HSL instantly. The unified Color Converter shows HEX, RGB, HSL and OKLCH equivalents at once.",
+  alternates: { canonical: "/tools/color-converter" },
+  robots: { index: false },
+};
 
 export default function Page() {
-  return (
-    <ToolShell
-      tool={TOOL}
-      usage={[
-        "Paste a HEX value or use the color picker.",
-        "Read the hsl() equivalent, plus OKLCH for perceptual work in modern CSS.",
-        "Copy either format instantly.",
-      ]}
-    >
-      <ConverterTool mode="hex-to-hsl" />
-    </ToolShell>
-  );
+  permanentRedirect("/tools/color-converter");
+  return null;
 }

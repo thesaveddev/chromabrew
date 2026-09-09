@@ -20,8 +20,6 @@ function buildGradient(type: GradientType, angle: number, stops: Stop[]): string
   }
 }
 
-let nextId = 3;
-
 export function CssGradientGenerator() {
   const [type, setType] = useState<GradientType>("linear");
   const [angle, setAngle] = useState(90);

@@ -1,24 +1,15 @@
 import type { Metadata } from "next";
-import { findTool } from "@/lib/tools";
-import { ToolShell } from "@/components/tools/tool-shell";
-import { ConverterTool } from "@/components/tools/contrast-and-convert-tools";
-import { toolMetadata } from "@/components/tools/tool-metadata";
+import { permanentRedirect } from "next/navigation";
 
-export const metadata: Metadata = toolMetadata("/tools/hex-to-rgb");
-
-const TOOL = findTool("/tools/hex-to-rgb")!;
+export const metadata: Metadata = {
+  title: "HEX to RGB converter",
+  description:
+    "Convert HEX to RGB instantly. The unified Color Converter shows HEX, RGB, HSL and OKLCH equivalents at once.",
+  alternates: { canonical: "/tools/color-converter" },
+  robots: { index: false },
+};
 
 export default function Page() {
-  return (
-    <ToolShell
-      tool={TOOL}
-      usage={[
-        "Paste a HEX value such as #47003A or pick a color.",
-        "The rgb() equivalent updates live as you type.",
-        "Copy the result with one click â€” an OKLCH readout is included for modern CSS.",
-      ]}
-    >
-      <ConverterTool mode="hex-to-rgb" />
-    </ToolShell>
-  );
+  permanentRedirect("/tools/color-converter");
+  return null;
 }

@@ -3,6 +3,8 @@ export interface ToolFaq {
   a: string;
 }
 
+export type ToolCategory = "color" | "converter" | "css" | "image";
+
 export interface ToolDefinition {
   href: string;
   navLabel: string;
@@ -11,6 +13,8 @@ export interface ToolDefinition {
   description: string;
   /** Short card copy for grids. */
   blurb: string;
+  /** Broad category used for related-tool grouping and the index page. */
+  category: ToolCategory;
   /** Genuine Q&As rendered on the page and emitted as FAQPage JSON-LD. */
   faqs: ToolFaq[];
 }
@@ -28,6 +32,7 @@ export const TOOLS: ToolDefinition[] = [
     description:
       "Generate complementary, analogous, triadic, split-complementary, monochromatic and tetradic palettes from any color. Free and instant.",
     blurb: "Six palette strategies from one color.",
+    category: "color",
     faqs: [
       {
         q: "How does the color palette generator work?",
@@ -44,6 +49,30 @@ export const TOOLS: ToolDefinition[] = [
     ],
   },
   {
+    href: "/tools/brand-palettes",
+    navLabel: "Brand color palettes",
+    title: "Brand color palettes",
+    metaTitle: "Brand Color Palettes — real brand colors as design seeds",
+    description:
+      "Browse reference colors for top brands and turn any of them into a full accessible design system. Search by sector, copy hex values, or use a brand color as the generator's primary seed.",
+    blurb: "Real brand colors you can use as a design seed.",
+    category: "color",
+    faqs: [
+      {
+        q: "Are these official brand colors?",
+        a: "They are widely published reference values, not official brand guidelines. Confirm the current color with the brand's own materials before shipping anything in their identity.",
+      },
+      {
+        q: "How do I turn a brand color into a design system?",
+        a: "Click 'Use as seed' on any card. It opens the design system generator with that color pre-filled as the primary, so everything — scale, palette, tokens, themes and exports — derives from it.",
+      },
+      {
+        q: "Why is only one color listed per brand?",
+        a: "Most marks have a single anchor color. For brands with multi-color or gradient identities we list the most commonly cited anchor, which is the best single seed for palette generation.",
+      },
+    ],
+  },
+  {
     href: "/tools/shade-generator",
     navLabel: "Shade generator",
     title: "Shade & tint scale generator",
@@ -51,6 +80,7 @@ export const TOOLS: ToolDefinition[] = [
     description:
       "Create perceptually even 50–950 shade scales in OKLCH from a single brand color. Copy HEX values or the full Tailwind theme.",
     blurb: "Perceptual 50–950 scales in OKLCH.",
+    category: "color",
     faqs: [
       {
         q: "Why generate shades in OKLCH instead of plain HEX?",
@@ -74,6 +104,7 @@ export const TOOLS: ToolDefinition[] = [
     description:
       "Check the contrast ratio between two colors against WCAG 2.x AA and AAA thresholds for normal and large text, then fix failures instantly.",
     blurb: "WCAG 2.x ratios with one-click fixes.",
+    category: "color",
     faqs: [
       {
         q: "What contrast ratios does WCAG require?",
@@ -90,71 +121,26 @@ export const TOOLS: ToolDefinition[] = [
     ],
   },
   {
-    href: "/tools/hex-to-rgb",
-    navLabel: "HEX to RGB",
-    title: "HEX to RGB converter",
-    metaTitle: "HEX to RGB Converter — instant, accurate, free",
+    href: "/tools/color-converter",
+    navLabel: "Color converter",
+    title: "Color converter",
+    metaTitle: "Color Converter — HEX, RGB, HSL & OKLCH at once",
     description:
-      "Convert any HEX color to RGB with live preview. Paste a hex code or pick a color and copy the rgb() value instantly.",
-    blurb: "Instant HEX → rgb() conversion.",
+      "Convert between HEX, RGB, HSL and OKLCH in one place. Paste any color in any format and copy all four equivalents instantly, with a live preview.",
+    blurb: "HEX, RGB, HSL & OKLCH in one converter.",
+    category: "converter",
     faqs: [
       {
-        q: "How do I convert HEX to RGB?",
-        a: "Each HEX pair is a base-16 number: split #47003A into 47, 00 and 3A, then convert each to decimal (71, 0, 58). Paste a code here and the rgb() equivalent updates live.",
+        q: "Which color formats are supported?",
+        a: "Paste HEX, rgb() or hsl() — even CSS-color keywords you type are resolved. The tool shows HEX, RGB, HSL and OKLCH simultaneously so you never convert twice.",
       },
       {
-        q: "Does it support 3-digit shorthand like #F00?",
-        a: "Yes. Three-digit HEX is expanded by doubling each digit (#F00 → #FF0000) before conversion.",
+        q: "Why is there one converter instead of separate pages?",
+        a: "HEX, RGB, HSL and OKLCH describe the same color. One page that shows every format at once is faster than three one-way converters, and there is one URL to bookmark and link to.",
       },
       {
-        q: "What else does the converter show?",
-        a: "Besides rgb(), you get an OKLCH readout — the modern CSS color space used by newer design systems — plus a live preview swatch.",
-      },
-    ],
-  },
-  {
-    href: "/tools/rgb-to-hex",
-    navLabel: "RGB to HEX",
-    title: "RGB to HEX converter",
-    metaTitle: "RGB to HEX Converter — instant, accurate, free",
-    description:
-      "Convert any RGB color to its HEX value with sliders and a live preview. Copy clean six-digit hex codes instantly.",
-    blurb: "Instant rgb() → #hex conversion.",
-    faqs: [
-      {
-        q: "How is RGB converted to HEX?",
-        a: "Each channel (0–255) is written in base 16 and the three pairs are joined: rgb(199, 121, 208) becomes #C779D0. Values outside 0–255 are clamped.",
-      },
-      {
-        q: "Will I always get a six-digit code?",
-        a: "Yes — output is always a clean six-digit hex with the # prefix, ready to paste into CSS, Figma or Tailwind config.",
-      },
-      {
-        q: "Can I adjust channels visually?",
-        a: "Yes — red, green and blue sliders update the HEX value and preview live as you drag.",
-      },
-    ],
-  },
-  {
-    href: "/tools/hex-to-hsl",
-    navLabel: "HEX to HSL",
-    title: "HEX to HSL converter",
-    metaTitle: "HEX to HSL Converter — instant, accurate, free",
-    description:
-      "Convert HEX colors to HSL with hue, saturation and lightness readouts plus OKLCH equivalents for modern CSS.",
-    blurb: "HEX → hsl() with OKLCH readout.",
-    faqs: [
-      {
-        q: "How does HEX to HSL conversion work?",
-        a: "The HEX values are first expanded to normalized RGB, then hue is derived from the dominant channel difference, saturation from the spread between min and max, and lightness from their average.",
-      },
-      {
-        q: "Why would I use HSL over HEX?",
-        a: "HSL separates hue, saturation and lightness, which makes it easy to build consistent variations of one color — darker hover states or desaturated backgrounds — while keeping the same hue.",
-      },
-      {
-        q: "Does it also show OKLCH?",
-        a: "Yes — alongside hsl() you get the OKLCH equivalent, useful for modern CSS where perceptually uniform adjustments matter.",
+        q: "Can I turn the result into a full design system?",
+        a: "Yes — a one-click link seeds the design system generator with your color, deriving scale, palette, tokens, light and dark themes, and exports from it.",
       },
     ],
   },
@@ -166,6 +152,7 @@ export const TOOLS: ToolDefinition[] = [
     description:
       "Generate Tailwind CSS v4 @theme color variables from a single brand color, with a full 50–950 perceptual scale ready to paste.",
     blurb: "Tailwind v4 @theme output from one color.",
+    category: "css",
     faqs: [
       {
         q: "Does this support Tailwind CSS v4?",
@@ -189,6 +176,7 @@ export const TOOLS: ToolDefinition[] = [
     description:
       "Build a complete shadcn/ui theme in current oklch format from one brand color — light and dark modes, charts and sidebar tokens included.",
     blurb: "Current-convention shadcn themes.",
+    category: "css",
     faqs: [
       {
         q: "Does it output the current shadcn/ui token format?",
@@ -212,6 +200,7 @@ export const TOOLS: ToolDefinition[] = [
     description:
       "Turn any brand color into an accessible dark theme with semantic tokens — never a mechanical inversion of your light mode.",
     blurb: "Semantic dark themes, not inversions.",
+    category: "color",
     faqs: [
       {
         q: "Why isn't dark mode just inverted light mode?",
@@ -235,6 +224,7 @@ export const TOOLS: ToolDefinition[] = [
     description:
       "Generate structured design tokens — primitives and semantic roles for light and dark themes — as DTCG-style JSON or CSS variables.",
     blurb: "DTCG-style JSON + CSS tokens.",
+    category: "css",
     faqs: [
       {
         q: "What's the difference between primitive and semantic tokens?",
@@ -258,6 +248,7 @@ export const TOOLS: ToolDefinition[] = [
     description:
       "Upload an image and instantly extract its dominant colors as a clean palette. Get HEX values, RGB readouts and a ready-to-use color scheme. Free, runs in your browser.",
     blurb: "Extract dominant colors from any image.",
+    category: "image",
     faqs: [
       {
         q: "How does the image color extractor work?",
@@ -281,6 +272,7 @@ export const TOOLS: ToolDefinition[] = [
     description:
       "Simulate how any color or palette appears to people with protanopia, deuteranopia, tritanopia and achromatopsia. Check whether a text/background pair stays distinguishable. Free, instant, browser-only.",
     blurb: "Simulate protanopia, deuteranopia & tritanopia, + pair check.",
+    category: "color",
     faqs: [
       {
         q: "What types of color blindness does this simulate?",
@@ -304,6 +296,7 @@ export const TOOLS: ToolDefinition[] = [
     description:
       "Build linear, radial and conic CSS gradients visually. Pick colors, adjust angles and stops, then copy production-ready CSS. Free, no sign-up, runs in your browser.",
     blurb: "Linear, radial & conic gradients visually.",
+    category: "css",
     faqs: [
       {
         q: "What gradient types are supported?",
@@ -327,6 +320,7 @@ export const TOOLS: ToolDefinition[] = [
     description:
       "Blend two colors at any ratio with a live preview. Get HEX, RGB and HSL values for the mixed result, plus an 11-step blend scale. Free, instant, browser-only.",
     blurb: "Blend two colors at any ratio.",
+    category: "color",
     faqs: [
       {
         q: "How does color mixing work?",
@@ -350,6 +344,7 @@ export const TOOLS: ToolDefinition[] = [
     description:
       "Build box-shadow and text-shadow CSS visually. Adjust offset, blur, spread, color and opacity with sliders, then copy production-ready CSS. Free, no sign-up, runs in your browser.",
     blurb: "Visual box-shadow & text-shadow builder.",
+    category: "css",
     faqs: [
       {
         q: "What shadow types are supported?",
@@ -373,6 +368,7 @@ export const TOOLS: ToolDefinition[] = [
     description:
       "Add transparency to any color. Get HEX8, RGBA and percentage opacity values with a live preview on white, gray and black backgrounds. Free, instant, browser-only.",
     blurb: "HEX8, RGBA & opacity from any color.",
+    category: "color",
     faqs: [
       {
         q: "What is HEX8?",
@@ -396,6 +392,7 @@ export const TOOLS: ToolDefinition[] = [
     description:
       "Check an entire color palette for WCAG contrast violations. See every foreground/background pair in a matrix, spot failures instantly, and fix them. Free, instant, browser-only.",
     blurb: "Check full palettes for contrast issues.",
+    category: "color",
     faqs: [
       {
         q: "How is this different from the contrast checker?",
@@ -419,6 +416,7 @@ export const TOOLS: ToolDefinition[] = [
     description:
       "Generate a modular type scale from base size and ratio (1.2 / 1.25 / 1.333). Get px & rem sizes, line heights, letter spacing, font pairings, CSS variables and a live preview. Free, no sign-up.",
     blurb: "Modular type scale with live preview & CSS.",
+    category: "css",
     faqs: [
       {
         q: "What is a modular type scale?",
@@ -446,6 +444,7 @@ export const TOOLS: ToolDefinition[] = [
     description:
       "Convert SVG images to JPG instantly. Upload or paste SVG code, preview live, then export at 1x, 2x, 3x or 4x resolution. Free, no sign-up, runs in your browser.",
     blurb: "SVG → JPG at any scale.",
+    category: "image",
     faqs: [
       {
         q: "How does SVG to JPG conversion work?",
@@ -469,6 +468,7 @@ export const TOOLS: ToolDefinition[] = [
     description:
       "Convert JPG, PNG or any raster image to SVG using color quantization. Adjust the color count for quality vs file size. Free, no sign-up, runs in your browser.",
     blurb: "Raster → SVG via color quantization.",
+    category: "image",
     faqs: [
       {
         q: "How does JPG to SVG conversion work?",
@@ -488,4 +488,15 @@ export const TOOLS: ToolDefinition[] = [
 
 export function findTool(href: string): ToolDefinition | undefined {
   return TOOLS.find((tool) => tool.href === href);
+}
+
+const CATEGORY_LABELS: Record<ToolCategory, string> = {
+  color: "Color tools",
+  converter: "Converters",
+  css: "CSS & tokens",
+  image: "Image tools",
+};
+
+export function categoryLabel(category: ToolCategory): string {
+  return CATEGORY_LABELS[category];
 }

@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { fixContrast } from "@/lib/design-system/colour/contrast";
+import { cvdPair, CVD_DIFF_THRESHOLD, CVD_TYPES } from "@/lib/design-system/colour/cvd";
 import { CHECK_PAIR_TOKENS } from "@/lib/design-system/tokens/generate";
 import type {
   AccessibilityCheck,
@@ -111,7 +112,98 @@ export function AccessibilityPanel({
         large ≥ 4.5:1. Fixes adjust the nearest accessible value in OKLCH,
         preserving hue.
       </p>
+
+      <CvdPreview checks={checks} />
     </section>
+  );
+}
+
+/**
+ * Colour-blind preview: contrast measures lightness, not hue. Two colours
+ * can pass WCAG yet differ only in hue and collapse together for someone
+ * with a colour vision deficiency. Run the key pairs through the standard
+ * Machado et al. (2009) simulation matrices and flag any that blur.
+ */
+function CvdPreview({ checks }: { checks: CheckWithTokens[] }) {
+  const deviations = CVD_TYPES.filter(
+    (t) => t.id === "protanopia" || t.id === "deuteranopia" || t.id === "tritanopia",
+  );
+  return (
+    <section aria-labelledby="cvd-heading" className="pt-1">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 id="cvd-heading" className="panel-title">
+          Colour-blind preview
+        </h2>
+        <p className="text-xs text-zinc-500">
+          Simulated difference for each pair — under ~30 they are hard to tell apart.
+        </p>
+      </div>
+      <div className="overflow-x-auto rounded-xl border border-zinc-200 dark:border-zinc-800">
+        <table className="w-full min-w-[640px] border-collapse text-left text-xs">
+          <caption className="sr-only">
+            Each foreground/background pair simulated for protanopia, deuteranopia and tritanopia
+          </caption>
+          <thead>
+            <tr className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/60 text-[11px] uppercase tracking-wide text-zinc-500">
+              <th scope="col" className="px-3 py-2 font-medium">Pair</th>
+              {deviations.map((t) => (
+                <th key={t.id} scope="col" className="px-3 py-2 font-medium">{t.label}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {checks.map((check) => (
+              <tr key={check.id} className="border-b border-zinc-100 dark:border-zinc-800/70 last:border-0">
+                <td className="px-3 py-1.5">
+                  {check.label}
+                  <span className="ml-1.5 rounded bg-zinc-100 px-1 py-0.5 text-[10px] uppercase text-zinc-500">
+                    {check.mode}
+                  </span>
+                </td>
+                {deviations.map((t) => {
+                  const pair = cvdPair(check.foregroundHex, check.backgroundHex, t.id);
+                  return <CvdCell key={t.id} pair={pair} />;
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="text-[11px] leading-4 text-zinc-400">
+        Simulations use the Machado, Oliveira &amp; Fernandes (2009) matrices.
+        A passing WCAG ratio does not guarantee the pair stays distinguishable
+        under a colour vision deficiency — these checks surface pairs that
+        collapse even though the numbers look fine.
+      </p>
+    </section>
+  );
+}
+
+function CvdCell({ pair }: { pair: ReturnType<typeof cvdPair> }) {
+  const ok = pair.difference >= CVD_DIFF_THRESHOLD;
+  return (
+    <td className="px-3 py-1.5">
+      <span className="flex items-center gap-2">
+        <span className="flex shrink-0 overflow-hidden rounded border border-black/10 dark:border-white/10">
+          <span className="h-4 w-4" style={{ backgroundColor: pair.simulatedA }} aria-hidden />
+          <span className="h-4 w-4" style={{ backgroundColor: pair.simulatedB }} aria-hidden />
+        </span>
+        <span className="flex flex-col gap-0.5">
+          <code className="font-mono text-[10px] text-zinc-500">
+            diff {pair.difference.toFixed(0)} · {pair.contrast.toFixed(2)}:1
+          </code>
+          <span
+            className={`inline-flex w-fit items-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
+              ok
+                ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
+                : "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300"
+            }`}
+          >
+            {ok ? "Distinguishable" : "Hard to tell apart"}
+          </span>
+        </span>
+      </span>
+    </td>
   );
 }
 

@@ -3,13 +3,15 @@ import { TOOLS, type ToolDefinition } from "@/lib/tools";
 import { siteUrl } from "@/lib/site-url";
 import { JsonLd } from "@/components/site/json-ld";
 
-/** Deterministic "related tools" mapping (next three tools cyclically). */
-const RELATED = new Map<string, ToolDefinition[]>(
-  TOOLS.map((tool, index) => [
-    tool.href,
-    [1, 2, 3].map((offset) => TOOLS[(index + offset) % TOOLS.length]),
-  ]),
-);
+/**
+ * Related tools: same-category tools first (so a color tool links to other
+ * color tools, not SVGs), then anything else to fill the row.
+ */
+function relatedTools(tool: ToolDefinition): ToolDefinition[] {
+  const same = TOOLS.filter((t) => t.href !== tool.href && t.category === tool.category);
+  const rest = TOOLS.filter((t) => t.href !== tool.href && t.category !== tool.category);
+  return [...same, ...rest].slice(0, 6);
+}
 
 /**
  * Shared shell for free tool pages: unique heading, working tool, honest
@@ -24,7 +26,7 @@ export function ToolShell({
   children: React.ReactNode;
   usage: string[];
 }) {
-  const others = RELATED.get(tool.href) ?? [];
+  const others = relatedTools(tool);
   const anchor = tool.href.replace(/\//g, "-");
   return (
     <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
@@ -142,6 +144,10 @@ export function ToolShell({
           </ul>
         </section>
       ) : null}
+
+      <p className="mt-10 border-t border-zinc-200 pt-6 text-xs text-zinc-500 dark:border-zinc-800 dark:text-zinc-500">
+        {tool.title} runs entirely in your browser — nothing you enter is sent to a server.
+      </p>
     </div>
   );
 }

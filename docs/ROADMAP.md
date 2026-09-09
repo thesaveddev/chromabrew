@@ -49,6 +49,35 @@ Scope:
 Out of scope (deliberately): authentication, databases, payments, AI features,
 APIs, integrations, templates, marketplace, teams, advertising.
 
+### Phase 1 additions (competitor-informed, implemented)
+
+Added after a competitive review of ChromaBrew against Chroma Creator (the
+free color-tool market leader). These expand Phase 1 utility without changing
+its scope — still no account, no payments, browser-only processing.
+
+- Brand colour palettes: ~90 real brand colors browsable by search and sector
+  at `/tools/brand-palettes`, each usable as the primary seed for the full
+  design system generator via `/design-system?primary=…`. Values are
+  noted as unofficial references, not brand guidelines.
+- Unified colour converter: `/tools/color-converter` shows HEX, RGB, HSL and
+  OKLCH simultaneously with copy buttons and a one-click seed into the
+  generator. Replaces the three one-way pages `/tools/hex-to-rgb`,
+  `/tools/rgb-to-hex` and `/tools/hex-to-hsl`, which now 301 to it.
+- Related-tools relevance: tool registry gained a `category` field and
+  `ToolShell` now surfaces same-category tools first instead of a cyclic
+  "next three" list; the `/tools` index pages group tools by category.
+- Privacy messaging: every `/tools/*` page and the footer now state plainly
+  that processing runs in the browser and nothing is uploaded.
+- Colour-blind simulation inside the design-system accessibility panel: key
+  token pairs are run through the Machado et al. (2009) matrices with a
+  "distinguishable / hard to tell apart" flag alongside the WCAG table.
+  The matrices/`simulate` logic was extracted to a shared lib
+  (`src/lib/design-system/colour/cvd.ts`) used by both the simulator tool
+  and the panel.
+
+Not copied from Chroma Creator (deliberately): its 100+ unrelated micro-tools,
+`/vs/` competitor pages, and borrowed/misleading product statistics.
+
 ## Phase 2 — Accounts & Projects (in progress)
 
 Goal: registered users can save, manage and share design system projects with
