@@ -124,23 +124,55 @@ export const TOOLS: ToolDefinition[] = [
     href: "/tools/color-converter",
     navLabel: "Color converter",
     title: "Color converter",
-    metaTitle: "Color Converter — HEX, RGB, HSL & OKLCH at once",
+    metaTitle: "Color Converter — HEX, RGB, HSL, CMYK & OKLCH at once",
     description:
-      "Convert between HEX, RGB, HSL and OKLCH in one place. Paste any color in any format and copy all four equivalents instantly, with a live preview.",
-    blurb: "HEX, RGB, HSL & OKLCH in one converter.",
+      "Convert between HEX, RGB, HSL, CMYK and OKLCH in one place. Paste any color in any format and copy all five equivalents instantly, with a live preview.",
+    blurb: "HEX, RGB, HSL, CMYK & OKLCH in one converter.",
     category: "converter",
     faqs: [
       {
         q: "Which color formats are supported?",
-        a: "Paste HEX, rgb() or hsl() — even CSS-color keywords you type are resolved. The tool shows HEX, RGB, HSL and OKLCH simultaneously so you never convert twice.",
+        a: "Paste HEX, rgb() or hsl() — even CSS-color keywords you type are resolved. The tool shows HEX, RGB, HSL, CMYK and OKLCH simultaneously so you never convert twice.",
       },
       {
         q: "Why is there one converter instead of separate pages?",
-        a: "HEX, RGB, HSL and OKLCH describe the same color. One page that shows every format at once is faster than three one-way converters, and there is one URL to bookmark and link to.",
+        a: "HEX, RGB, HSL, CMYK and OKLCH describe the same color. One page that shows every format at once is faster than three one-way converters, and there is one URL to bookmark and link to.",
+      },
+      {
+        q: "What's the difference between CMYK and the on-screen formats?",
+        a: "CMYK is subtractive ink percentages used for print — packaging, stationery and brand collateral. On screen it is a translation, not a native language: your code and design system consume the HEX, RGB, HSL or OKLCH versions shown alongside it.",
       },
       {
         q: "Can I turn the result into a full design system?",
         a: "Yes — a one-click link seeds the design system generator with your color, deriving scale, palette, tokens, light and dark themes, and exports from it.",
+      },
+    ],
+  },
+  {
+    href: "/tools/color-names",
+    navLabel: "Color names",
+    title: "CSS color names",
+    metaTitle: "CSS Color Names — find the closest named colour to any color",
+    description:
+      "Find the closest of the 148 CSS named colors to any HEX, RGB or HSL color, measured in OKLab. Browse, search and copy names or hex straight into your CSS.",
+    blurb: "The 148 CSS names, closest first.",
+    category: "color",
+    faqs: [
+      {
+        q: "How many named colors does CSS define?",
+        a: "CSS Color Module Level 4 defines 148 named colors — the SVG keywords from aqua and black to yellowgreen (147 of them), plus rebeccapurple, and aliases like gray/grey and aqua/cyan that share a hex. Every one can be used as-is in any browser.",
+      },
+      {
+        q: "How is the closest name chosen?",
+        a: "Distances are measured in OKLab, a colour space built to match how humans perceive difference. An exact hex (like #ff6347 → tomato) lands at distance 0; neighbours are ranked by that perceptual distance.",
+      },
+      {
+        q: "Should I use named colors in production?",
+        a: "They are valid CSS, but only a handful are stable enough to lean on at scale — navy, crimson, tomato, rebeccapurple and a few greys. This tool shows the hex behind every name so you can lock values into tokens instead of magic strings.",
+      },
+      {
+        q: "Can I turn a named color into a full design system?",
+        a: "Yes — copy the hex, then one click seeds the design system generator, deriving scale, palette, tokens, themes and exports from that color.",
       },
     ],
   },

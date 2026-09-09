@@ -77,6 +77,13 @@ export interface Oklch {
   h: number;
 }
 
+export interface Cmyk {
+  c: number;
+  m: number;
+  y: number;
+  k: number;
+}
+
 /** A colour resolved into every format we surface in the UI. */
 export interface ColourValue {
   hex: string;

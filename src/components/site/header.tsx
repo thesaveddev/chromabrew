@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Logo } from "./logo";
 import { ThemeToggle } from "./theme-toggle";
 import { AuthNav } from "./auth-nav";
+import { ToolSearch } from "./tool-search";
 
 export function SiteHeader() {
   return (
@@ -21,6 +22,7 @@ export function SiteHeader() {
           >
             Free tools
           </Link>
+          <ToolSearch />
           <AuthNav />
           <ThemeToggle />
         </nav>

@@ -1,4 +1,4 @@
-import type { ColourValue, Hsl, Oklch, Rgb } from "../types";
+import type { Cmyk, ColourValue, Hsl, Oklch, Rgb } from "../types";
 
 const HEX_SHORT = /^#?([0-9a-f]{3})$/i;
 const HEX_LONG = /^#?([0-9a-f]{6})$/i;
@@ -78,6 +78,22 @@ export function rgbToHsl({ r, g, b }: Rgb): Hsl {
 
 export function hexToHsl(hex: string): Hsl {
   return rgbToHsl(hexToRgb(hex));
+}
+
+/** Standard subtractive-ink conversion (0–100 each, percentages). */
+export function rgbToCmyk({ r, g, b }: Rgb): Cmyk {
+  const rn = r / 255;
+  const gn = g / 255;
+  const bn = b / 255;
+  const k = 1 - Math.max(rn, gn, bn);
+  if (k >= 1) return { c: 0, m: 0, y: 0, k: 100 };
+  const factor = (v: number) => ((v - k) / (1 - k)) * 100;
+  return {
+    c: round(factor(1 - rn), 1),
+    m: round(factor(1 - gn), 1),
+    y: round(factor(1 - bn), 1),
+    k: round(k * 100, 1),
+  };
 }
 
 export function hslToHex(h: number, s: number, l: number): string {
@@ -264,6 +280,10 @@ export function formatHsl({ h, s, l }: Hsl): string {
 
 export function formatOklch({ l, c, h }: Oklch): string {
   return `oklch(${round(l, 3)} ${round(c, 3)} ${round(h, 1)})`;
+}
+
+export function formatCmyk({ c, m, y, k }: Cmyk): string {
+  return `cmyk(${round(c, 1)}%, ${round(m, 1)}%, ${round(y, 1)}%, ${round(k, 1)}%)`;
 }
 
 /** Perceptual distance between two colours in OKLab space (0–~1). */

@@ -141,7 +141,7 @@ export function ImageColorExtractor() {
               Drop an image or click to upload
             </p>
             <p className="mt-1 text-xs text-zinc-500">
-              JPEG, PNG, GIF, WebP, SVG — runs entirely in your browser
+              JPEG, PNG, GIF, WebP, SVG — processed locally, nothing is uploaded
             </p>
           </>
         )}

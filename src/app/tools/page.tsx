@@ -42,6 +42,13 @@ export default function ToolsIndexPage() {
           . Generate color palettes, extract colors from images, check WCAG contrast ratios,
           simulate color blindness, create CSS gradients, and build Tailwind CSS themes — all free, no sign-up.
         </p>
+        <p className="mt-3 text-sm text-zinc-500">
+          Want a color-focused overview? See the{" "}
+          <Link href="/color-tools" className="font-medium text-zinc-700 underline underline-offset-4 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-zinc-100">
+            color tools hub
+          </Link>
+          .
+        </p>
       </header>
 
       {groups.map((group) => (

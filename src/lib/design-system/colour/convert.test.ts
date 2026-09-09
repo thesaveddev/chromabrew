@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  formatCmyk,
   formatHsl,
   formatOklch,
   formatRgb,
@@ -8,6 +9,7 @@ import {
   oklabDistance,
   oklchToHex,
   parseColour,
+  rgbToCmyk,
   rgbToHex,
   rgbToHsl,
   rgbToOklch,
@@ -20,6 +22,32 @@ describe("hex handling", () => {
     expect(normalizeHex("#47003a")).toBe("#47003a");
     expect(normalizeHex("nope")).toBeNull();
     expect(normalizeHex("#12345")).toBeNull();
+  });
+});
+
+describe("cmyk conversion", () => {
+  it("converts #47003a to the expected ink percentages", () => {
+    const cmyk = rgbToCmyk({ r: 71, g: 0, b: 58 });
+    expect(cmyk.c).toBeCloseTo(0, 1);
+    expect(cmyk.m).toBeCloseTo(100, 1);
+    expect(cmyk.y).toBeCloseTo(18.3, 1);
+    expect(cmyk.k).toBeCloseTo(72.2, 1);
+  });
+
+  it("white is zero ink and black is 100% key", () => {
+    expect(rgbToCmyk({ r: 255, g: 255, b: 255 })).toEqual({ c: 0, m: 0, y: 0, k: 0 });
+    expect(rgbToCmyk({ r: 0, g: 0, b: 0 })).toEqual({ c: 0, m: 0, y: 0, k: 100 });
+  });
+
+  it("pure red and pure green stay in their channels", () => {
+    const red = rgbToCmyk({ r: 255, g: 0, b: 0 });
+    expect(red).toEqual({ c: 0, m: 100, y: 100, k: 0 });
+    const green = rgbToCmyk({ r: 0, g: 255, b: 0 });
+    expect(green).toEqual({ c: 100, m: 0, y: 100, k: 0 });
+  });
+
+  it("formats as percent cmyk()", () => {
+    expect(formatCmyk(rgbToCmyk({ r: 71, g: 0, b: 58 }))).toMatch(/^cmyk\(/,);
   });
 });
 

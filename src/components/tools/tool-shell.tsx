@@ -1,5 +1,6 @@
 ﻿import Link from "next/link";
 import { TOOLS, type ToolDefinition } from "@/lib/tools";
+import { BLOG_POSTS, type BlogPost } from "@/lib/posts";
 import { siteUrl } from "@/lib/site-url";
 import { JsonLd } from "@/components/site/json-ld";
 
@@ -11,6 +12,13 @@ function relatedTools(tool: ToolDefinition): ToolDefinition[] {
   const same = TOOLS.filter((t) => t.href !== tool.href && t.category === tool.category);
   const rest = TOOLS.filter((t) => t.href !== tool.href && t.category !== tool.category);
   return [...same, ...rest].slice(0, 6);
+}
+
+const DATE_FMT = new Intl.DateTimeFormat("en-GB", { month: "short", day: "numeric", year: "numeric" });
+
+/** Guides that expressly link to this tool page. */
+function relatedArticles(tool: ToolDefinition): BlogPost[] {
+  return BLOG_POSTS.filter((post) => post.relatedHrefs.includes(tool.href)).slice(0, 3);
 }
 
 /**
@@ -27,6 +35,7 @@ export function ToolShell({
   usage: string[];
 }) {
   const others = relatedTools(tool);
+  const articles = relatedArticles(tool);
   const anchor = tool.href.replace(/\//g, "-");
   return (
     <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
@@ -138,6 +147,32 @@ export function ToolShell({
                   className="inline-block rounded-full border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-600 transition-colors hover:border-zinc-400 hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 dark:border-zinc-800 dark:text-zinc-400 dark:hover:border-zinc-600 dark:hover:text-zinc-100 dark:focus-visible:outline-zinc-100"
                 >
                   {other.navLabel}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
+      {articles.length ? (
+        <section aria-labelledby="related-guides" className="mt-12 border-t border-zinc-200 pt-8 dark:border-zinc-800">
+          <h2 id="related-guides" className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            Related guides
+          </h2>
+          <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {articles.map((post) => (
+              <li key={post.slug}>
+                <Link
+                  href={`/blog/${post.slug}`}
+                  className="group block h-full rounded-xl border border-zinc-200 bg-white p-4 transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-600 dark:focus-visible:outline-zinc-100"
+                >
+                  <p className="text-[11px] uppercase tracking-wide text-zinc-400">
+                    {post.category} · {DATE_FMT.format(new Date(`${post.publishedAt}T00:00:00Z`))}
+                  </p>
+                  <p className="mt-1.5 text-sm font-medium leading-5 text-zinc-800 group-hover:text-zinc-900 dark:text-zinc-200 dark:group-hover:text-zinc-100">
+                    {post.title}
+                  </p>
+                  <p className="mt-1.5 line-clamp-2 text-xs leading-5 text-zinc-500">{post.excerpt}</p>
                 </Link>
               </li>
             ))}

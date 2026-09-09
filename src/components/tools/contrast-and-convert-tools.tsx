@@ -2,10 +2,12 @@
 
 import { useMemo, useState } from "react";
 import {
+  formatCmyk,
   formatHsl,
   formatOklch,
   formatRgb,
   parseColour,
+  rgbToCmyk,
   toColourValue,
 } from "@/lib/design-system/colour/convert";
 import { contrastRatio, fixContrast, grade } from "@/lib/design-system/colour/contrast";
@@ -190,6 +192,7 @@ export function ColourConverter() {
         { format: "HEX", code: value.hex.toUpperCase() },
         { format: "RGB", code: formatRgb(value.rgb) },
         { format: "HSL", code: formatHsl(value.hsl) },
+        { format: "CMYK", code: formatCmyk(rgbToCmyk(value.rgb)) },
         { format: "OKLCH", code: formatOklch(value.oklch) },
       ]
     : [];

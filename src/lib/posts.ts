@@ -1920,31 +1920,31 @@ OKLCH: oklch(0.162 0.111 324.1)`,
   },
   {
     slug: "css-named-colors",
-    title: "CSS named colors: the full list of 147 and when to use them",
-    metaTitle: "CSS Named Colors — The Full List of 147 & When to Use Them",
+    title: "CSS named colors: the full list of 148 and when to use them",
+    metaTitle: "CSS Named Colors — The Full List of 148 & When to Use Them",
     description:
-      "All 147 CSS named colours, the ones worth remembering, when a color name beats a hex value, and how to find the closest named color to any hex.",
+      "All 148 CSS named colours, the ones worth remembering, when a color name beats a hex value, and how to find the closest named color to any hex.",
     excerpt:
-      "tomato, rebeccapurple, deeppink — 147 CSS color names exist and most are unforgettable in the wrong way. When to use them, when not to, and how to find the nearest one.",
+      "tomato, rebeccapurple, deeppink — 148 CSS color names exist and most are unforgettable in the wrong way. When to use them, when not to, and how to find the nearest one.",
     image: "/blog/css-named-colors.svg",
     imageAlt: "CSS named color keywords shown as swatches",
     publishedAt: "2026-09-10",
     category: "Development",
     tags: ["css named colors", "css color names", "css", "web development", "color"],
-    relatedHrefs: ["/tools/color-converter", "/tools/color-palette-generator", "/tools/design-token-generator"],
+    relatedHrefs: ["/tools/color-names", "/tools/color-converter", "/tools/color-palette-generator", "/tools/design-token-generator"],
     keyword: "css named colors",
     sections: [
       {
         heading: "Colours already have names in CSS",
         body: [
-          "Before hex was invented, software specified colours with words, and CSS kept that vocabulary. The color property accepts 147 named values — from the obvious blue to the suspicious lightgoldenrodyellow — and they all map to exact, fixed hex colours. Named colors are a real token type, not a shorthand: tomato is precisely #FF6347, forever.",
+          "Before hex was invented, software specified colours with words, and CSS kept that vocabulary. The color property accepts 148 named values — from the obvious blue to the suspicious lightgoldenrodyellow — and they all map to exact, fixed hex colours. Named colors are a real token type, not a shorthand: tomato is precisely #FF6347, forever.",
           "In practice most people use a dozen of them and think that is the entire feature. The other 130+ are a useful resource for prototyping, documentation and tests, and a few are arguably the best-looking colours CSS has to offer.",
         ],
       },
       {
         heading: "The complete list",
         body: [
-          "Here are all 147 keywords, grouped by colour family for scanning. gray and grey, aqua and cyan, fuchsia and magenta are aliases that resolve to the same hex:",
+          "Here are all 148 keywords, grouped by colour family for scanning. gray and grey, aqua and cyan, fuchsia and magenta are aliases that resolve to the same hex:",
         ],
         code: `Reds/oranges: red, darkred, firebrick, indianred, brown, maroon, salmon, darksalmon, lightsalmon, coral, tomato, orangered, orange, darkorange, gold, goldenrod, darkgoldenrod, peru, chocolate, saddlebrown, sienna
 Pinks/violets: pink, lightpink, hotpink, deeppink, palevioletred, mediumvioletred, violet, plum, orchid, thistle, magenta/fuchsia, mediumorchid, mediumpurple, lavender, purple, rebeccapurple, indigo, darkmagenta, darkviolet, blueviolet
@@ -1964,7 +1964,7 @@ Blues/grays/lights: aliceblue, azure, mintcream, honeydew, ghostwhite, lavenderb
       {
         heading: "When a name is a trap",
         body: [
-          "The traps are real. There is no consistent rule to remember which of the 147 your reader knows — hotpink is a specific, saturated magenta-pink, not 'sort of pink'. Aliases multiply confusion (gray and grey are both valid and identical, and slack `green` implies a pure #008000 that most teams do not actually want). And a name carries assumed meaning: a colleague will read `--brand: purple` as a decision, not a placeholder.",
+          "The traps are real. There is no consistent rule to remember which of the 148 your reader knows — hotpink is a specific, saturated magenta-pink, not 'sort of pink'. Aliases multiply confusion (gray and grey are both valid and identical, and slack `green` implies a pure #008000 that most teams do not actually want). And a name carries assumed meaning: a colleague will read `--brand: purple` as a decision, not a placeholder.",
           "The sharpest trap is semantic. `color: green` in a report about environmental data collides with the pre-existing meaning of the word in that context. The moment a colour name is doing double duty as content, switch it to hex or a token.",
         ],
       },
@@ -1972,9 +1972,10 @@ Blues/grays/lights: aliceblue, azure, mintcream, honeydew, ghostwhite, lavenderb
         heading: "Find the closest named colour to any hex",
         body: [
           "When you have a hex and want its nearest keyword, the honest way to compare is perceptual distance — the OKLCH space, not raw RGB difference. Take your value, compute its position, and pick the named colour with the smallest distance. In practice the closest keyword is usually a small shrug: your carefully tuned #5833FF lands nearest to rebeccapurple, which confirms you are one step away from a name that ships.",
-          "You can run that comparison by hand with the colour converter: paste your hex and read the OKLCH output, then test candidate keywords until one lands close. If nothing is within a perceptually small distance, use the hex — approximating a precise colour down to a name you half-like is the worst trade in this article.",
+          "You can run that comparison by hand with the colour converter: paste your hex and read the OKLCH output, then test candidate keywords until one lands close. Or skip the arithmetic — the colour names tool measures all 148 keywords against your value in OKLab and lists them closest first. If nothing is within a perceptually small distance, use the hex — approximating a precise colour down to a name you half-like is the worst trade in this article.",
         ],
         links: [
+          { label: "Find your closest named colour", href: "/tools/color-names" },
           { label: "Check your colours in the converter", href: "/tools/color-converter" },
           { label: "Generate a scale from any colour", href: "/tools/color-palette-generator" },
         ],
