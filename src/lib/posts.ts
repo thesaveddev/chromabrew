@@ -120,7 +120,7 @@ export const BLOG_POSTS: BlogPost[] = [
     publishedAt: "2026-08-21",
     category: "Color theory",
     tags: ["hex", "hsl", "oklch", "css", "design tokens"],
-    relatedHrefs: ["/tools/hex-to-rgb", "/tools/hex-to-hsl", "/tools/design-token-generator"],
+    relatedHrefs: ["/tools/color-converter", "/tools/contrast-checker", "/tools/design-token-generator"],
     keyword: "HEX vs HSL vs OKLCH",
     sections: [
       {
@@ -1756,6 +1756,241 @@ export const BLOG_POSTS: BlogPost[] = [
           "Any crimson-family brand works; the anchoring move is keeping the dominant hue dominant. Use the marketing preview to judge headline scale, the SaaS preview to confirm the density stays usable in a working tool, and the generous ratio across all four — then shave the palette down rather than up if the previews feel frantic.",
           "Keep the scale strategy explicit in the tokens. With a 1.333 ratio, the jump from body to display is enormous — and that is the point — but it only holds if body copy stays small, quiet and mechanically readable. The moment body type starts shouting, the style reads as chaos instead of hierarchy. Calm text is not a compromise here; it is the mechanism.",
         ],
+      },
+    ],
+  },
+{
+    slug: "brand-color-palettes",
+    title: "Famous brand colour palettes: exact hex values and how to use them",
+    metaTitle: "Famous Brand Color Palettes — Exact Hex Values & How to Use Them",
+    description:
+      "Exact brand colour hex values for 100+ famous companies — Spotify, Stripe, Netflix and more — and how to turn any brand colour into an accessible design system.",
+    excerpt:
+      "Spotify green, Stripe indigo, Netflix red — exact brand hex values plus a workflow for turning any brand colour into an accessible design system.",
+    image: "/blog/brand-color-palettes.svg",
+    imageAlt: "Exact hex values for famous brand colors: Spotify green and Stripe indigo",
+    publishedAt: "2026-09-08",
+    category: "Color theory",
+    tags: ["brand colors", "brand colour palettes", "hex values", "color palette", "design system"],
+    relatedHrefs: ["/tools/brand-palettes", "/design-system", "/tools/color-palette-generator", "/tools/color-converter"],
+    keyword: "brand colour palettes",
+    sections: [
+      {
+        heading: "Every brand colour is a design decision you can borrow",
+        body: [
+          "A brand colour is a compressed design decision. The stripe next to Spotify's name is a specific green that survived years of designers, focus groups and legal trademark screens. Stripe's indigo reads as fintech before the logo is even legible. These values are not random — they were tuned to be recognised at a glance and to hold up in real products.",
+          "That makes them excellent starting colours for your own work. A brand palette is a hue that already passes the two tests your palette will eventually face: it is distinctive, and it performs on screen. Borrowing one as a seed is not copying a brand, it is starting from a colour that has already been battle-tested.",
+        ],
+      },
+      {
+        heading: "Where these hex values come from",
+        body: [
+          "Most brands publish official colour values in their press kits and brand guidelines — the same documents agencies use to build their decks. Our brand palettes dataset in /tools/brand-palettes collects 100+ of these widely published reference values, grouped by sector, so you can browse without tab-hopping through corporate PDFs.",
+          "Be aware of what the data is and is not. The values are widely published references rather than legal swatches, they cover only the primary brand colour (most brands have whole systems behind them), and using them does not mean the brand endorses your project. Treat them as starting points, not licences.",
+        ],
+      },
+      {
+        heading: "The exact values",
+        body: [
+          "Here are a handful with the numbers next to them, exactly as they appear in the dataset:",
+        ],
+        bullets: [
+          "Stripe — #635BFF, the indigo that owns modern fintech",
+          "Spotify — #1DB954, a green that survives against dark and light backgrounds",
+          "Netflix — #E50914, pure alarm red but restrained to a single surface",
+          "Slack — #4A154B, a plum chosen for calm long-session software",
+          "Instagram — #E4405F, the gradient core of the app icon",
+          "Figma — #A259FF, a violet aimed squarely at the design audience",
+        ],
+      },
+      {
+        heading: "Start a design system from a brand colour",
+        body: [
+          "The workflow we built ChromaBrew around takes one hex and does the rest: banks of shades from 50 to 950, semantic tokens, light and dark themes, WCAG contrast checks and production exports. A brand colour is the perfect first input, because it anchors the whole system in a hue you already trust.",
+          "Open the generator, drop in the hex, and the scale, tokens and previews follow the hue end to end. From Stripe indigo, the mechanical result looks like this:",
+        ],
+        code: `:root {
+  --background: #f5f4ff;
+  --surface: #ffffff;
+  --primary: #635bff;
+  --secondary: #7a6ff2;
+  --accent: #7c3aed;
+  --foreground: #1e1b2e;
+}`,
+        codeLang: "css",
+        links: [
+          { label: "Browse 110+ real brand colours", href: "/tools/brand-palettes" },
+          { label: "Seed the generator with Stripe indigo", href: "/design-system?primary=635bff" },
+        ],
+        tip: "A brand colour is a starting point, not a licence. Use it as the seed for your own scale and tokens — and don't imply affiliation with the brand whose hue you borrowed.",
+      },
+      {
+        heading: "Why a brand colour is such a good seed",
+        body: [
+          "A hue-anchored scale inherits the properties of its seed. If Spotify's green reads clearly in an app icon at 16 pixels, the 700 step of a scale derived from that same hue carries the same clarity. You skip the hardest part of palette design — picking a hue that is both distinctive and usable — and jump straight to the structural work of shades, roles and contrast.",
+          "The caveat is that a hue is not a palette. The perceptual distance between your brand hue and the neutrals, the darkness of your surface stack, and the exact ratio your typography needs against it are all decisions the generator still has to make. That is precisely what the seed workflow is for: the hue arrives ready, everything downstream is derived and checked.",
+        ],
+      },
+      {
+        heading: "Copy it exactly — then make it yours",
+        body: [
+          "Exactness matters more than people expect. #635BFF and #645CFF are different colours to the eye, and a hex value is a promise you either keep or quietly break. Copy the exact value from the brand palette entry, then regenerate the scale so every derived shade stays true to that hue. Your system can borrow the anchor while being entirely your own.",
+        ],
+      },
+    ],
+  },
+  {
+    slug: "hex-rgb-hsl-cmyk-which-format",
+    title: "HEX, RGB, HSL and CMYK: which colour format should you use?",
+    metaTitle: "HEX vs RGB vs HSL vs CMYK — Which Color Format Should You Use?",
+    description:
+      "HEX, RGB, HSL, CMYK and OKLCH compared: what each colour format is for, when it makes sense, and how to convert between them without losing colour.",
+    excerpt:
+      "Four formats, one colour. When to write hex, when to reach for HSL, why CMYK only matters for print, and why OKLCH beats all of them for scaling colours.",
+    image: "/blog/hex-rgb-hsl-cmyk.svg",
+    imageAlt: "HEX, RGB, HSL and CMYK colour formats compared",
+    publishedAt: "2026-09-09",
+    category: "Color theory",
+    tags: ["hex", "rgb", "hsl", "cmyk", "oklch", "color converter", "color format"],
+    relatedHrefs: ["/tools/color-converter", "/tools/color-palette-generator", "/tools/contrast-checker"],
+    keyword: "color format",
+    sections: [
+      {
+        heading: "Four ways to say the same colour",
+        body: [
+          "The colour your browser displays can be written as #47003A, rgb(71, 0, 58), hsl(326, 100%, 14%) or cmyk(0, 100, 18, 72) — four notations, one identical hue on screen. They are not different colours, they are different vocabularies, and each one was designed around a different job. The format you reach for should be chosen by the job, not habit.",
+          "That framing settles most format arguments immediately. Storage, editing, print and perceptual scaling each have a natural fit, and the mismatch — using a perceptual format for storage, or a print format for CSS — is where the practical pain comes from.",
+        ],
+      },
+      {
+        heading: "HEX: compact storage, opaque meaning",
+        body: [
+          "#47A248 is six hex digits in three pairs that are literally R, G and B written in base-16. It is the CSV of colour: compact, unambiguous, pasteable anywhere, and nearly impossible to reason about. You cannot look at a hex value and know whether the colour is dark or saturated — the encoding hides the meaning.",
+          "Use hex as the interchange format. It is what design tools, brand guidelines and code exports share. It is also precisely the format you should avoid editing by hand, because editing a value you cannot read is guessing.",
+        ],
+      },
+      {
+        heading: "RGB: channels you can feel",
+        body: [
+          "rgb(71, 0, 58) is the same colour written for the additive physics of a screen: each channel 0–255, mixed like light. The model is intuitive at the channel level — raise the red, the colour warms — and it is the honest representation of how a monitor actually works.",
+          "But channel intuition breaks the moment you want qualitative edits. Making a colour 'darker' is not subtracting a constant from every channel; that shifts the hue. RGB is the vocabulary of hardware, not the vocabulary of design intent.",
+        ],
+      },
+      {
+        heading: "HSL: built for editing",
+        body: [
+          "hsl(326, 100%, 14%) is the first format designed around how humans describe colour: hue around a circle, saturation as a percentage, lightness as a percentage. 'Take the hue and make it lighter' is a one-variable edit. This is why colour pickers and design tools let you work in HSL instead of channel triplets.",
+          "The catch is perceptual unevenness: a 10% lightness step near the dark end feels much larger than the same step near the middle. HSL is a brilliant editor's vocabulary and a mediocre scaler's vocabulary. For scaling, you want the next format.",
+        ],
+      },
+      {
+        heading: "CMYK: beloved only by printers",
+        body: [
+          "cmyk(0, 100, 18, 72) is subtractive ink percentages — cyan, magenta, yellow, key (black) — and it exists because paper subtracts light instead of adding it. It is indispensable for print: business cards, packaging and brand collateral are specified in CMYK because inks mix differently from pixels.",
+          "On screen it is a translation, not a native language. No CSS property, design system or web colour conversation uses CMYK directly, but you will still need to read it when a print designer hands you a brand value in inks. Convert it to hex — that is the version your code and your design system actually consume.",
+        ],
+      },
+      {
+        heading: "Why OKLCH matters more than all of them",
+        body: [
+          "OKLCH is the perceptual answer to HSL's unevenness: its lightness axis matches how humans actually judge brightness, so equal steps are equal to the eye. That is why ChromaBrew derives its entire 50–950 scale in OKLCH — a 700 that is 'one perceptible step' from 600, instead of a number that happens to be 100 apart.",
+          "For daily work you still convert into hex to communicate, but you should generate and scale in a perceptual space and translate at the boundary. There is more depth on the trade-offs in our earlier guide.",
+        ],
+        links: [
+          { label: "Deeper dive: HEX vs HSL vs OKLCH", href: "/blog/hex-vs-hsl-vs-oklch" },
+        ],
+      },
+      {
+        heading: "Convert without losing the colour",
+        body: [
+          "Every format in this post is a different spelling of the same hue, and converting should never change the colour. Our colour converter parses any recognisable colour and emits every format side by side — hex, RGB, HSL, CMYK and OKLCH — live, with one-click copy. The same #47003A reads across all five vocabularies:",
+        ],
+        code: `HEX:  #47003A
+RGB:  rgb(71, 0, 58)
+HSL:  hsl(326, 100%, 14%)
+CMYK: cmyk(0, 100, 18, 72)
+OKLCH: oklch(0.162 0.111 324.1)`,
+        codeLang: "text",
+        links: [
+          { label: "Open the colour converter", href: "/tools/color-converter" },
+        ],
+        tip: "When you hand a colour to a colleague, send the format their tool expects and the hex alongside it — hex is the lowest-common-denominator everyone can paste.",
+      },
+    ],
+  },
+  {
+    slug: "css-named-colors",
+    title: "CSS named colors: the full list of 147 and when to use them",
+    metaTitle: "CSS Named Colors — The Full List of 147 & When to Use Them",
+    description:
+      "All 147 CSS named colours, the ones worth remembering, when a color name beats a hex value, and how to find the closest named color to any hex.",
+    excerpt:
+      "tomato, rebeccapurple, deeppink — 147 CSS color names exist and most are unforgettable in the wrong way. When to use them, when not to, and how to find the nearest one.",
+    image: "/blog/css-named-colors.svg",
+    imageAlt: "CSS named color keywords shown as swatches",
+    publishedAt: "2026-09-10",
+    category: "Development",
+    tags: ["css named colors", "css color names", "css", "web development", "color"],
+    relatedHrefs: ["/tools/color-converter", "/tools/color-palette-generator", "/tools/design-token-generator"],
+    keyword: "css named colors",
+    sections: [
+      {
+        heading: "Colours already have names in CSS",
+        body: [
+          "Before hex was invented, software specified colours with words, and CSS kept that vocabulary. The color property accepts 147 named values — from the obvious blue to the suspicious lightgoldenrodyellow — and they all map to exact, fixed hex colours. Named colors are a real token type, not a shorthand: tomato is precisely #FF6347, forever.",
+          "In practice most people use a dozen of them and think that is the entire feature. The other 130+ are a useful resource for prototyping, documentation and tests, and a few are arguably the best-looking colours CSS has to offer.",
+        ],
+      },
+      {
+        heading: "The complete list",
+        body: [
+          "Here are all 147 keywords, grouped by colour family for scanning. gray and grey, aqua and cyan, fuchsia and magenta are aliases that resolve to the same hex:",
+        ],
+        code: `Reds/oranges: red, darkred, firebrick, indianred, brown, maroon, salmon, darksalmon, lightsalmon, coral, tomato, orangered, orange, darkorange, gold, goldenrod, darkgoldenrod, peru, chocolate, saddlebrown, sienna
+Pinks/violets: pink, lightpink, hotpink, deeppink, palevioletred, mediumvioletred, violet, plum, orchid, thistle, magenta/fuchsia, mediumorchid, mediumpurple, lavender, purple, rebeccapurple, indigo, darkmagenta, darkviolet, blueviolet
+Blues/teals: blue, mediumblue, darkblue, navy, royalblue, dodgerblue, cornflowerblue, steelblue, lightskyblue, skyblue, deepskyblue, lightblue, powderblue, lightsteelblue, cadetblue, teal, cyan/aqua, darkturquoise, turquoise, mediumturquoise, darkcyan, aquamarine, mediumaquamarine, lightseagreen, mediumseagreen, seagreen
+Greens/olives: green, darkgreen, forestgreen, lime/limegreen, lawngreen, chartreuse, greenyellow, yellowgreen, olivedrab, darkolivegreen, olive, yellow, khaki, darkkhaki, palegoldenrod
+Neutrals/browns: black, white, gray/grey, darkgray/darkgrey, dimgray/dimgrey, lightgray/lightgrey, slategray/slategrey, darkslategray/darkslategrey, lightslategray/lightslategrey, gainsboro, silver, whitesmoke, snow, floralwhite, linen, seashell, oldlace, beige, ivory, cornsilk, blanchedalmond, bisque, antiquewhite, navajowhite, moccasin, papayawhip, peachpuff, sandybrown, tan, burlywood, wheat, rosybrown
+Blues/grays/lights: aliceblue, azure, mintcream, honeydew, ghostwhite, lavenderblush, lavender, mistyrose, lightcyan, lightgoldenrodyellow, lightyellow, lightgreen, palegreen, paleturquoise, palevioletred`,
+        codeLang: "text",
+      },
+      {
+        heading: "When a name beats a hex value",
+        body: [
+          "Named colors win when the exact hue is not yet the point. In a prototype, `background: tomato` communicates intent ('we want something tomato-ish here') in a way a hex never can. The same is true in design-token documentation, where `--error: firebrick` reads better than `--error: #B22222` in a bullet point, and in tests, where asserting against an expressive keyword makes failures explainable.",
+          "There is a cheaper reason to love them too: they are self-documenting. `color: gold` in a chart legend is a sentence; `color: #FFD700` is homework. For throwaway exploration the readability of a keyword is worth more than the precision you are not using yet.",
+        ],
+      },
+      {
+        heading: "When a name is a trap",
+        body: [
+          "The traps are real. There is no consistent rule to remember which of the 147 your reader knows — hotpink is a specific, saturated magenta-pink, not 'sort of pink'. Aliases multiply confusion (gray and grey are both valid and identical, and slack `green` implies a pure #008000 that most teams do not actually want). And a name carries assumed meaning: a colleague will read `--brand: purple` as a decision, not a placeholder.",
+          "The sharpest trap is semantic. `color: green` in a report about environmental data collides with the pre-existing meaning of the word in that context. The moment a colour name is doing double duty as content, switch it to hex or a token.",
+        ],
+      },
+      {
+        heading: "Find the closest named colour to any hex",
+        body: [
+          "When you have a hex and want its nearest keyword, the honest way to compare is perceptual distance — the OKLCH space, not raw RGB difference. Take your value, compute its position, and pick the named colour with the smallest distance. In practice the closest keyword is usually a small shrug: your carefully tuned #5833FF lands nearest to rebeccapurple, which confirms you are one step away from a name that ships.",
+          "You can run that comparison by hand with the colour converter: paste your hex and read the OKLCH output, then test candidate keywords until one lands close. If nothing is within a perceptually small distance, use the hex — approximating a precise colour down to a name you half-like is the worst trade in this article.",
+        ],
+        links: [
+          { label: "Check your colours in the converter", href: "/tools/color-converter" },
+          { label: "Generate a scale from any colour", href: "/tools/color-palette-generator" },
+        ],
+      },
+      {
+        heading: "The ones worth remembering",
+        body: [
+          "Most names are for completeness; these do real daily work and are worth committing to memory:",
+        ],
+        bullets: [
+          "black, white, gray, silver — the four reliable neutrals",
+          "red, green, blue, yellow, orange — status-color primaries",
+          "tomato, coral, gold, skyblue, dodgerblue — pleasant mid-tones for charts and accents",
+          "crimson, firebrick, indigo, deeppink, rebeccapurple — unmistakable statement colours",
+        ],
+        tip: "Reach for a named colour when the exact hue does not matter yet — the moment a designer starts eyeballing the difference between tomato and coral, switch to hex or a token.",
       },
     ],
   },

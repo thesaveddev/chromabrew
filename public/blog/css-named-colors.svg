@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="CSS named color keywords shown as swatches">
+  <defs>
+    <radialGradient id="glow" cx="0.85" cy="0.1" r="0.7">
+      <stop offset="0" stop-color="#f97316" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#f97316" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#101014"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+  <rect width="1200" height="6" fill="#f97316"/>
+  <text x="88" y="96" font-family="'Courier New', Courier, monospace" font-size="14" letter-spacing="6" fill="#9a9aa3">CHROMABREW</text>
+  <text x="88" y="132" font-family="'Courier New', Courier, monospace" font-size="11" letter-spacing="2" fill="#6f6f78">CSS COLOUR KEYWORDS — ALL 147</text>
+  <text x="88" y="336" font-family="Helvetica, Arial, sans-serif" font-size="78" font-weight="700" fill="#f2f2f5">147 colours,</text>
+  <text x="88" y="428" font-family="Helvetica, Arial, sans-serif" font-size="78" font-weight="700" fill="#fb923c">every one named.</text>
+  <text x="88" y="556" font-family="'Courier New', Courier, monospace" font-size="13" fill="#8b8b93">chromabrew.com/blog/css-named-colors</text>
+  <rect x="914" y="150" width="242" height="338" rx="18" fill="#16161c" stroke="#24242d"/>
+  <rect x="940" y="184" width="82" height="46" rx="10" fill="#ff6347" stroke="#ffffff26" stroke-width="1"/><text x="981" y="210" font-family="'Courier New', Courier, monospace" font-size="11" fill="#101014" text-anchor="middle">tomato</text>
+  <rect x="1034" y="184" width="82" height="46" rx="10" fill="#663399" stroke="#ffffff26" stroke-width="1"/><text x="1075" y="210" font-family="'Courier New', Courier, monospace" font-size="11" fill="#f2f2f5" text-anchor="middle">rebecca</text>
+  <rect x="940" y="246" width="82" height="46" rx="10" fill="#ff1493" stroke="#ffffff26" stroke-width="1"/><text x="981" y="272" font-family="'Courier New', Courier, monospace" font-size="11" fill="#f2f2f5" text-anchor="middle">deeppink</text>
+  <rect x="1034" y="246" width="82" height="46" rx="10" fill="#ffd700" stroke="#ffffff26" stroke-width="1"/><text x="1075" y="272" font-family="'Courier New', Courier, monospace" font-size="11" fill="#101014" text-anchor="middle">gold</text>
+  <rect x="940" y="308" width="82" height="46" rx="10" fill="#87ceeb" stroke="#ffffff26" stroke-width="1"/><text x="981" y="334" font-family="'Courier New', Courier, monospace" font-size="11" fill="#101014" text-anchor="middle">skyblue</text>
+  <rect x="1034" y="308" width="82" height="46" rx="10" fill="#dc143c" stroke="#ffffff26" stroke-width="1"/><text x="1075" y="334" font-family="'Courier New', Courier, monospace" font-size="11" fill="#f2f2f5" text-anchor="middle">crimson</text>
+  <rect x="940" y="370" width="176" height="52" rx="10" fill="#191922" stroke="#24242d"/>
+  <text x="1028" y="403" font-family="'Courier New', Courier, monospace" font-size="13" fill="#a1a1aa" text-anchor="middle">+ 141 more</text>
+  <text x="1010" y="530" font-family="'Courier New', Courier, monospace" font-size="11" fill="#6f6f78" text-anchor="end">gold · skyblue · tomato · crimson</text>
+</svg>
