@@ -14,7 +14,7 @@ export default function Page() {
       tool={TOOL}
       usage={[
         "Enter or pick your brand color.",
-        "The tool generates a perceptually even 50â€“950 scale in OKLCH, pinning your exact color at its natural step.",
+        "The tool generates a perceptually even 50–950 scale in OKLCH, pinning your exact color at its natural step.",
         "Copy individual values as HEX, or copy the whole scale into your design tokens.",
       ]}
     >

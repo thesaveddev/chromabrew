@@ -131,8 +131,8 @@ export function DarkModeTool({ initial = "#47003a" }: { initial?: string }) {
         submitLabel="Generate dark theme"
       />
       <p className="text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-        Values below are constructed for dark surfaces â€” lighter primaries and
-        tinted neutrals with verified contrast â€” not an inversion of a light
+        Values below are constructed for dark surfaces — lighter primaries and
+        tinted neutrals with verified contrast — not an inversion of a light
         theme.
       </p>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">

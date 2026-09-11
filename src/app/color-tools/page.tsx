@@ -9,6 +9,19 @@ export const metadata: Metadata = {
   description:
     "Every color tool in one place: palette generator, brand color palettes, CSS color names finder, WCAG contrast checker, color blindness simulator, color converter and more — all free, no sign-up.",
   alternates: { canonical: "/color-tools" },
+  openGraph: {
+    title: "Color Tools — Palettes, Contrast, Names & Converters",
+    description:
+      "Every color tool in one place: palette generator, brand color palettes, CSS color names finder, WCAG contrast checker, color blindness simulator, color converter and more — all free, no sign-up.",
+    url: "/color-tools",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Color Tools — Palettes, Contrast, Names & Converters",
+    description:
+      "Every color tool in one place: palette generator, WCAG contrast checker, color converter, CSS color names finder and more — all free.",
+  },
 };
 
 const SUBSETS: { id: string; label: string; blurb: string; hrefs: string[] }[] = [
@@ -60,7 +73,7 @@ export default function ColorToolsHubPage() {
           name: "Color Tools",
           url: `${siteUrl}/color-tools`,
           description: metadata.description,
-          isPartOf: { "@type": "WebSite", name: "Chroma Brew", url: siteUrl },
+          isPartOf: { "@type": "WebSite", name: "ChromaBrew", url: siteUrl },
         }}
       />
       <JsonLd

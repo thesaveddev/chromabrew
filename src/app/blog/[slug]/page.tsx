@@ -23,9 +23,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: post.metaTitle,
     description: post.description,
     alternates: { canonical: `/blog/${post.slug}` },
-    ...(post.image
-      ? { openGraph: { images: [{ url: `${siteUrl}${post.image}`, width: 1200, height: 630, alt: post.imageAlt ?? post.title }] } }
-      : {}),
+    openGraph: {
+      title: `${post.metaTitle} · ChromaBrew`,
+      description: post.description,
+      url: `/blog/${post.slug}`,
+      type: "article",
+      ...(post.image
+        ? { images: [{ url: `${siteUrl}${post.image}`, width: 1200, height: 630, alt: post.imageAlt ?? post.title }] }
+        : {}),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${post.metaTitle} · ChromaBrew`,
+      description: post.description,
+      ...(post.image ? { images: [`${siteUrl}${post.image}`] } : {}),
+    },
   };
 }
 
@@ -57,11 +69,12 @@ export default async function BlogPostPage({ params }: Props) {
         <JsonLd
           data={{
             "@context": "https://schema.org",
-            "@type": "FAQPage",
-            mainEntity: post.sections.map((s) => ({
-              "@type": "Question",
+            "@type": "ItemList",
+            name: `${post.title} — sections`,
+            itemListElement: post.sections.map((s, index) => ({
+              "@type": "ListItem",
+              position: index + 1,
               name: s.heading,
-              acceptedAnswer: { "@type": "Answer", text: s.body.join(" ") },
             })),
           }}
         />

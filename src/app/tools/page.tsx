@@ -7,6 +7,19 @@ export const metadata: Metadata = {
   description:
     "15+ free color tools for developers and designers: color palette generator, brand color palettes, image color extractor, WCAG contrast checker, color blindness simulator, CSS gradient generator, Tailwind color generator, and more. No sign-up required.",
   alternates: { canonical: "/tools" },
+  openGraph: {
+    title: "Free Color Tools — Palette Generator, Contrast Checker & More",
+    description:
+      "15+ free color tools for developers and designers: color palette generator, brand color palettes, image color extractor, WCAG contrast checker, color blindness simulator, CSS gradient generator, Tailwind color generator, and more. No sign-up required.",
+    url: "/tools",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Free Color Tools — Palette Generator, Contrast Checker & More",
+    description:
+      "15+ free color tools: color palette generator, WCAG contrast checker, color blindness simulator, image color extractor, CSS gradient generator and more.",
+  },
 };
 
 const ORDER: ToolCategory[] = ["color", "converter", "css", "image"];

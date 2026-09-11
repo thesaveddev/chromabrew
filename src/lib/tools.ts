@@ -13,6 +13,8 @@ export interface ToolDefinition {
   description: string;
   /** Short card copy for grids. */
   blurb: string;
+  /** Two short, keyword-aware paragraphs rendered under the page intro. */
+  intro: string[];
   /** Broad category used for related-tool grouping and the index page. */
   category: ToolCategory;
   /** Genuine Q&As rendered on the page and emitted as FAQPage JSON-LD. */
@@ -32,6 +34,10 @@ export const TOOLS: ToolDefinition[] = [
     description:
       "Generate complementary, analogous, triadic, split-complementary, monochromatic and tetradic palettes from any color. Free and instant.",
     blurb: "Six palette strategies from one color.",
+    intro: [
+      "Generate a color palette from any base color using the six classic color-harmony rules — complementary, analogous, triadic, split-complementary, monochromatic and tetradic. Everything runs locally in your browser, so nothing is uploaded and there is no account to create.",
+      "Every palette is computed in OKLCH, a perceptually uniform colour space, so the swatches stay visually balanced instead of drifting like raw-hex mixes. Change the base color or switch strategies and the palette regenerates instantly, with HEX values ready to copy.",
+    ],
     category: "color",
     faqs: [
       {
@@ -56,6 +62,10 @@ export const TOOLS: ToolDefinition[] = [
     description:
       "Browse reference colors for top brands and turn any of them into a full accessible design system. Search by sector, copy hex values, or use a brand color as the generator's primary seed.",
     blurb: "Real brand colors you can use as a design seed.",
+    intro: [
+      "Browse the anchor colors behind well-known brands and turn any of them into a full, accessible design system in one click. Each entry lists the most widely cited color for a mark, with the hex value ready to copy.",
+      "Choose \"Use as seed\" and the design system generator derives a perceptual scale, semantic tokens, light and dark themes and production CSS from that single brand color.",
+    ],
     category: "color",
     faqs: [
       {
@@ -80,6 +90,10 @@ export const TOOLS: ToolDefinition[] = [
     description:
       "Create perceptually even 50–950 shade scales in OKLCH from a single brand color. Copy HEX values or the full Tailwind theme.",
     blurb: "Perceptual 50–950 scales in OKLCH.",
+    intro: [
+      "Turn any color into an eleven-step shade scale — 50 through 950 — computed in OKLCH so the steps are perceptually even. No more scales that look identical in the middle and jump at the ends.",
+      "Copy plain HEX values or the complete Tailwind-ready @theme block. The step naming matches Tailwind exactly, so tints and shades map straight onto utility classes.",
+    ],
     category: "color",
     faqs: [
       {
@@ -104,6 +118,10 @@ export const TOOLS: ToolDefinition[] = [
     description:
       "Check the contrast ratio between two colors against WCAG 2.x AA and AAA thresholds for normal and large text, then fix failures instantly.",
     blurb: "WCAG 2.x ratios with one-click fixes.",
+    intro: [
+      "Check the WCAG contrast ratio between any two colors — foreground and background — and see whether the pair passes AA and AAA for normal and large text. The ratio uses the WCAG relative-luminance formula, the same numbers other accessibility tools report.",
+      "When a combination fails, the contrast checker suggests the nearest accessible color that preserves your hue, so you can fix the pair instead of guessing.",
+    ],
     category: "color",
     faqs: [
       {
@@ -128,6 +146,10 @@ export const TOOLS: ToolDefinition[] = [
     description:
       "Convert between HEX, RGB, HSL, CMYK and OKLCH in one place. Paste any color in any format and copy all five equivalents instantly, with a live preview.",
     blurb: "HEX, RGB, HSL, CMYK & OKLCH in one converter.",
+    intro: [
+      "Convert any color between HEX, RGB, HSL, CMYK and OKLCH in a single converter. Type or paste a hex code, rgb() or hsl() — even a CSS color name like tomato — and read all five equivalents at once.",
+      "One URL replaces three separate round-trip converters, and the live preview updates as you type. Copy any format, or seed the design system generator with the result.",
+    ],
     category: "converter",
     faqs: [
       {
@@ -156,6 +178,10 @@ export const TOOLS: ToolDefinition[] = [
     description:
       "Find the closest of the 148 CSS named colors to any HEX, RGB or HSL color, measured in OKLab — with the dominant hue named for every color too. Browse, search and copy names or hex straight into your CSS.",
     blurb: "The 148 CSS names + dominant hue, closest first.",
+    intro: [
+      "Find the closest of the 148 CSS named colors to any hex, RGB or HSL value, measured in OKLab. An exact match lands at distance zero; neighboring keywords are ranked by how close they appear to the eye.",
+      "Every color also gets its dominant hue named for it. Browse or search the full list of CSS named colors and copy the name or hex straight into your stylesheet.",
+    ],
     category: "color",
     faqs: [
       {
@@ -184,6 +210,10 @@ export const TOOLS: ToolDefinition[] = [
     description:
       "Generate Tailwind CSS v4 @theme color variables from a single brand color, with a full 50–950 perceptual scale ready to paste.",
     blurb: "Tailwind v4 @theme output from one color.",
+    intro: [
+      "Generate a full 50–950 Tailwind color scale from a single brand color, emitted as a ready-to-paste Tailwind CSS v4 @theme block. The eleven steps are derived in OKLCH so tints and shades stay perceptually even.",
+      "Name the scale before copying and every --color-* variable and utility class follows along — bg-brand-600 style utilities work the moment you paste. The same hex steps drop into a Tailwind v3 config too.",
+    ],
     category: "css",
     faqs: [
       {
@@ -208,6 +238,10 @@ export const TOOLS: ToolDefinition[] = [
     description:
       "Build a complete shadcn/ui theme in current oklch format from one brand color — light and dark modes, charts and sidebar tokens included.",
     blurb: "Current-convention shadcn themes.",
+    intro: [
+      "Build a complete shadcn/ui theme from one brand color in the current oklch() convention. The generator emits matched light and dark variable blocks, including chart-1…chart-5 and sidebar tokens.",
+      "Paste the CSS into your global stylesheet and every shadcn component — buttons, cards, dialogs and charts — picks up the theme automatically.",
+    ],
     category: "css",
     faqs: [
       {
@@ -232,6 +266,10 @@ export const TOOLS: ToolDefinition[] = [
     description:
       "Turn any brand color into an accessible dark theme with semantic tokens — never a mechanical inversion of your light mode.",
     blurb: "Semantic dark themes, not inversions.",
+    intro: [
+      "Turn any brand color into an accessible dark theme with real semantic tokens — backgrounds, surfaces, borders, actions and status colors — rather than a mechanical inversion of your light mode.",
+      "Foreground/background pairs are measured against WCAG contrast thresholds and adjusted automatically, and you can export the result as CSS variables or JSON for Tailwind v4 or plain CSS.",
+    ],
     category: "color",
     faqs: [
       {
@@ -256,6 +294,10 @@ export const TOOLS: ToolDefinition[] = [
     description:
       "Generate structured design tokens — primitives and semantic roles for light and dark themes — as DTCG-style JSON or CSS variables.",
     blurb: "DTCG-style JSON + CSS tokens.",
+    intro: [
+      "Generate structured design tokens — a primitive brand scale plus semantic roles for light and dark themes — and export them as DTCG-style JSON or plain CSS custom properties.",
+      "Semantic tokens map roles like background, surface and primary to primitives, so retheming means swapping one mapping instead of hunting hard-coded hex values. Save a system to your account to regenerate it later, with version snapshots.",
+    ],
     category: "css",
     faqs: [
       {
@@ -280,6 +322,10 @@ export const TOOLS: ToolDefinition[] = [
     description:
       "Upload an image and instantly extract its dominant colors as a clean palette. Get HEX values, RGB readouts and a ready-to-use color scheme. Free, runs in your browser.",
     blurb: "Extract dominant colors from any image.",
+    intro: [
+      "Extract the dominant colors from any image and get a clean palette with HEX values within seconds. The image is processed locally on a canvas — pixels are clustered with a median-cut algorithm and nothing is uploaded.",
+      "Drag in a JPEG, PNG, GIF, WebP or SVG; the extractor returns the dominant colors plus RGB readouts you can use as a ready-made scheme.",
+    ],
     category: "image",
     faqs: [
       {
@@ -304,15 +350,19 @@ export const TOOLS: ToolDefinition[] = [
     description:
       "Simulate any color and any image under all eight conditions — protanopia, deuteranopia, tritanopia, achromatopsia and the milder anomalous forms — and check whether a text/background pair stays distinguishable. Free, instant, browser-only, nothing uploaded.",
     blurb: "Simulate colors & images under all eight CVD types.",
+    intro: [
+      "See how any color — or a whole image — appears under all eight types of color vision deficiency: protanopia, deuteranopia, tritanopia, achromatopsia and the milder anomalous forms. Roughly 8% of men and 0.5% of women have some form of color blindness, so checking matters.",
+      "Simulations run on a local canvas with peer-reviewed Machado et al. (2009) matrices; nothing is uploaded. A pair checker also grades whether text on a background stays distinguishable for color-blind viewers.",
+    ],
     category: "color",
     faqs: [
       {
         q: "What types of color blindness does this simulate?",
-        a: "Eight conditions: the full forms - protanopia (no red cones), deuteranopia (no green cones), tritanopia (no blue cones) and achromatopsia (total color blindness) - plus the milder, far more common anomalous forms protanomaly, deuteranomaly and tritanomaly. Each uses peer-reviewed Machado et al. (2009) matrices.",
+        a: "Eight conditions: the full forms — protanopia (no red cones), deuteranopia (no green cones), tritanopia (no blue cones) and achromatopsia (total color blindness) — plus the milder, far more common anomalous forms protanomaly, deuteranomaly and tritanomaly. Each uses peer-reviewed Machado et al. (2009) matrices.",
       },
       {
         q: "Can I simulate a whole image, not just one color?",
-        a: "Yes - drop in a photo, chart or UI screenshot and it is simulated under all eight conditions on a local canvas. Your image never leaves your browser, and every preview can be downloaded as a PNG.",
+        a: "Yes — drop in a photo, chart or UI screenshot and it is simulated under all eight conditions on a local canvas. Your image never leaves your browser, and every preview can be downloaded as a PNG.",
       },
       {
         q: "Can I check if two colors are distinguishable?",
@@ -332,6 +382,10 @@ export const TOOLS: ToolDefinition[] = [
     description:
       "Build linear, radial and conic CSS gradients visually. Pick colors, adjust angles and stops, then copy production-ready CSS. Free, no sign-up, runs in your browser.",
     blurb: "Linear, radial & conic gradients visually.",
+    intro: [
+      "Build linear, radial and conic CSS gradients visually — pick colors, set angles and drag color stops — then copy production-ready CSS. The code updates live and includes a plain-color fallback where useful.",
+      "Switch gradient types and stop colors without touching the output; the generated CSS is standard-compliant and ready to paste into any stylesheet.",
+    ],
     category: "css",
     faqs: [
       {
@@ -356,6 +410,10 @@ export const TOOLS: ToolDefinition[] = [
     description:
       "Blend two colors at any ratio with a live preview. Get HEX, RGB and HSL values for the mixed result, plus an 11-step blend scale. Free, instant, browser-only.",
     blurb: "Blend two colors at any ratio.",
+    intro: [
+      "Blend two colors at any ratio with instant HEX, RGB and HSL readouts, plus an eleven-step scale you can use for transitions and hover states. Mixing interpolates each RGB channel, so the result is predictable.",
+      "Use the scale output to build smooth color gradients or pick hover shades between two brand colors.",
+    ],
     category: "color",
     faqs: [
       {
@@ -380,6 +438,10 @@ export const TOOLS: ToolDefinition[] = [
     description:
       "Build box-shadow and text-shadow CSS visually. Adjust offset, blur, spread, color and opacity with sliders, then copy production-ready CSS. Free, no sign-up, runs in your browser.",
     blurb: "Visual box-shadow & text-shadow builder.",
+    intro: [
+      "Design box-shadow and text-shadow values with sliders — offset, blur, spread, color and opacity — and copy clean rgba() CSS the moment it looks right. Standard-compliant output for any modern browser.",
+      "Shadows combine with commas, so it is easy to layer multiple effects for depth, elevation or soft glows.",
+    ],
     category: "css",
     faqs: [
       {
@@ -404,6 +466,10 @@ export const TOOLS: ToolDefinition[] = [
     description:
       "Add transparency to any color. Get HEX8, RGBA and percentage opacity values with a live preview on white, gray and black backgrounds. Free, instant, browser-only.",
     blurb: "HEX8, RGBA & opacity from any color.",
+    intro: [
+      "Add transparency to any color and get the HEX8, RGBA and percentage opacity values at once, previewed on white, gray and black backgrounds. HEX8 extends a hex code with two alpha digits.",
+      "Preview on multiple backgrounds catches contrast problems before they ship, because transparency reads differently depending on what sits beneath it.",
+    ],
     category: "color",
     faqs: [
       {
@@ -428,6 +494,10 @@ export const TOOLS: ToolDefinition[] = [
     description:
       "Check an entire color palette for WCAG contrast violations. See every foreground/background pair in a matrix, spot failures instantly, and fix them. Free, instant, browser-only.",
     blurb: "Check full palettes for contrast issues.",
+    intro: [
+      "Check an entire color palette for WCAG contrast failures in one matrix view. Every foreground/background pair is graded for AA normal and large text, with failures flagged at a glance.",
+      "Add as many colors as you need; the matrix scales automatically and makes obvious which combinations need fixing before you export.",
+    ],
     category: "color",
     faqs: [
       {
@@ -452,6 +522,10 @@ export const TOOLS: ToolDefinition[] = [
     description:
       "Generate a modular type scale from base size and ratio (1.2 / 1.25 / 1.333). Get px & rem sizes, line heights, letter spacing, font pairings, CSS variables and a live preview. Free, no sign-up.",
     blurb: "Modular type scale with live preview & CSS.",
+    intro: [
+      "Generate a modular type scale from a base size and ratio — 1.2, 1.25 or 1.333 — with px and rem output, line heights, letter spacing, font pairings and CSS variables. Watch it live before you export.",
+      "rem units respect the user's browser font-size setting, which is the accessible default. Six curated system-font pairings ship without loading any webfonts.",
+    ],
     category: "css",
     faqs: [
       {
@@ -480,6 +554,10 @@ export const TOOLS: ToolDefinition[] = [
     description:
       "Convert SVG images to JPG instantly. Upload or paste SVG code, preview live, then export at 1x, 2x, 3x or 4x resolution. Free, no sign-up, runs in your browser.",
     blurb: "SVG → JPG at any scale.",
+    intro: [
+      "Convert SVG files or pasted SVG code to JPG at 1x, 2x, 3x or 4x resolution. The SVG renders on a local canvas and exports as a 92%-quality JPEG — nothing is sent to a server.",
+      "Pick 2x for retina screens or 4x for print-level sharpness. JPGs don't carry transparency, so the export adds a white background.",
+    ],
     category: "image",
     faqs: [
       {
@@ -504,6 +582,10 @@ export const TOOLS: ToolDefinition[] = [
     description:
       "Convert JPG, PNG or any raster image to SVG using color quantization. Adjust the color count for quality vs file size. Free, no sign-up, runs in your browser.",
     blurb: "Raster → SVG via color quantization.",
+    intro: [
+      "Convert a JPG, PNG or any raster image to SVG by color quantization, right in the browser. Fewer colors mean smaller files with clean flat shapes — ideal for logos and icons; more colors preserve photo detail.",
+      "Adjacent same-color pixels merge into rectangles, which keeps the SVG lightweight and editable in any vector tool.",
+    ],
     category: "image",
     faqs: [
       {

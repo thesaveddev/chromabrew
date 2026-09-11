@@ -8,6 +8,19 @@ export const metadata: Metadata = {
   description:
     "Practical guides on building accessible color palettes, design tokens, Tailwind v4 themes, dark mode, and more — from the team behind ChromaBrew's free color tools.",
   alternates: { canonical: "/blog" },
+  openGraph: {
+    title: "Blog — Color & Design System Guides",
+    description:
+      "Practical guides on building accessible color palettes, design tokens, Tailwind v4 themes, dark mode, and more — from the team behind ChromaBrew.",
+    url: "/blog",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Blog — Color & Design System Guides",
+    description:
+      "Practical guides on accessible color palettes, design tokens, Tailwind v4 themes and dark mode.",
+  },
 };
 
 export default function BlogIndexPage() {

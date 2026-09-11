@@ -6,7 +6,7 @@ import { jsonAdapter } from "./exports/json";
 import { tailwindAdapter } from "./exports/tailwind";
 import { shadcnAdapter } from "./exports/shadcn";
 
-describe("buildDesignSystem â€” critical workflow integration", () => {
+describe("buildDesignSystem — critical workflow integration", () => {
   const system = buildDesignSystem(
     normaliseConfig({
       primary: "#47003a",

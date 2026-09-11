@@ -14,7 +14,7 @@ export default function Page() {
       tool={TOOL}
       usage={[
         "Enter your brand color.",
-        "The tool constructs a semantic dark theme â€” lighter primaries, tinted neutrals and status colors with verified contrast.",
+        "The tool constructs a semantic dark theme — lighter primaries, tinted neutrals and status colors with verified contrast.",
         "Copy the .dark CSS block, or open the generator to preview the theme on real interfaces.",
       ]}
     >

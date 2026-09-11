@@ -89,6 +89,15 @@ export function ToolShell({
         <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-600 dark:text-zinc-400">
           {tool.description}
         </p>
+        {tool.intro.length ? (
+          <div className="mt-4 max-w-2xl space-y-2">
+            {tool.intro.map((paragraph) => (
+              <p key={paragraph} className="text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+                {paragraph}
+              </p>
+            ))}
+          </div>
+        ) : null}
       </header>
 
       <div className="mt-8">{children}</div>

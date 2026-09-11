@@ -150,7 +150,7 @@ function round(rem: number): number {
 /* Spacing                                                             */
 /* ------------------------------------------------------------------ */
 
-/** 4px-base spacing scale keyed by pixel size ("4" = 0.25rem â€¦ "96" = 24rem). */
+/** 4px-base spacing scale keyed by pixel size ("4" = 0.25rem … "96" = 24rem). */
 const SPACING_MULTIPLIERS = [0.5, 1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10, 12, 16, 20, 24] as const;
 
 export type SpacingScale = Record<string, string>;
