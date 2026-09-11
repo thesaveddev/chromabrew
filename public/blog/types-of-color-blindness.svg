@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="Types of color blindness: protan, deutan, tritan and monochromacy">
+  <defs>
+    <radialGradient id="glow" cx="0.85" cy="0.1" r="0.7">
+      <stop offset="0" stop-color="#8b5cf6" stop-opacity="0.30"/>
+      <stop offset="1" stop-color="#8b5cf6" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#101014"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+  <rect width="1200" height="6" fill="#8b5cf6"/>
+  <text x="88" y="96" font-family="'Courier New', Courier, monospace" font-size="14" letter-spacing="6" fill="#9a9aa3">CHROMABREW</text>
+  <text x="88" y="132" font-family="'Courier New', Courier, monospace" font-size="11" letter-spacing="2" fill="#6f6f78">COLOR VISION DEFICIENCY — THE EIGHT CONDITIONS</text>
+  <text x="88" y="330" font-family="Helvetica, Arial, sans-serif" font-size="72" font-weight="700" fill="#f2f2f5">Eight ways</text>
+  <text x="88" y="424" font-family="Helvetica, Arial, sans-serif" font-size="72" font-weight="700" fill="#c4b5fd">to see color.</text>
+  <text x="88" y="556" font-family="'Courier New', Courier, monospace" font-size="13" fill="#8b8b93">chromabrew.com/blog/types-of-color-blindness</text>
+  <rect x="906" y="150" width="240" height="338" rx="18" fill="#16161c" stroke="#2a2a33"/>
+  <text x="936" y="188" font-family="'Courier New', Courier, monospace" font-size="11" letter-spacing="2" fill="#6f6f78">A RED/GREEN PAIR, TWO VIEWS</text>
+  <rect x="936" y="210" width="46" height="46" rx="10" fill="#e20000"/><text x="959" y="240" font-family="'Courier New', Courier, monospace" font-size="10" fill="#f2f2f5" text-anchor="middle">red</text>
+  <rect x="994" y="210" width="46" height="46" rx="10" fill="#00671c"/><text x="1017" y="240" font-family="'Courier New', Courier, monospace" font-size="10" fill="#f2f2f5" text-anchor="middle">green</text>
+  <text x="1094" y="238" font-family="'Courier New', Courier, monospace" font-size="11" fill="#a1a1aa">normal</text>
+  <rect x="936" y="272" width="46" height="46" rx="10" fill="#533f00"/><text x="959" y="302" font-family="'Courier New', Courier, monospace" font-size="10" fill="#f2f2f5" text-anchor="middle">red</text>
+  <rect x="994" y="272" width="46" height="46" rx="10" fill="#1f1e1a"/><text x="1017" y="302" font-family="'Courier New', Courier, monospace" font-size="10" fill="#f2f2f5" text-anchor="middle">green</text>
+  <text x="1094" y="300" font-family="'Courier New', Courier, monospace" font-size="11" fill="#a1a1aa">deutan</text>
+  <rect x="936" y="334" width="104" height="18" rx="9" fill="#3f3f46"/><text x="988" y="346" font-family="'Courier New', Courier, monospace" font-size="10" fill="#e4e4e7" text-anchor="middle">protan · tritan · mono</text>
+  <text x="1010" y="470" font-family="'Courier New', Courier, monospace" font-size="11" fill="#6f6f78" text-anchor="end">worst-case check first, milder anomalies second</text>
+</svg>

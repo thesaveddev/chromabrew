@@ -154,8 +154,8 @@ export const TOOLS: ToolDefinition[] = [
     title: "CSS color names",
     metaTitle: "CSS Color Names — find the closest named colour to any color",
     description:
-      "Find the closest of the 148 CSS named colors to any HEX, RGB or HSL color, measured in OKLab. Browse, search and copy names or hex straight into your CSS.",
-    blurb: "The 148 CSS names, closest first.",
+      "Find the closest of the 148 CSS named colors to any HEX, RGB or HSL color, measured in OKLab — with the dominant hue named for every color too. Browse, search and copy names or hex straight into your CSS.",
+    blurb: "The 148 CSS names + dominant hue, closest first.",
     category: "color",
     faqs: [
       {
@@ -300,23 +300,27 @@ export const TOOLS: ToolDefinition[] = [
     href: "/tools/color-blindness-simulator",
     navLabel: "Color blindness simulator",
     title: "Color blindness simulator",
-    metaTitle: "Color Blindness Simulator — see how colors look to everyone",
+    metaTitle: "Color Blindness Simulator — see colors as others see them",
     description:
-      "Simulate how any color or palette appears to people with protanopia, deuteranopia, tritanopia and achromatopsia. Check whether a text/background pair stays distinguishable. Free, instant, browser-only.",
-    blurb: "Simulate protanopia, deuteranopia & tritanopia, + pair check.",
+      "Simulate any color and any image under all eight conditions — protanopia, deuteranopia, tritanopia, achromatopsia and the milder anomalous forms — and check whether a text/background pair stays distinguishable. Free, instant, browser-only, nothing uploaded.",
+    blurb: "Simulate colors & images under all eight CVD types.",
     category: "color",
     faqs: [
       {
         q: "What types of color blindness does this simulate?",
-        a: "Four types: protanopia (no red cones), deuteranopia (no green cones), tritanopia (no blue cones), and achromatopsia (total color blindness). Each uses peer-reviewed transformation matrices.",
+        a: "Eight conditions: the full forms - protanopia (no red cones), deuteranopia (no green cones), tritanopia (no blue cones) and achromatopsia (total color blindness) - plus the milder, far more common anomalous forms protanomaly, deuteranomaly and tritanomaly. Each uses peer-reviewed Machado et al. (2009) matrices.",
+      },
+      {
+        q: "Can I simulate a whole image, not just one color?",
+        a: "Yes - drop in a photo, chart or UI screenshot and it is simulated under all eight conditions on a local canvas. Your image never leaves your browser, and every preview can be downloaded as a PNG.",
       },
       {
         q: "Can I check if two colors are distinguishable?",
-        a: "Yes — alongside simulating a single color, you can check a foreground/background pair under each condition. The color difference score shows whether they stay distinguishable, which contrast ratio alone can't guarantee.",
+        a: "Yes — alongside simulating single colors and images, you can check a foreground/background pair under every full condition. The color difference score shows whether they stay distinguishable, which contrast ratio alone can't guarantee.",
       },
       {
         q: "Why does color accessibility matter?",
-        a: "Roughly 8 % of men and 0.5 % of women have some form of color vision deficiency. If your interface relies on color alone to convey meaning, those users may be excluded. This tool helps you catch those issues early.",
+        a: "Roughly 8% of men and 0.5% of women have some form of color vision deficiency. If your interface relies on color alone to convey meaning, those users may be excluded. This tool helps you catch those issues early.",
       },
     ],
   },

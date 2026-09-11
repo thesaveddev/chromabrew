@@ -1,4 +1,4 @@
-import { oklabDistance } from "@/lib/design-system/colour/convert";
+import { oklabDistance, parseColour, toColourValue } from "@/lib/design-system/colour/convert";
 
 export interface CssNamedColour {
   name: string;
@@ -185,4 +185,33 @@ export function closestNamedColour(hex: string): ClosestNamedColour | null {
     if (!best || distance < best.distance) best = { name: entry.name, hex: entry.hex, distance };
   }
   return best;
+}
+
+/**
+ * A human-readable dominant hue bucket derived from the color's HSL
+ * properties — useful for pairing with the closest named colour and for
+ * quick scanning in a palette overview. Named after the nearest main hue
+ * (Name That Color–style classification, simplified).
+ */
+export function dominantHue(hex: string): string {
+  const norm = parseColour(hex);
+  if (!norm) return "Unknown";
+  const { h, s, l } = toColourValue(norm).hsl;
+
+  if (l >= 93) return "White";
+  if (l <= 8) return "Black";
+  if (s <= 12) return "Grey";
+
+  // Browns are muted, dark orange-range tones — pure orange stays "Orange".
+  if (h >= 15 && h < 45 && s < 85 && l <= 55) return "Brown";
+
+  let hueName: string;
+  if (h >= 345 || h < 22) hueName = "Red";
+  else if (h < 45) hueName = "Orange";
+  else if (h < 70) hueName = "Yellow";
+  else if (h < 170) hueName = "Green";
+  else if (h < 250) hueName = "Blue";
+  else hueName = "Violet";
+
+  return hueName;
 }

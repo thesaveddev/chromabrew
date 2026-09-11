@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { ColourInput } from "@/components/ui/colour";
 import { CopyButton, LinkButton } from "@/components/ui/primitives";
 import { parseColour } from "@/lib/design-system/colour/convert";
-import { CSS_NAMED_COLORS, closestNamedColour } from "@/lib/css-colors";
+import { CSS_NAMED_COLORS, closestNamedColour, dominantHue } from "@/lib/css-colors";
 
 const BROWSE_LIMIT = 60;
 
@@ -17,6 +17,7 @@ export function ColourNames() {
     () => (resolved ? closestNamedColour(resolved) : null),
     [resolved],
   );
+  const hue = useMemo(() => (resolved ? dominantHue(resolved) : null), [resolved]);
 
   const query = search.trim().toLowerCase();
   const matches = query
@@ -62,6 +63,9 @@ export function ColourNames() {
                   {closest.hex.toUpperCase()} · OKLab distance{" "}
                   <span className="font-mono">{closest.distance.toFixed(3)}</span>
                   {closest.distance === 0 ? " — exact match" : ""}
+                </p>
+                <p className="mt-1 text-xs font-medium text-zinc-700 dark:text-zinc-300">
+                  Dominant hue · {hue}
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">

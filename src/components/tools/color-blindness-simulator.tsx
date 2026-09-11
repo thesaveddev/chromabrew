@@ -1,9 +1,16 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { parseColour, formatRgb, formatHsl, formatOklch, toColourValue } from "@/lib/design-system/colour/convert";
 import { contrastRatio } from "@/lib/design-system/colour/contrast";
-import { CVD_TYPES, simulateCvd, differenceScore } from "@/lib/design-system/colour/cvd";
+import {
+  CVD_ANOMALIES,
+  CVD_TYPES,
+  differenceScore,
+  simulateCvd,
+  simulateCvdRgb,
+  type CvdVariant,
+} from "@/lib/design-system/colour/cvd";
 import { ColourInput } from "@/components/ui/colour";
 import { CopyButton } from "@/components/ui/primitives";
 
@@ -18,6 +25,11 @@ export function ColorBlindnessSimulator({ initial = "#47003a" }: { initial?: str
 
   const simulations = useMemo(
     () => CVD_TYPES.map((t) => ({ ...t, hex: simulateCvd(color, t.id) })),
+    [color],
+  );
+
+  const anomalies = useMemo(
+    () => CVD_ANOMALIES.map((t) => ({ ...t, hex: simulateCvd(color, t.id) })),
     [color],
   );
 
@@ -62,35 +74,212 @@ export function ColorBlindnessSimulator({ initial = "#47003a" }: { initial?: str
         </dl>
       )}
 
-      <div className="space-y-3">
-        <p className="text-xs font-medium text-zinc-500">Simulation results</p>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {simulations.map((sim) => (
-            <div key={sim.id} className="rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
-              <div className="flex">
-                <div className="h-14 flex-1" style={{ backgroundColor: color }} />
-                <div className="h-14 flex-1" style={{ backgroundColor: sim.hex }} />
-              </div>
-              <div className="px-3 py-2.5">
-                <div className="flex items-center justify-between">
-                  <p className="text-xs font-medium text-zinc-800 dark:text-zinc-200">{sim.label}</p>
-                  <code className="font-mono text-[10px] text-zinc-500">{sim.hex.toUpperCase()}</code>
-                </div>
-                <p className="mt-0.5 text-[10px] text-zinc-500">{sim.desc}</p>
-              </div>
-            </div>
-          ))}
+      <div className="space-y-5">
+        <div className="space-y-3">
+          <p className="text-xs font-medium text-zinc-500">Simulation results</p>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              { id: "normal", label: "Normal vision", desc: "Full trichromatic color vision", hex: color },
+              ...simulations,
+            ].map((sim) => (
+              <SimCard key={sim.id} sim={sim} />
+            ))}
+          </div>
         </div>
+
+        {anomalies.length ? (
+          <div className="space-y-3">
+            <p className="text-xs font-medium text-zinc-500">
+              Milder forms — anomalous trichromacy (far more common than the full forms)
+            </p>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {anomalies.map((sim) => (
+                <SimCard key={sim.id} sim={sim} />
+              ))}
+            </div>
+          </div>
+        ) : null}
       </div>
 
       <p className="text-xs text-zinc-500">
         Simulations use the Machado et al. (2009) matrices — the same
         transform used by major accessibility tools. Roughly 8% of men and
-        0.5% of women have some form of color vision deficiency.
+        0.5% of women have some form of color vision deficiency, and the
+        milder anomalous forms make up the vast majority of cases.
       </p>
+
+      <ImageCvdSimulator />
 
       <ColorPairChecker />
     </div>
+  );
+}
+
+function SimCard({ sim }: { sim: { id: string; label: string; desc: string; hex: string } }) {
+  return (
+    <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+      <div className="flex">
+        <div className="h-14 flex-1" style={{ backgroundColor: sim.hex }} />
+      </div>
+      <div className="px-3 py-2.5">
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-medium text-zinc-800 dark:text-zinc-200">{sim.label}</p>
+          <code className="font-mono text-[10px] text-zinc-500">{sim.hex.toUpperCase()}</code>
+        </div>
+        <p className="mt-0.5 text-[10px] text-zinc-500">{sim.desc}</p>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Image simulator: drop in a photo, illustration or UI screenshot and see
+ * it under every condition — including the milder anomalous forms. All
+ * processing happens on a canvas in this browser tab; nothing is uploaded.
+ */
+function ImageCvdSimulator() {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [source, setSource] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [previews, setPreviews] = useState<{ variant: CvdVariant; dataUrl: string }[]>([]);
+
+  const handleFile = (file: File | undefined) => {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setError("That file isn't an image — try a PNG, JPG, GIF, WebP or SVG.");
+      return;
+    }
+    setError(null);
+    const reader = new FileReader();
+    reader.onload = () => setSource(String(reader.result));
+    reader.onerror = () => setError("Couldn't read that file.");
+    reader.readAsDataURL(file);
+  };
+
+  useEffect(() => {
+    if (!source) return;
+    let cancelled = false;
+    const image = new Image();
+    image.onload = () => {
+      const longSide = Math.max(image.naturalWidth, image.naturalHeight);
+      const scale = Math.min(1, 768 / longSide);
+      const w = Math.max(1, Math.round(image.naturalWidth * scale));
+      const h = Math.max(1, Math.round(image.naturalHeight * scale));
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d", { willReadFrequently: true });
+      if (!ctx) return;
+      ctx.drawImage(image, 0, 0, w, h);
+      const original = ctx.getImageData(0, 0, w, h);
+      const variants = [...CVD_TYPES, ...CVD_ANOMALIES];
+      const rendered = variants
+        .map((variant) => {
+          const outCanvas = document.createElement("canvas");
+          outCanvas.width = w;
+          outCanvas.height = h;
+          const outCtx = outCanvas.getContext("2d");
+          if (!outCtx) return null;
+          const data = new ImageData(new Uint8ClampedArray(original.data), w, h);
+          const bytes = data.data;
+          for (let i = 0; i < bytes.length; i += 4) {
+            const simulated = simulateCvdRgb(
+              { r: bytes[i], g: bytes[i + 1], b: bytes[i + 2] },
+              variant.id,
+            );
+            bytes[i] = simulated.r;
+            bytes[i + 1] = simulated.g;
+            bytes[i + 2] = simulated.b;
+          }
+          outCtx.putImageData(data, 0, 0);
+          return { variant, dataUrl: outCanvas.toDataURL("image/png") };
+        })
+        .filter((r): r is { variant: CvdVariant; dataUrl: string } => r !== null);
+      if (!cancelled) setPreviews(rendered);
+    };
+    image.onerror = () => setError("Couldn't read that image.");
+    image.src = source;
+    return () => {
+      cancelled = true;
+    };
+  }, [source]);
+
+  return (
+    <section className="mt-8 border-t border-zinc-200 pt-6 dark:border-zinc-800">
+      <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
+        Preview a whole image
+      </h2>
+      <p className="mt-1 max-w-2xl text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+        Sometimes a single swatch isn&apos;t enough — charts, UI screenshots and photos have color doing
+        real work. Drop one in and it is processed locally on a canvas, nothing is uploaded. Files are
+        capped at 768px for speed, so any size works.
+      </p>
+
+      <div className="mt-4">
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(event) => handleFile(event.target.files?.[0])}
+          aria-label="Choose an image to simulate"
+        />
+        <button
+          type="button"
+          onClick={() => fileRef.current?.click()}
+          className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-800 transition-colors hover:border-zinc-400 hover:text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:border-zinc-500 dark:hover:text-zinc-100 dark:focus-visible:outline-zinc-100"
+        >
+          {source ? "Choose a different image" : "Choose an image"}
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setSource(null);
+            setPreviews([]);
+            if (fileRef.current) fileRef.current.value = "";
+          }}
+          className={`ml-2 rounded-lg px-4 py-2 text-sm font-medium text-zinc-500 transition-colors hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 dark:focus-visible:outline-zinc-100 ${
+            source ? "" : "pointer-events-none opacity-40"
+          }`}
+        >
+          Clear
+        </button>
+      </div>
+
+      {error ? <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p> : null}
+
+      {source ? (
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <figure className="overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800">
+            <img src={source} alt="Original" className="max-h-48 w-full object-contain bg-zinc-50 dark:bg-zinc-900" />
+            <figcaption className="border-t border-zinc-100 px-3 py-2 dark:border-zinc-800">
+              <p className="text-xs font-medium text-zinc-800 dark:text-zinc-200">Original</p>
+              <p className="text-[10px] text-zinc-500">Full trichromatic vision</p>
+            </figcaption>
+          </figure>
+          {previews.map(({ variant, dataUrl }) => (
+            <figure key={variant.id} className="overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800">
+              <img src={dataUrl} alt={`${variant.label} simulation`} className="max-h-48 w-full object-contain bg-zinc-50 dark:bg-zinc-900" />
+              <figcaption className="border-t border-zinc-100 px-3 py-2 dark:border-zinc-800">
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    <p className="text-xs font-medium text-zinc-800 dark:text-zinc-200">{variant.label}</p>
+                    <p className="text-[10px] text-zinc-500">{variant.desc}</p>
+                  </div>
+                  <a
+                    href={dataUrl}
+                    download={`${variant.id}.png`}
+                    className="shrink-0 rounded-md border border-zinc-200 px-2 py-1 text-[10px] font-medium text-zinc-600 hover:border-zinc-400 hover:text-zinc-900 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-500 dark:hover:text-zinc-100"
+                  >
+                    Download
+                  </a>
+                </div>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      ) : null}
+    </section>
   );
 }
 
@@ -243,6 +432,8 @@ function ColorPairChecker({
           <p className="text-xs text-zinc-500">
             Color difference is the perceptual distance between the simulated pair on a 0–100 scale.
             Below roughly 30, the two are hard to tell apart even when the contrast ratio looks fine.
+            The pair checker grades the full (anopia) conditions — if a pair survives those worst cases,
+            it will survive the milder anomalous forms too.
           </p>
         </div>
       )}

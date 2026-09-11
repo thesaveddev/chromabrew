@@ -3,6 +3,7 @@ import {
   closestNamedColour,
   CSS_NAMED_COLORS,
   CSS_NAMED_COLOR_COUNT,
+  dominantHue,
 } from "@/lib/css-colors";
 
 describe("CSS named colours dataset", () => {
@@ -51,5 +52,31 @@ describe("closestNamedColour", () => {
     // A vivid violet should land near rebeccapurple or violet, never black/white.
     const result = closestNamedColour("#7c3aed");
     expect(["rebeccapurple", "violet", "mediumpurple", "blueviolet"]).toContain(result?.name);
+  });
+});
+
+describe("dominantHue", () => {
+  it("classifies the ten buckets correctly", () => {
+    expect(dominantHue("#ff0000")).toBe("Red");
+    expect(dominantHue("#ffa500")).toBe("Orange");
+    expect(dominantHue("#facc15")).toBe("Yellow");
+    expect(dominantHue("#16a34a")).toBe("Green");
+    expect(dominantHue("#0ea5e9")).toBe("Blue");
+    expect(dominantHue("#8b5cf6")).toBe("Violet");
+    expect(dominantHue("#8b4513")).toBe("Brown");
+    expect(dominantHue("#808080")).toBe("Grey");
+    expect(dominantHue("#000000")).toBe("Black");
+    expect(dominantHue("#ffffff")).toBe("White");
+  });
+
+  it("handles edges and near-neutral tones", () => {
+    expect(dominantHue("#fff")).toBe("White");
+    expect(dominantHue("#111111")).toBe("Black");
+    expect(dominantHue("#f8fafc")).toBe("White");
+    expect(dominantHue("#1e1e24")).toMatch(/^(Black|Grey)$/);
+  });
+
+  it("rejects invalid input gracefully", () => {
+    expect(dominantHue("not-a-color")).toBe("Unknown");
   });
 });

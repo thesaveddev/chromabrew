@@ -13,7 +13,7 @@ export default function Page() {
     <ToolShell
       tool={TOOL}
       usage={[
-        "Type or pick any colour in HEX, RGB or HSL and the tool finds the closest of the 148 CSS named colours, measured in OKLab.",
+        "Type or pick any colour in HEX, RGB or HSL and the tool finds the closest of the 148 CSS named colours (measured in OKLab) and names its dominant hue.",
         "Copy the name straight into your CSS, or copy the hex and open it in the design system generator as the primary seed.",
         "Browse the full list, search by name, and click any swatch to see its closest-name card.",
       ]}
