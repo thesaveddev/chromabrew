@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BLOG_POSTS, postsByCategory } from "@/lib/posts";
+import { livePosts, postsByCategory } from "@/lib/posts";
 import { PostCard } from "@/components/blog/post-card";
+import { defaultOgImage } from "@/lib/og";
 
 export const metadata: Metadata = {
   title: "Blog — Color & Design System Guides",
@@ -14,12 +15,14 @@ export const metadata: Metadata = {
       "Practical guides on building accessible color palettes, design tokens, Tailwind v4 themes, dark mode, and more — from the team behind ChromaBrew.",
     url: "/blog",
     type: "website",
+    images: [defaultOgImage],
   },
   twitter: {
     card: "summary_large_image",
     title: "Blog — Color & Design System Guides",
     description:
       "Practical guides on accessible color palettes, design tokens, Tailwind v4 themes and dark mode.",
+    images: [defaultOgImage.url],
   },
 };
 
@@ -60,7 +63,7 @@ export default function BlogIndexPage() {
       ))}
 
       <p className="mt-12 text-sm text-zinc-500">
-        {BLOG_POSTS.length} guides published. <Link href="/tools" className="font-medium text-zinc-900 underline underline-offset-4 dark:text-zinc-100">Explore all free color tools →</Link>
+        {livePosts().length} guides published. <Link href="/tools" className="font-medium text-zinc-900 underline underline-offset-4 dark:text-zinc-100">Explore all free color tools →</Link>
       </p>
     </div>
   );

@@ -1,0 +1,35 @@
+name: Publish scheduled posts
+
+on:
+  schedule:
+    # Publish posts at 09:00 UTC on dates when future-dated posts go live.
+    # Adjust as needed; workflow_dispatch also allows manual rebuilds.
+    - cron: '0 9 12 10 *'  # Oct 12
+    - cron: '0 9 14 10 *'  # Oct 14
+    - cron: '0 9 16 10 *'  # Oct 16
+    - cron: '0 9 19 10 *'  # Oct 19
+    - cron: '0 9 22 10 *'  # Oct 22
+    - cron: '0 9 26 10 *'  # Oct 26
+    - cron: '0 9 29 10 *'  # Oct 29
+    - cron: '0 9 2 11 *'   # Nov 2
+    - cron: '0 9 5 11 *'   # Nov 5
+    - cron: '0 9 8 11 *'   # Nov 8
+
+  workflow_dispatch:
+
+jobs:
+  trigger-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Vercel Production Deploy
+        if: ${{ secrets.VERCEL_DEPLOY_HOOK_URL != '' }}
+        run: |
+          curl -X POST "$VERCEL_DEPLOY_HOOK_URL" -H "Content-Type: application/json" -d "{}"
+        env:
+          VERCEL_DEPLOY_HOOK_URL: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
+
+      - name: Notify missing secret
+        if: ${{ secrets.VERCEL_DEPLOY_HOOK_URL == '' }}
+        run: |
+          echo "::warning::VERCEL_DEPLOY_HOOK_URL secret is not configured. This workflow will not trigger a deploy."
+          echo "Add the secret in Settings > Secrets and variables > Actions for this repository."

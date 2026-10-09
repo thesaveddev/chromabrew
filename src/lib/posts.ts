@@ -45,6 +45,850 @@ export interface BlogPost {
 
 export const BLOG_POSTS: BlogPost[] = [
   {
+slug: "oklch-explained-for-frontend-developers",
+    title: "OKLCH explained for frontend developers",
+    metaTitle: "OKLCH for Developers - Channels, Scales & When to Use It",
+    description:
+      "What the L, C and H channels actually mean, why OKLCH is perceptually uniform, and where to use oklch() in real CSS — scales, mixing and shade generation.",
+    excerpt:
+      "Hue, chroma, lightness: what each OKLCH channel does, why the space is perceptually uniform, and how to read and write oklch() values in real CSS.",
+    publishedAt: "2026-10-12",
+    category: "Color scales",
+    tags: ["oklch", "css color", "color space", "tailwind", "shadcn"],
+    relatedHrefs: [
+      "/tools/shade-generator",
+      "/tools/color-converter",
+      "/tools/shadcn-theme-generator",
+    ],
+    keyword: "oklch for developers",
+    sections: [
+      {
+        heading: "The three channels, decoded",
+        body: [
+          "OKLCH is a cylindrical color space with three channels. L (lightness) runs 0 to 1 and is designed so that equal steps look like equal steps to the eye — the reason it beats HSL for anything graded. C (chroma) is how far the color sits from neutral gray, roughly 0 to 0.37 for sRGB colors. H (hue) is an angle in degrees, 0–360, the same mental model as HSL's hue.",
+          "You read an oklch() value left to right: oklch(0.68 0.24 292) is 'lightness 68%, quite saturated, in the violet azimuth'. Because the channels are perceptual rather than derived from an RGB primary, a value communicates feel, not math — that is the entire point.",
+        ],
+      },
+      {
+        heading: "Why 'perceptually uniform' actually matters",
+        body: [
+          "Hex and RGB channels are hardware math: stepping red from 40 to 42 is measured in electricity, not in how the color feels. HSL is closer to human language, but its lightness curve is visibly non-linear — a gradient from hsl(240 100% 10%) to hsl(240 100% 40%) looks like it stops moving halfway through. OKLCH fixes that with a lightness axis matched to human perception.",
+          "The practical consequence: a shade scale computed in OKLCH has evenly spaced steps, while the same scale computed in RGB has clumps of near-identical steps in the middle and abrupt jumps at the ends. That is exactly the difference you see between a hand-tuned brand scale and an auto-generated one.",
+        ],
+        tip: "Quick mental check to tell a perceptual space from a device space: in HSL, changing lightness and then converting back to hex usually keeps the hue recognisable; the failure shows up as uneven spacing, not wrong hues. ChromaBrew computes every scale and palette in OKLCH for this reason.",
+        links: [
+          { label: "Compare HEX, RGB, HSL and OKLCH side by side", href: "/tools/color-converter" },
+        ],
+      },
+      {
+        heading: "Where oklch() ships in CSS today",
+        body: [
+          "Every evergreen browser supports the oklch() and oklab() color functions, so you can write them directly in stylesheets. That makes OKLCH more than an authoring nicety — it is a publishable format, and Tailwind v4's default palette and shadcn/ui themes are written in it.",
+          "The interesting reveal is how the two live sides of the toolchain shake out: ChromaBrew's full design-system export writes shadcn-style oklch() values into :root and .dark blocks, while its plain CSS and Tailwind exports keep literal hex per token. Both are deliberate — oklch keeps your theme readable and tweakable, hex keeps your output maximally interoperable.",
+        ],
+        code: `:root {
+  --primary: oklch(0.62 0.22 292);
+  --primary-foreground: oklch(0.99 0 0);
+}
+.dark {
+  --primary: oklch(0.68 0.19 292);
+}`,
+        codeLang: "css",
+        links: [
+          { label: "Generate a shadcn theme with oklch values", href: "/tools/shadcn-theme-generator" },
+        ],
+      },
+      {
+        heading: "Generating scales in OKLCH",
+        body: [
+          "A 50–950 shade scale is built by walking OKLCH lightness between two anchors while keeping the hue. ChromaBrew's scale generator anchors the light end (50) at lightness 0.977 and the dark end (950) at 0.268, ramps chroma so the middle of the scale is most vivid, and clamps per-step by reducing chroma when a step would fall outside sRGB — never by bending the hue.",
+          "The hue signal survives, which is what keeps the whole scale recognisable as 'the same color'. Two tools consume this directly: the shade & tint scale generator, and the Tailwind color generator, which exports the finished 11-step scale as a @theme block.",
+        ],
+        bullets: [
+          "Lightness anchors: 50 → 0.977, 500 → 0.684, 950 → 0.268",
+          "Chroma ramps up to 1.04× at 600, then decays toward the dark end",
+          "Primary color is pinned at its nearest step with a source badge",
+          "Tailwind v4 output uses --color-brand-50 … --color-brand-950 naming",
+        ],
+        links: [
+          { label: "Generate a 50–950 scale from one color", href: "/tools/shade-generator" },
+        ],
+      },
+      {
+        heading: "Three rules for using OKLCH well",
+        body: [
+          "First, stop converting when you need to judge a relationship — read the L and C directly instead of the hex. Second, when you interpolate (mixing, gradients, color-mix()), do it in OKLCH so the midpoint lands where the eye expects it; mixing in RGB makes muddy mids. Third, remember chroma has a ceiling for a given hue in sRGB — the H stays, but very saturated colors clamp at the gamut boundary.",
+        ],
+      },
+    ],
+  },
+  {
+    slug: "wcag-contrast-ratio-math",
+    title: "WCAG contrast ratios: the math behind the numbers",
+    metaTitle: "WCAG Contrast Ratios - The Math Behind the Numbers",
+    description:
+      "What a 4.5:1 ratio actually measures: relative luminance, the WCAG formula, and why large text gets 3:1. Understand the numbers instead of memorising them.",
+    excerpt:
+      "A contrast ratio is a single quotient between two relative-luminance values. Here's the exact WCAG math, the thresholds, and what the numbers can't tell you.",
+    publishedAt: "2026-10-14",
+    category: "Accessibility",
+    tags: ["wcag", "contrast ratio", "accessibility", "relative luminance"],
+    relatedHrefs: ["/tools/contrast-checker", "/tools/wcag-palette-checker"],
+    keyword: "wcag contrast ratio",
+    sections: [
+      {
+        heading: "A ratio is a quotient of two luminances",
+        body: [
+          "Every WCAG 2.x contrast figure is computed in three steps. First, convert the foreground and background colors to relative luminance — a number from 0 (black) to 1 (white) that weights how bright the channels look to human eyes. Then add the same constant, 0.05, to both values. Then divide the lighter value by the darker one.",
+          "So 4.5:1 does not mean 'four and a half of something you can count'; it means the lighter color is 4.5 times as luminous, after a small tone-mapped floor. The floor is why pure black on pure white returns 21:1 — (1.0 + 0.05) ÷ (0.0 + 0.05) — and why two very dark colors can never score highly even if they feel distinct.",
+        ],
+        code: `function contrastRatio(hexFg, hexBg) {
+  const L = (hex) => {
+    const [r, g, b] = [0, 2, 4]
+      .map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
+      .map((c) => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)));
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  };
+  const [l1, l2] = [L(hexFg), L(hexBg)].sort((a, b) => b - a);
+  return (l1 + 0.05) / (l2 + 0.05);
+}`,
+        codeLang: "js",
+      },
+      {
+        heading: "The four thresholds, and why large text is easier",
+        body: [
+          "WCAG defines two pass levels — AA and AAA — each with a normal-text and large-text bar. The numbers exist to be remembered, but the reason for 3:1 on large text is real: at 18.66px bold or 24px regular and up, glyph shapes fill more pixels, so the same luminance difference is easier to resolve. Small text at 4.5:1 buys the contrast that keeps dense paragraphs readable.",
+          "The thresholds in practice: AA normal ≥ 4.5:1, AA large ≥ 3:1, AAA normal ≥ 7:1, AAA large ≥ 4.5:1. Notice AAA large reuses AA normal's number — the two scales are deliberately nested.",
+        ],
+        bullets: [
+          "AA normal text ≥ 4.5:1 — the bar your body copy must clear",
+          "AA large text ≥ 3:1 — buttons, headings, icons",
+          "AAA normal text ≥ 7:1 — the ceiling most designers aim for on primary text",
+          "AAA large text ≥ 4.5:1 — nested reuse of the small-text minimum",
+        ],
+        tip: "'Large text' means at least 24px regular, or at least 18.66px bold (19px). The WCAG definition uses the type size in CSS pixels, so it stays consistent across devices.",
+        links: [
+          { label: "Check any two colors against all four bars", href: "/tools/contrast-checker" },
+        ],
+      },
+      {
+        heading: "Contrast is lightness, not hue",
+        body: [
+          "Relative luminance has no hue information. Two colors can differ wildly in hue yet score a low ratio, which is why red-on-green pairing fails WCAG even though it 'feels' high contrast to a trichromat. Equally, desaturating a compliant pair — same lightness, less chroma — usually keeps it compliant, because luminance only barely depends on saturation in OKLCH.",
+          "That asymmetry is also the algorithm's blind spot that a human review must catch: a ratio passes, but people with some color-vision deficiencies may still struggle to tell two hues apart when the ratio is carried mostly by hue, not lightness. The fix is never 'increase the ratio' until it stops looking good; the fix is to add a second cue, like a label, icon or pattern.",
+        ],
+      },
+      {
+        heading: "What the numbers can't tell you",
+        body: [
+          "A checker reports a single ratio and pass/fail state for one pair. A real interface is a matrix — every text token against every background it can sit on, in light and dark. Grading a whole palette pair-by-pair by hand is where errors hide: the body text passes on the app background and fails on one card surface.",
+          "That is what the palette checker exists for: feed it the palette, and it grades every foreground/background combination against AA and stacks the results, so an accidental failure on one surface surfaces as a matrix cell instead of a review note. Pass the matrix, and the individual numbers stop being the job.",
+        ],
+        links: [
+          { label: "Grade every pair in a palette at once", href: "/tools/wcag-palette-checker" },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "tints-shades-and-tones-scale",
+    title: "Tints, shades and tones: building a usable 9-step scale",
+    metaTitle: "Tints, Shades & Tones - Build a 9-Step Color Scale",
+    description:
+      "Tint adds white, shade adds black, tone adds gray — in a naive space all three produce muddy or jumpy scales. How to build a usable 9-step scale with perceptually even steps.",
+    excerpt:
+      "The classic definitions and why the naive mix-white/mix-black approach fails. Build a 9-step scale that is evenly spaced and actually matchable to UI roles.",
+    publishedAt: "2026-10-16",
+    category: "Color scales",
+    tags: ["tints", "shades", "tones", "color scale", "oklch"],
+    relatedHrefs: [
+      "/tools/shade-generator",
+      "/tools/tailwind-color-generator",
+      "/tools/design-token-generator",
+    ],
+    keyword: "color scale",
+    sections: [
+      {
+        heading: "The definitions, and why they're useful",
+        body: [
+          "A tint is a color mixed with white, a shade is a color mixed with black, and a tone is a color mixed with gray. The terms are old painting vocabulary, and they map cleanly onto a modern scale: tints live at the light end of your scale and carry surfaces, shades live at the dark end and carry emphasis, and tones are the workhorse mid-range where most UI colors land.",
+          "The useful mental model is less 'three kinds of color' and more 'one hue explored along two axes': toward light, toward dark, and toward neutrality. That is precisely what a 50–950 scale is.",
+        ],
+      },
+      {
+        heading: "Why mixing with white and black fails",
+        body: [
+          "The naive recipe — blend your brand color toward #ffffff for a tint and toward #000000 for a shade — produces a broken scale. Mixing toward white lifts brightness but also erodes chroma fast: the 100 and 200 steps end up near-identical pastel grays. Mixing toward black drags everything toward a muddy brown-ish darkness for warm hues, because 'black' from a hex triplet is not neutral in hue terms.",
+          "The giveaway is uneven spacing: a few steps look like duplicates, and one step jumps. In a perceptually uniform space like OKLCH, the fix is to walk lightness between fixed anchors while preserving the hue, and to modulate chroma with its own anchor curve — bright steps less saturated, the middle most vivid, dark steps more neutral again.",
+        ],
+        tip: "A scale generated in RGB/HSL wiggles; a scale generated in OKLCH glides. If your scale looks clumped in the middle, it was not interpolated perceptually.",
+        links: [
+          { label: "See a perceptually stepped 50–950 scale", href: "/tools/shade-generator" },
+        ],
+      },
+      {
+        heading: "The layout of a usable scale",
+        body: [
+          "The full 50–950 scale (eleven steps) is the raw material; most real design systems ship a usable subset of about nine. The light steps 50–300 read as tints: fills, hover surfaces, selected tags, input backgrounds. The middle 400–600 are your primary color and its neighbours. The dark steps 700–950 are shades: text-on-light is usually a 900 or 950, and 700–800 works for pressed states and strong borders.",
+          "The most common usable pattern is 50, 100, 200, 300, 500, 600, 700, 800, 900 — dropping 400 and 950 — because a UI rarely needs a 950 text step (the 900 is dark enough) or a 400 between the surface tints and the primary. You keep the full scale in tokens; you just don't wire every step into components.",
+        ],
+        bullets: [
+          "50–300: surface tints — fills, tags, highlight backgrounds",
+          "500–600: the primary color itself and its closest working neighbours",
+          "700–800: pressed states, strong borders, emphasis on light",
+          "900–950: text and contrast-critical foregrounds",
+          "Keep the full scale in tokens; wire only the subset into components",
+        ],
+        links: [
+          { label: "Export the finished scale as Tailwind tokens", href: "/tools/tailwind-color-generator" },
+          { label: "Ship the scale as DTCG-style design tokens", href: "/tools/design-token-generator" },
+        ],
+      },
+      {
+        heading: "Names should describe the job, not the recipe",
+        body: [
+          "70 is a step number, not a role. The same scale serves three different names in code: the primitive brand-brand-70, the semantic surface/foreground/primary tokens that components actually reference, and the Tailwind utilities --color-brand-*. Keeping the three layers separate is what lets you retheme a product without touching components.",
+          "That separation is the difference between a scale that decorates a stylesheet and a scale that scaffolds a design system.",
+        ],
+      },
+    ],
+  },
+  {
+    slug: "hover-active-and-disabled-color-states",
+    title: "Hover, active, disabled: deriving interactive states from a scale",
+    metaTitle: "Hover, Active & Disabled States From a Color Scale",
+    description:
+      "Interactive states are lightness moves within a derived scale — not new hues. How to derive hover, active, focus and disabled from one primary scale, and keep them accessible.",
+    excerpt:
+      "Washed-out greys, arbitrary darkening, 50% opacity everywhere: interactive states are easy to get wrong. Derive hover, active and focus from the scale instead.",
+    publishedAt: "2026-10-19",
+    category: "Color scales",
+    tags: ["hover", "active", "disabled", "interactive states", "color tokens"],
+    relatedHrefs: [
+      "/design-system",
+      "/tools/shade-generator",
+      "/tools/contrast-checker",
+    ],
+    keyword: "hover active states color",
+    sections: [
+      {
+        heading: "States are the same hue, moved in lightness",
+        body: [
+          "A control in its default, hover, active and focus states should be unmistakably the same control. That reads best when the states are lightness moves within one scale: the default sits on the 600 step, hover steps to 700, and active (pressed) steps one further to 800. The hue never changes, so the eye tracks the element instead of reassessing it.",
+          "In dark mode the same logic inverts — surfaces move lighter, not darker, so hover shifts the primary toward a lighter 500 and active back toward 600. Deriving both directions from one scale is how paired light/dark themes stay siblings.",
+        ],
+      },
+      {
+        heading: "How a generator derives hover and active",
+        body: [
+          "In ChromaBrew's design system, hover and active variants are computed from the primary by lightness math in OKLCH, not by guessing percentages. The primary keeps its hue, the state token just relocates it on the lightness axis — so a primary of #6d28d9 yields a primary-hover and primary-active that are visibly more and more 'pressed' while staying the same color family.",
+          "The focus ring is a distinct consideration: it is a visibility cue, not a state change, and for default light themes it aliases to the primary color itself. Focus-visible styling is about location — a high-chroma ring around the element — so it intentionally reuses the strongest chroma in the scale rather than inventing a new one.",
+        ],
+        code: `@layer base {
+  .btn {
+    background: var(--primary);
+  }
+  .btn:hover:not(:disabled) {
+    background: var(--primary-hover);
+  }
+  .btn:active:not(:disabled) {
+    background: var(--primary-active);
+  }
+  .btn:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+}`,
+        codeLang: "css",
+        links: [
+          { label: "Generate light & dark themes with derived states", href: "/design-system" },
+        ],
+      },
+      {
+        heading: "Disabled is a design decision, not a sign-off",
+        body: [
+          "Disabled is the only state with a strict requirement — it must not look interactive — but no WCAG ratio at it. The convention is reduced contrast plus desaturation: pull the control toward a neutral gray with enough lightness separation from the background that it reads as 'not available', while never colliding with a variant that still means something. In practice that means using a low-chroma step of the scale rather than lowering opacity, because 50% opacity over content produces unpredictable composites.",
+          "Because ChromaBrew's token set ends at the interactive states, disabled is the one you author: take the button background, desaturate it in OKLCH (chroma toward zero), lighten it a step, and you get a safe default. Opacity-down-to-0.5 is the shortcut that ships the composite-color bug.",
+        ],
+        tip: "If a disabled element needs to keep readability — like a muted list item with text — test the pair in the contrast checker anyway; some 'grayed out' tokens drop below 3:1 and disappear for low-vision users.",
+        links: [
+          { label: "Verify a disabled token pair against WCAG", href: "/tools/contrast-checker" },
+        ],
+      },
+      {
+        heading: "The scale-first rule",
+        body: [
+          "Every state should be addressable as a named token (primary-hover, primary-active, focus-ring) that resolves to a step of the primary scale. When a token is a derived step instead of an eyeballed hex, global retheming works, dark mode sits for free, and a one-color seed produces a self-consistent interactive system.",
+        ],
+      },
+    ],
+  },
+  {
+    slug: "design-tokens-and-the-w3c-spec",
+    title: "Design tokens and the W3C spec, in practice",
+    metaTitle: "Design Tokens & the W3C Spec, in Practice",
+    description:
+      "Primitives vs semantic tokens, the W3C Design Tokens (DTCG) JSON format, naming conventions, and how to export a system as interoperable token files.",
+    excerpt:
+      "The W3C Design Tokens (DTCG) format is the interchange standard your tokens should speak. Here's the JSON shape, the naming, and how to export it.",
+    publishedAt: "2026-10-22",
+    category: "Design systems",
+    tags: ["design tokens", "dtcg", "w3c", "css variables", "json"],
+    relatedHrefs: ["/tools/design-token-generator", "/design-system"],
+    keyword: "design tokens",
+    sections: [
+      {
+        heading: "Two layers: primitives and semantics",
+        body: [
+          "Design tokens split into primitives and semantic tokens. Primitives are the raw material — a brand scale, a type-size ramp, a radius set — named after what they are (brand.500, font-size.base). Semantic tokens are the decisions components consume — background, foreground, primary, border-muted — named after the job. Components reference semantics; semantics reference primitives; only the semantic layer changes when you retheme.",
+          "This layering is what the W3C Design Tokens (DTCG) format encodes. The spec is a community standard for describing tokens as JSON so tools can interchange them: Tokens Studio, Style Dictionary, container queries and hand-rolled pipelines all read the same $type/$value shape.",
+        ],
+      },
+      {
+        heading: "The JSON shape you'll actually see",
+        body: [
+          "The core of the format is a nested JSON object where each leaf token carries a $type and a $value, with an optional $description. A color primitive looks like {\"$type\": \"color\", \"$value\": \"#6d28d9\"}; a dimension like {\"$type\": \"dimension\", \"$value\": \"0.5rem\"}. Composite types like typography and shadow bundle sub-properties under one token.",
+          "ChromaBrew's design token generator emits exactly this shape — DTCG-style JSON with $type, $value and $description on every token — covering colors, typography, spacing, radius and shadows for both light and dark, so the file is a complete quiet description of the system with no CSS attached.",
+        ],
+        code: `{
+  "$description": "Aurora design tokens — generated by ChromaBrew",
+  "primitive": {
+    "color": {
+      "brand": {
+        "500": { "$type": "color", "$value": "#6d28d9" }
+      }
+    }
+  },
+  "semantic": {
+    "light": {
+      "primary": { "$type": "color", "$value": "#6d28d9" },
+      "background": { "$type": "color", "$value": "#fdfcff" }
+    }
+  }
+}`,
+        codeLang: "json",
+        links: [
+          { label: "Export a single-color system as DTCG JSON", href: "/tools/design-token-generator" },
+        ],
+      },
+      {
+        heading: "Aliasing is where the power lives",
+        body: [
+          "The DTCG format's killer feature is aliasing: a semantic token can $value-refer a primitive instead of repeating its hex. Then changing the brand scale updates every consumer through one indirection. The format supports it cleanly, though in practice generated files often write literal values so the JSON is readable without a reference resolver.",
+          "If your pipeline consumes tokens with a reference engine (Style Dictionary, Tokens Studio), alias-aware files are the goal. If you export for humans with a text editor, literal values are the safer default. What matters is the schema staying spec-shaped so either pipeline can ingest it.",
+        ],
+        tip: "Name tokens by role, not by value: primary, not purple-600. When you rename a semantic token, the components behave identically — the color swap happens one layer down.",
+      },
+      {
+        heading: "The W3C export in the design system",
+        body: [
+          "The full design system generator carries a dedicated W3C Design Tokens export alongside its CSS, Tailwind and shadcn ones. It flattens the whole generated system — semantic tokens for light and dark, typography, spacing, radius — into a design-tokens-w3c.json that matches the interchange shape, and a bundle export packages it with a README for handoff across tools.",
+          "The pattern is: CSS variables for the running site, DTCG JSON for the token pipeline, and both generated from the same system so they can never drift.",
+        ],
+        links: [
+          { label: "Generate the full system with a W3C export", href: "/design-system" },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "monochromatic-palette-without-flat",
+    title: "Monochromatic palettes that don't look flat",
+    metaTitle: "Monochromatic Palettes That Don't Look Flat",
+    description:
+      "A monochrome palette is not just lightness steps of one hue. Use chroma variation, a lighter tint and a deeper shade to keep a one-hue palette feeling rich.",
+    excerpt:
+      "One hue, five swatches, monotonous result. The difference between flat and rich monochrome is chroma — here's how to vary saturation inside a single-hue palette.",
+    publishedAt: "2026-10-26",
+    category: "Palette generation",
+    tags: ["monochromatic", "palette", "chroma", "oklch"],
+    relatedHrefs: ["/tools/color-palette-generator", "/tools/shade-generator"],
+    keyword: "monochromatic palette",
+    sections: [
+      {
+        heading: "Why one-hue palettes go flat",
+        body: [
+          "A monochromatic palette is the same hue at different lightness levels. The flat failure happens when 'different lightness' is implemented as pure brightness stripping: the tint turns into a faded pastel, the shade turns into a blackened version, and every swatch reads as 'washed brand color'. Nothing has a point of view because no step has its own character.",
+          "The cure is a second axis. A mono palette that works varies chroma as well as lightness — the deep shade stays saturated enough to feel intense, the tint keeps enough of the hue to feel intentional rather than transparent, and the middle is where the hue sings at full strength.",
+        ],
+      },
+      {
+        heading: "The chroma curve inside a mono palette",
+        body: [
+          "Chroma is how far a color sits from pure gray. In a good monochrome, chroma is not constant: the lightest step drops chroma so it reads as a surface tint, the darkest step rises chroma so it reads as depth rather than black, and the anchor hue sits at peak chroma. The result is a palette with a light neutral-ish member, a vivid anchor, and a saturated dark member — three characters from one hue.",
+          "ChromaBrew's monochromatic strategy encodes exactly that curve. With one hue in play, the strategy modulates chroma (roughly 0.85× at the tint, 1.05× at the shade) and lightness (≈ +0.14 and −0.14 around the anchor), and if an intermediate swatch would collapse into a duplicate of the primary, it nudges the chroma further apart so every step stays distinct.",
+        ],
+        bullets: [
+          "Tint: higher lightness, reduced chroma — the surface role",
+          "Anchor: peak chroma — the brand color itself",
+          "Shade: lower lightness, higher chroma — depth and emphasis",
+          "Every step stays the same hue; only L and C move",
+        ],
+        links: [
+          { label: "Generate a five-swatch monochrome from one color", href: "/tools/color-palette-generator" },
+        ],
+      },
+      {
+        heading: "Give the space a monochrome palette lives in",
+        body: [
+          "Monochrome reads dramatically on the right scaffolding: generous white space, strong type and a grayscale-neutral surface stack. The palette contributes warmth at one point — an accent, an interaction, a hero — rather than being the background. Ninety percent gray, ten percent hue is the secret to a mono palette that looks expensive instead of flat.",
+          "Pair the mono scale with a neutral scale (pure grays or grays tinted toward the palette's temperature) and let the single hue do the talking only where the interface is making a statement.",
+        ],
+        tip: "If a single swatch looks dead against your neutrals, the fix is usually chroma, not hue — raise the saturated dark step rather than hunting for a 'close but different' color.",
+        links: [
+          { label: "Get the 50–950 steps for one hue", href: "/tools/shade-generator" },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "accessible-gradients-contrast",
+    title: "Accessible gradients: contrast rules for real interfaces",
+    metaTitle: "Accessible Gradients - Contrast Rules for Real Interfaces",
+    description:
+      "WCAG has no gradient formula, so text over a gradient needs a strategy: check the worst stop, lay a scrim, keep button labels on a solid band, and always provide a fallback color.",
+    excerpt:
+      "Gradients break every contrast shortcut because their background is a range, not a color. Test the worst stop, use scrims, and keep controls honest.",
+    publishedAt: "2026-10-29",
+    category: "Accessibility",
+    tags: ["gradient", "contrast", "accessibility", "css"],
+    relatedHrefs: [
+      "/tools/css-gradient-generator",
+      "/tools/contrast-checker",
+      "/tools/color-mixer",
+    ],
+    keyword: "gradient contrast",
+    sections: [
+      {
+        heading: "There is no WCAG gradient algorithm",
+        body: [
+          "Contrast ratios are defined between two solid colors, and a gradient is a continuum. The spec gives no single number, so the correct approach is to treat the range as a worst-case problem: the text must pass against the least favourable stop it crosses. If a label sits on a gradient, the stop with the closest luminance to the text decides whether the pair ships.",
+          "That one rule explains most gradient accessibility failures: a headline passes on the bright half and dies over the saturated dark half of the same banner.",
+        ],
+        tip: "Extract the gradient's extreme stops and test text against the darkest (for light text) and lightest (for dark text). If the worst stop fails, the gradient fails.",
+        links: [
+          { label: "Grade the worst two stops against your text", href: "/tools/contrast-checker" },
+        ],
+      },
+      {
+        heading: "Scrims: gradient is on the background, not the text",
+        body: [
+          "The most reliable pattern for text over imagery or wide gradients is a scrim — a translucent gradient layer between the art and the text. You control the text/background relationship by the scrim's opacity and direction (dark at the bottom where the label sits, fading to transparent above). The text then grades against a raised dark band rather than a moving target.",
+          "The same trick works for button labels: instead of hoping the brand shimmer covers contrast, give the control a solid label token on top and let the gradient live in the fill. The label runs against a uniform swatch, and the gradient is decoration the ratio never sees.",
+        ],
+        code: `.hero {
+  background:
+    linear-gradient(to top, rgba(10, 8, 20, 0.82), rgba(10, 8, 20, 0) 60%);
+}
+.hero__title {
+  /* light text now sits on a near-solid dark band */
+  color: oklch(0.97 0 0);
+}`,
+        codeLang: "css",
+        links: [
+          { label: "Build a scrim as a layered CSS gradient", href: "/tools/css-gradient-generator" },
+        ],
+      },
+      {
+        heading: "Always ship a solid fallback",
+        body: [
+          "Gradients are progressive enhancement. Before the gradient rule, declare a solid background using the gradient's dominant or darkest color — browsers that support it paint over the fallback, older ones still get a readable base. The fallback rule comes first so the cascade does the upgrade.",
+          "A two-line rule costs nothing and removes the entire class of 'empty background' failures in legacy environments.",
+        ],
+        code: `.hero {
+  background: #13101e; /* fallback for no-gradient engines */
+  background: linear-gradient(135deg, #6d28d9, #13101e);
+}`,
+        codeLang: "css",
+      },
+      {
+        heading: "Keep interactive gradients honest",
+        body: [
+          "A gradient button behind text is a contrast bug waiting to land. The safest pattern is a flat fill for the control itself and gradient reserved for decorative areas with no text dependency — or a gradient fill whose endpoints both pass the label's ratio. When you do want a lively button, check both endpoints and the midpoint separately, because hue rotation mid-gradient can drop chroma and eat contrast in the middle.",
+        ],
+        links: [
+          { label: "See how gradient endpoints blend in OKLCH", href: "/tools/color-mixer" },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "brand-color-to-design-system-worked-example",
+    title: "From brand color to full design system: a worked example",
+    metaTitle: "Brand Color to a Full Design System - Worked Example",
+    description:
+      "A real 50–950 scale, a five-hue palette, light/dark tokens and the contrast results all derived from one seed color, #6d28d9 — with the exact hex values.",
+    excerpt:
+      "One seed color, a complete system. Watch #6d28d9 become an 11-step scale, a five-hue palette, light and dark token sets and a passing contrast matrix.",
+    publishedAt: "2026-11-02",
+    category: "Design systems",
+    tags: ["design system", "worked example", "tokens", "contrast", "palette"],
+    relatedHrefs: [
+      "/design-system",
+      "/tools/shade-generator",
+      "/tools/color-palette-generator",
+    ],
+    keyword: "design system worked example",
+    sections: [
+      {
+        heading: "The seed: #6d28d9",
+        body: [
+          "The worked example starts with a single violet: #6d28d9. In OKLCH that resolves to a lightness of about 0.49, a chroma around 0.24 and a hue near 292°. Every value in this breakdown is what ChromaBrew actually generates from that one input with no manual tuning — you can reproduce the whole walk on the design system page and see identical hexes.",
+          "The pipeline has five stages: an 11-step scale, a harmony palette, semantic tokens, paired light/dark themes, and an accessibility matrix. Each stage consumes the previous one.",
+        ],
+      },
+      {
+        heading: "Stage 1 — the 50–950 scale",
+        body: [
+          "The scale generator walks OKLCH lightness from 0.977 at step 50 down to 0.268 at step 950 while keeping the hue, producing the eleven steps. The source color sits at 700 (the generator's representative step), which is slightly dark of middle — the seed is a strong but not neon violet. The exact scale: 50 #f7f6ff, 100 #edeaff, 200 #dfd9ff, 300 #cdc3ff, 400 #b5a2ff, 500 #9f7fff, 600 #8c56ff, 700 #6d28d9, 800 #5e1dbe, 900 #49079a, 950 #2d0066.",
+          "Notice the chroma curve: the tints (50–300) are pale but stay cool-violet rather than going grey, and the darks (800–950) stay saturated enough that 950 at #2d0066 is clearly indigo, not black.",
+        ],
+        code: `:root {
+  --brand-50:  #f7f6ff;
+  --brand-100: #edeaff;
+  --brand-200: #dfd9ff;
+  --brand-500: #9f7fff;
+  --brand-600: #8c56ff;
+  --brand-700: #6d28d9;
+  --brand-800: #5e1dbe;
+  --brand-900: #49079a;
+  --brand-950: #2d0066;
+}`,
+        codeLang: "css",
+        links: [
+          { label: "Regenerate this exact scale", href: "/tools/shade-generator" },
+        ],
+      },
+      {
+        heading: "Stage 2 — the harmony palette",
+        body: [
+          "With a five-swatch analogous strategy, the seed drives a small family: the primary at #6d28d9, a cool neighbour at #004be4, a warm neighbour at #9900ab, then lighter variants at #276cff and #864cf9. Analogous strategy keeps the palette calm and recognisably related — good for a brand system where complementary shock would fight the violet.",
+          "The palette hands the design system its seeds for secondary and accent when they are not chosen explicitly. Here the accent resolves to the warm neighbour #9900ab, keeping the derived accent tokens clearly distinct from the primary; the secondary seeds from the primary's own neighbourhood and is then lifted in lightness by the theme step, which is why the token lands on #976eff rather than repeating the seed verbatim.",
+        ],
+        links: [
+          { label: "Compare palette strategies on the same seed", href: "/tools/color-palette-generator" },
+        ],
+      },
+      {
+        heading: "Stage 3 and 4 — semantic tokens in light and dark",
+        body: [
+          "Each mode derives 31 semantic tokens from the scale and palette. In light mode, the background resolves to #fdfcff (near-white with a violet breath), the surface to #fdfdff, foreground text to #13101e, and the primary button to #6d28d9 with a white label. Hover and active darken in-step: #6311cb then #5700b8, same hue, deeper value.",
+          "Dark mode inverts both luminosity and approach: the background drops to #0b0a0f, the primary lifts to #8c56ff (a lighter, brighter violet reads better on near-black), and its label flips to dark #0e0d14. The dark theme's primary-hover moves *lighter* (#9871ff) — the same pressed-direction rule, reversed for mode.",
+        ],
+        bullets: [
+          "Light: background #fdfcff · surface #fdfdff · foreground #13101e",
+          "Light: primary #6d28d9 → hover #6311cb → active #5700b8",
+          "Dark: background #0b0a0f · surface #15141a · foreground #edebf6",
+          "Dark: primary #8c56ff → hover #9871ff → active #844bf4",
+          "Status: success #2b9338 light / #6bc670 dark · danger #c94c49 / #ff847d",
+        ],
+        links: [
+          { label: "Generate the full system from this seed", href: "/design-system" },
+        ],
+      },
+      {
+        heading: "Stage 5 — the contrast matrix",
+        body: [
+          "The generator grades ten key pairings in each mode against WCAG: body text, muted text, card text, primary/secondary buttons, accent element and the four status badges. For this violet seed, all twenty checks pass AA. Body text scores 18.33:1 in light and 16.73:1 in dark; the primary button label lands 7.10:1 in light (better than AAA normal) and 4.50:1 in dark — comfortably AA, exactly at the cusp before AAA.",
+          "The interesting non-obvious result is the secondary button in light mode at 5.11:1 — it passes AA but not AAA, because the lavender fill #976eff sits close enough to its label. That's a deliberate, surfaced trade-off: secondary buttons are allowed to be visually softer, and the matrix records the consequence rather than hiding it.",
+        ],
+        bullets: [
+          "Body text / background: 18.33:1 light · 16.73:1 dark",
+          "Muted text / background: 8.16:1 light · 7.90:1 dark",
+          "Primary button: 7.10:1 light · 4.50:1 dark",
+          "Secondary button: 5.11:1 light (AA, not AAA) — an accepted trade-off",
+          "Result: 20/20 pairings pass AA",
+        ],
+        links: [
+          { label: "Check the matrix in the accessibility panel", href: "/design-system" },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "export-design-system-tailwind-shadcn-css",
+    title: "Exporting design systems to Tailwind, shadcn and CSS variables",
+    metaTitle: "Export Design Systems to Tailwind, shadcn & CSS Variables",
+    description:
+      "The same generated system as Tailwind v4 @theme, a shadcn/ui oklch stylesheet, DTCG JSON and plain CSS variables — and when to reach for each export.",
+    excerpt:
+      "One system, four dialects. How the design-system export produces Tailwind v4, shadcn/ui, CSS variables and W3C token files from the same colors.",
+    publishedAt: "2026-11-05",
+    category: "Design systems",
+    tags: ["tailwind", "shadcn", "css variables", "export", "design tokens"],
+    relatedHrefs: [
+      "/design-system",
+      "/tools/tailwind-color-generator",
+      "/tools/shadcn-theme-generator",
+      "/tools/design-token-generator",
+    ],
+    keyword: "export design system",
+    sections: [
+      {
+        heading: "One system, four dialects",
+        body: [
+          "The full design system generator ships its generated system through several export adapters, and they are not interchangeable ways of saying the same thing — each targets a consumer. CSS variables are the runtime contract for a hand-rolled stylesheet; Tailwind v4 maps tokens into the @theme namespace; shadcn/ui writes a drop-in oklch stylesheet for that component library; W3C tokens hand the whole system to a token pipeline.",
+          "The key guarantee is that every dialect is generated from the same in-memory system — the export never re-derives colors, so hex, oklch and token files can't drift out of sync.",
+        ],
+      },
+      {
+        heading: "Tailwind v4: @theme and a dark variant",
+        body: [
+          "The Tailwind export produces a complete theme file: it registers a .dark custom variant, then maps every semantic token into :root and .dark blocks, then wires them into @theme inline so utilities like bg-background and text-primary resolve to the tokens. The brand 50–950 scale lands as --color-brand-* inside the same @theme block, plus the type scale, radius and shadows as their own namespaces.",
+          "Spacing is deliberately left at Tailwind defaults so the file composes with the framework instead of fighting it. The single standalone Tailwind color generator produces the plain @theme scale block if all you need is the 11-step brand scale without the system.",
+        ],
+        code: `@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: #fdfcff;
+  --foreground: #13101e;
+  --primary: #6d28d9;
+}
+.dark {
+  --background: #0b0a0f;
+  --foreground: #edebf6;
+  --primary: #8c56ff;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-brand-500: #9f7fff;
+}`,
+        codeLang: "css",
+        links: [
+          { label: "Export the standalone scale as @theme", href: "/tools/tailwind-color-generator" },
+        ],
+      },
+      {
+        heading: "shadcn/ui: the oklch stylesheet",
+        body: [
+          "The shadcn export writes the theme in the exact dialect that library expects: :root and .dark blocks, variable names covering card, popover, secondary, muted, accent, destructive, border, input, ring and the sidebar tokens, all as oklch() values. It fills chart-1 through chart-5 from the palette, and sets the canonical --radius: 0.625rem so component radii stay in family.",
+          "Because shadcn themes are oklch-native, this export is where the 'same system, different formats' payoff is most visible: the identical color is spelled oklch(0.62 0.22 292) here and #6d28d9 in the CSS export — two correct spellings of one decision.",
+        ],
+        code: `:root {
+  --background: oklch(0.993 0.004 301.4);
+  --foreground: oklch(0.184 0.028 293.2);
+  --primary: oklch(0.491 0.241 292.6);
+  --primary-foreground: oklch(1 0 0);
+  --radius: 0.625rem;
+}
+.dark {
+  --background: oklch(0.149 0.011 294.2);
+  --foreground: oklch(0.945 0.015 294.5);
+  --primary: oklch(0.605 0.237 292.6);
+}`,
+        codeLang: "css",
+        links: [
+          { label: "Generate the standalone shadcn theme", href: "/tools/shadcn-theme-generator" },
+        ],
+      },
+      {
+        heading: "CSS variables and W3C tokens, when to reach for them",
+        body: [
+          "Plain CSS variables are the most boring, most interoperable export: a :root/.dark pair of semantic tokens matching your component layer's expected names. Reach for them when you own the styling and want zero framework assumptions. DTCG/W3C JSON is the opposite pole — it carries no CSS at all, just $type/$value/$description data for token tooling, and a bundle export wraps the W3C file with a README for handoff.",
+          "A tidy workflow many teams land on: W3C tokens in the pipeline as source of truth, CSS variables in the running site, and Tailwind/shadcn exports wherever a framework needs the same decisions in its own dialect.",
+        ],
+        links: [
+          { label: "Generate the DTCG token file", href: "/tools/design-token-generator" },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "designing-for-color-blindness-in-practice",
+    title: "Designing for color blindness in practice",
+    metaTitle: "Designing for Color Blindness - Practice Guide",
+    description:
+      "From one-color signals to chart palettes that survive deutan and protan simulation: redundancy, the simulation workflow, and eight conditions worth testing against.",
+    excerpt:
+      "Roughly 8% of men are color vision deficient. Design so meaning never depends on hue alone — then prove it with simulation across eight conditions.",
+    publishedAt: "2026-11-08",
+    category: "Accessibility",
+    tags: ["color blindness", "cvd", "accessibility", "charts", "simulation"],
+    relatedHrefs: [
+      "/tools/color-blindness-simulator",
+      "/tools/wcag-palette-checker",
+      "/tools/contrast-checker",
+    ],
+    keyword: "color blindness design",
+    sections: [
+      {
+        heading: "Design as if hue were not the first language",
+        body: [
+          "The central rule of color-blind-friendly design is redundancy: color never carries meaning alone. Every color-coded state should have a second cue — a label, an icon, a pattern, a position — so the information survives any color-vision condition. Traffic lights work because position, not color, is the primary signal; error states work because the icon tells the story before the red does.",
+          "For roughly 8% of men and a smaller share of women, 'which swatch is danger?' is not a fast question to answer from hue. Pages that feel instant to a trichromat become guesswork without the second cue.",
+        ],
+      },
+      {
+        heading: "The eight conditions worth testing",
+        body: [
+          "Color-vision deficiency is not one thing. The design-critical set splits into full forms — protanopia (no red cones, ≈1.3% of men), deuteranopia (no green cones, ≈1.2%), tritanopia (no blue, ≈0.01%), and achromatopsia (total, ≈0.003%) — and the much more common milder anomalies: deuteranomaly (≈4.6% of men), protanomaly (≈1%), tritanomaly. Total color blindness is vanishingly rare, but it is the perfect stress test: if a design reads in grayscale, every less-severe form is covered.",
+          "The simulator runs colors and uploaded images through all of these using the Machado et al. deficiency matrices, showing the same UI under each condition side by side with the original. That visual diff is the fastest way to learn which of your pairs rely on hue.",
+        ],
+        bullets: [
+          "Protanopia, deuteranopia, tritanopia — the full forms; design against these first",
+          "Protanomaly (≈1% of men), deuteranomaly (≈4.6%), tritanomaly — the milder, common anomalies",
+          "Achromatopsia ≈0.003% — the grayscale test, and the strictest one of all",
+          "If the grayscale version works, every colored version below it in severity works too",
+        ],
+        links: [
+          { label: "Preview colors & images under all eight conditions", href: "/tools/color-blindness-simulator" },
+        ],
+      },
+      {
+        heading: "Chart palettes that survive simulation",
+        body: [
+          "Charts are where color-dependence is most concentrated: series distinguished only by hue. The discipline is to pick series colors that stay distinguishable after simulation — two series that differ solely in red/green land in the same grey after deutan simulation. The practical recipe: choose hues spread far enough apart that luminance differs too, not just hue; verify each pair in the simulator; and treat the red-green axis as the highest-risk one in any palette.",
+          "A common safety move is ordering series by a second dimension anyway — dashboards that also vary dash patterns or glyph shapes never require hue to disambiguate.",
+        ],
+        tip: "Grade whole palettes at once: run the palette through the checker and inspect every pair as a matrix. Pairs that fail become the candidates to re-hue or to re-support with a non-color cue.",
+        links: [
+          { label: "Grade every pair in your chart palette", href: "/tools/wcag-palette-checker" },
+        ],
+      },
+      {
+        heading: "Contrast and CVD are different problems",
+        body: [
+          "It is worth keeping two checks separate. WCAG contrast is computed from relative luminance and says nothing about hue; it protects low-vision users. Colour distinctness protects CVD users and depends on hue/chroma separation after simulation. A pair can pass 4.5:1 and still be hard to tell apart for a deutan, and a pair that survives simulation can still fail contrast for shaded text.",
+          "Run both checks, from different tools, and treat each as its own requirement. One color decision, two verifications: contrast for readability, simulation for distinguishability.",
+        ],
+        links: [
+          { label: "Check contrast for the text side", href: "/tools/contrast-checker" },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "saas-dashboard-color-palette",
+    title: "How to build a color palette for a SaaS dashboard",
+    metaTitle: "SaaS Dashboard Color Palette — Roles, Contrast & Dark Mode",
+    description:
+      "A practical walkthrough for building a SaaS dashboard color palette: surface stack, semantic roles, status colors, chart palettes and WCAG checks — from one brand color.",
+    excerpt:
+      "Dashboards stress-test color harder than any other UI. Here's how to build a SaaS palette that survives dense data, status colors and dark mode.",
+    publishedAt: "2026-10-09",
+    category: "Design systems",
+    tags: ["saas", "dashboard", "color palette", "design tokens", "data visualization"],
+    relatedHrefs: [
+      "/design-system",
+      "/tools/color-palette-generator",
+      "/tools/wcag-palette-checker",
+      "/tools/dark-mode-generator",
+    ],
+    keyword: "SaaS dashboard color palette",
+    sections: [
+      {
+        heading: "Why dashboards are the hardest test for a palette",
+        body: [
+          "A marketing page gets three colors and a gradient. A dashboard gets twenty surfaces, four chart series, five status states, disabled everything, and a sidebar — all visible at once, all day. A palette that looks great in a hero section collapses under that load: two 'neutral' grays fight each other in adjacent panels, the warning yellow vibrates against a tinted background, and the primary blue appears in four roles with no hierarchy.",
+          "The fix is not more colors. It is fewer colors with explicit jobs. A dashboard palette works when every value is a derived step or a named role — never a swatch someone liked in isolation. That discipline is what the rest of this guide builds.",
+        ],
+        tip: "Count the roles, not the colors. Most SaaS dashboards run on one brand hue, one status set (success/warning/danger/info), and a neutral surface stack — usually under 20 values total once tints are derived.",
+      },
+      {
+        heading: "Start with the surface stack, not the brand color",
+        body: [
+          "Start where users spend their time: the background stack. A dashboard typically needs four to five neutral layers — app background, card surface, raised surface (popovers, dropdowns), sidebar, and input fills. Each step should be distinguishable at a glance but never louder than the content on top of it.",
+          "Build the stack as a cool or warm neutral scale rather than pure grey. Pure #808080 grey reads as dead next to a brand hue; a neutral nudged toward your brand's temperature makes the whole product feel intentional. In light mode the stack climbs from near-white to mid-grey; in dark mode it inverts in elevation logic — raised surfaces get lighter, not darker.",
+        ],
+        bullets: [
+          "App background: the quietest layer — tinted white in light mode, tinted near-black in dark mode",
+          "Card surface: one step up from the background; the difference should be felt, not scrutinized",
+          "Raised surface: popovers, menus, tooltips — lighter than cards in dark mode",
+          "Borders: one step of separation; hairlines, never outlines",
+          "Input fills: distinguishable from their container so fields read as fields",
+        ],
+        links: [
+          { label: "Generate a neutral surface stack", href: "/tools/shade-generator" },
+        ],
+      },
+      {
+        heading: "Map the brand color to one clear role",
+        body: [
+          "The brand color's job on a dashboard is navigation and action: primary buttons, active nav items, links, focus rings, selected states. It is not the color of every icon and heading — that is how dashboards lose hierarchy.",
+          "Derive a full 50–950 scale from your brand hue so each of those jobs gets its own step. Active nav might take the 600 step on a tinted 100 background; a primary button takes 600 with a 50-step label; hover darkens to 700. Because the steps come from one perceptual scale, they always look like siblings.",
+        ],
+        code: `:root {
+  --brand-50:  #eef5ff;
+  --brand-100: #dbe7ff;
+  --brand-500: #3a86ff;
+  --brand-600: #1f6cff;
+  --brand-700: #0f53e0;
+  --color-primary: var(--brand-600);
+  --color-primary-hover: var(--brand-700);
+}`,
+        codeLang: "css",
+        links: [
+          { label: "Build the scale from your brand color", href: "/design-system" },
+        ],
+      },
+      {
+        heading: "Status colors are semantic, not decorative",
+        body: [
+          "Success, warning, danger and info appear in badges, toasts, chart series and inline validation — often simultaneously. Give each one a fixed semantic token and never reuse a status color for decoration, or the signal dilutes.",
+          "Two constraints decide whether a status set works. First, each color needs a light-mode and dark-mode variant: a green that reads 'success' on white turns into sludge on a dark surface unless it is lightened and re-tuned. Second, any status color that carries text must pass contrast on its badge background — a pale green pill with white text is the classic failure.",
+        ],
+        bullets: [
+          "Success: green family — passes contrast as text on a tinted badge",
+          "Warning: amber family — the hardest to make accessible; darken for text, keep the bright step for icons only",
+          "Danger: red family — strong at a glance, so keep usage rare to stay meaningful",
+          "Info: blue family — must be visually distinct from your brand blue, or pick a different info hue entirely",
+        ],
+        links: [
+          { label: "Check status pairs for WCAG", href: "/tools/wcag-palette-checker" },
+        ],
+      },
+      {
+        heading: "Chart colors: distinct beats beautiful",
+        body: [
+          "Dashboard charts need four to six categorical colors that are distinguishable at 12-pixel line widths and similar chroma levels. A palette where one series is neon and the rest are muted biases every reading of the chart.",
+          "The reliable recipe: pick hues spread evenly around the wheel (analogous sets are too close for data), equalize lightness so no series dominates, and reserve the brand color for the one series that is 'yours' — typically the primary metric. Then check the set against color-blindness simulation; red/green pairs that pass casual inspection fail deuteranopia readers.",
+        ],
+        links: [
+          { label: "Generate a six-hue chart set", href: "/tools/color-palette-generator" },
+          { label: "Simulate color blindness", href: "/tools/color-blindness-simulator" },
+        ],
+      },
+      {
+        heading: "Dark mode is a second palette, not a filter",
+        body: [
+          "The most common dashboard dark-mode failure is applying an inversion filter and shipping. Dark mode needs its own tuned values: surfaces lighten with elevation, the brand hue desaturates slightly so it doesn't glow against dark backgrounds, and status colors shift lighter while keeping their hue identity.",
+          "The dark theme should be generated from the same seed as the light theme so the two stay siblings — then graded by the same contrast rules. Text-on-surface pairs in dark mode often need more care than light mode, because the eye's sensitivity curve is different at low luminance.",
+        ],
+        links: [
+          { label: "Generate the dark theme from your brand color", href: "/tools/dark-mode-generator" },
+        ],
+      },
+      {
+        heading: "The whole palette on one page",
+        body: [
+          "Pull the pieces together. One brand hue drives the primary scale; neutrals form the surface stack; status colors get semantic tokens; charts take a distinctness-checked set; dark mode is generated, not filtered. Every text/background pair passes WCAG AA before anything ships:",
+        ],
+        code: `:root {
+  --background: #f7f8fa;
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --border: #e2e5ea;
+  --foreground: #16181d;
+  --primary: #1f6cff;
+  --success: #16a34a;
+  --warning: #d97706;
+  --danger: #dc2626;
+  --info: #0891b2;
+}`,
+        codeLang: "css",
+        tip: "Save the system as a share link once it passes. The URL encodes the whole configuration — your future self (or a teammate) reopens the exact palette without an account or a Figma file.",
+        links: [
+          { label: "Generate the full dashboard palette", href: "/design-system" },
+        ],
+      },
+    ],
+  },
+  {
     slug: "how-to-build-an-accessible-color-palette",
     title: "How to build an accessible color palette (2026 guide)",
     metaTitle: "How to Build an Accessible Color Palette — WCAG AA/AAA Guide",
@@ -374,10 +1218,13 @@ export const BLOG_POSTS: BlogPost[] = [
         heading: "Why naive mixing looks muddy",
         body: [
           "Mix two colors by taking a straight average and you get the obvious but wrong result: a flat, desaturated version of both. Blue averaged with orange doesn't give you a useful warm-neutral — it gives you grey with a hint of sadness. Averaging in RGB space treats color as if it were a set of three channels with equal perceptual weight, and it isn't.",
-          "Neatly, mixing in a perceptual space behaves like the real world. Each step toward the other color keeps both hues alive as long as possible, and the halfway point is properly neutral instead of prematurely grey. That's why a decent mixer doesn't just average RBG values.",
+          "Neatly, mixing in a perceptual space behaves like the real world. Each step toward the other color keeps both hues alive as long as possible, and the halfway point stays properly neutral instead of turning prematurely grey. That's why a decent mixer interpolates in OKLCH rather than averaging RGB values.",
           "Use a mixer that blends perceptually, and set it to a ratio. Even at 50/50 you want to preserve a hint of hue, not flush the whole thing down to earth.",
         ],
         tip: "When you want a lighter version of a color for a hover or surface, blend it with white at a ratio rather than lowering opacity over white. Blending gives you a real, solid color that behaves predictably in every context.",
+        links: [
+          { label: "Mix two colors in OKLCH", href: "/tools/color-mixer" },
+        ],
       },
       {
         heading: "Alpha is a tool, not a default",
@@ -399,6 +1246,10 @@ export const BLOG_POSTS: BlogPost[] = [
         body: [
           "Authoring alpha is easier with a tool that shows you the rgba(), hex8, and a plain opacity slider for the same color, so you can compare the actual result instead of estimating. Set your color, dial the opacity, and copy the exact value you need.",
           "Then run the finished element through a contrast check against its real background. If it's a text or icon that has to stay readable, confirm the effective color — the alpha composited over where it sits — actually passes. Nothing about transparency excuses you from the contrast conversation.",
+        ],
+        links: [
+          { label: "Add alpha to any color", href: "/tools/alpha-channel" },
+          { label: "Check contrast before shipping", href: "/tools/contrast-checker" },
         ],
       },
     ],
@@ -951,6 +1802,7 @@ export const BLOG_POSTS: BlogPost[] = [
         ],
         links: [
           { label: "Open the paper UI preset in the generator", href: "/design-system?primary=b4552d&secondary=8a5a2b&strategy=analogous&radius=sharp&fonts=editorial&ratio=1.333&sat=5" },
+          { label: "Build a matching type scale", href: "/tools/typography-scale-generator" },
         ],
         tip: "Ink on warm stock has forgiving but not automatic contrast. Text that sits on the lightest tint (your paper) will pass easily; text on the darker tints is where pairs sneak under 4.5:1 — check them all.",
       },
@@ -1732,6 +2584,7 @@ export const BLOG_POSTS: BlogPost[] = [
         ],
         links: [
           { label: "Open the maximalist editorial preset in the generator", href: "/design-system?primary=e11d48&secondary=2563eb&accent=f59e0b&strategy=split-complementary&radius=sharp&fonts=editorial&ratio=1.333" },
+          { label: "Preview the generous type ratio", href: "/tools/typography-scale-generator" },
         ],
         tip: "Layered type over color blocks is where reading collapses. Give headlines a legible background or real contrast step, keep body text on solid light surfaces, and let one hue dominate while the other two stay accents — three full-strength blocks at once is noise.",
       },
@@ -1835,6 +2688,9 @@ export const BLOG_POSTS: BlogPost[] = [
         heading: "Copy it exactly — then make it yours",
         body: [
           "Exactness matters more than people expect. #635BFF and #645CFF are different colours to the eye, and a hex value is a promise you either keep or quietly break. Copy the exact value from the brand palette entry, then regenerate the scale so every derived shade stays true to that hue. Your system can borrow the anchor while being entirely your own.",
+        ],
+        links: [
+          { label: "Check your brand colours for WCAG contrast", href: "/tools/wcag-palette-checker" },
         ],
       },
     ],
@@ -2073,9 +2929,24 @@ export function findPost(slug: string): BlogPost | undefined {
   return BLOG_POSTS.find((post) => post.slug === slug);
 }
 
+/**
+ * A post is live once its publishedAt date (UTC) has been reached.
+ * Future-dated posts stay invisible to the blog index, sitemap and
+ * related-article lists until then; the publish cron triggers a rebuild
+ * after each date so the post goes live without a code change.
+ */
+export function isPostLive(post: Pick<BlogPost, "publishedAt">, now: Date = new Date()): boolean {
+  const published = Date.parse(`${post.publishedAt}T00:00:00Z`);
+  return Number.isNaN(published) || published <= now.getTime();
+}
+
+export function livePosts(now: Date = new Date()): BlogPost[] {
+  return BLOG_POSTS.filter((post) => isPostLive(post, now));
+}
+
 export function postsByCategory(): { category: string; posts: BlogPost[] }[] {
   const map = new Map<string, BlogPost[]>();
-  for (const post of BLOG_POSTS) {
+  for (const post of livePosts()) {
     const list = map.get(post.category) ?? [];
     list.push(post);
     map.set(post.category, list);

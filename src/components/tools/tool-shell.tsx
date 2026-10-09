@@ -1,6 +1,6 @@
 ﻿import Link from "next/link";
 import { TOOLS, type ToolDefinition } from "@/lib/tools";
-import { BLOG_POSTS, type BlogPost } from "@/lib/posts";
+import { livePosts, type BlogPost } from "@/lib/posts";
 import { siteUrl } from "@/lib/site-url";
 import { JsonLd } from "@/components/site/json-ld";
 
@@ -18,7 +18,7 @@ const DATE_FMT = new Intl.DateTimeFormat("en-GB", { month: "short", day: "numeri
 
 /** Guides that expressly link to this tool page. */
 function relatedArticles(tool: ToolDefinition): BlogPost[] {
-  return BLOG_POSTS.filter((post) => post.relatedHrefs.includes(tool.href)).slice(0, 3);
+  return livePosts().filter((post) => post.relatedHrefs.includes(tool.href)).slice(0, 3);
 }
 
 /**

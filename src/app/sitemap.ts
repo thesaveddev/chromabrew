@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { TOOLS } from "@/lib/tools";
-import { BLOG_POSTS } from "@/lib/posts";
+import { livePosts } from "@/lib/posts";
 import { siteUrl } from "@/lib/site-url";
 
 const buildDate = new Date();
@@ -12,8 +12,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/tools", priority: 0.8 },
     { path: "/color-tools", priority: 0.6 },
     { path: "/blog", priority: 0.8 },
+    { path: "/pricing", priority: 0.5 },
     ...TOOLS.map((tool) => ({ path: tool.href, priority: 0.7 })),
-    ...BLOG_POSTS.map((post) => ({ path: `/blog/${post.slug}`, priority: 0.6 })),
+    ...livePosts().map((post) => ({ path: `/blog/${post.slug}`, priority: 0.6 })),
   ];
   return routes.map((route) => ({
     url: `${siteUrl}${route.path}`,

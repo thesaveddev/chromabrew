@@ -1,7 +1,7 @@
-import { findPost, BLOG_POSTS } from "./posts";
+import { findPost, livePosts, isPostLive } from "./posts";
 import { TOOLS, type ToolDefinition } from "./tools";
 
-export { findPost };
+export { findPost, isPostLive };
 
 /** Same formatting as the client card, shared server-side. */
 export function formatPostDate(iso: string): string {
@@ -30,5 +30,5 @@ export function getRelatedTools(hrefs: string[]): ToolDefinition[] {
 }
 
 export function allPostSlugs(): string[] {
-  return BLOG_POSTS.map((post) => post.slug);
+  return livePosts().map((post) => post.slug);
 }

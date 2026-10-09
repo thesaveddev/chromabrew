@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { findPost, formatPostDate, getRelatedTools, allPostSlugs } from "@/lib/posts-server";
+import { findPost, isPostLive, formatPostDate, getRelatedTools, allPostSlugs } from "@/lib/posts-server";
 import { siteUrl } from "@/lib/site-url";
+import { defaultOgImage } from "@/lib/og";
 import { JsonLd } from "@/components/site/json-ld";
 
 export const dynamicParams = false;
@@ -18,7 +19,7 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const post = findPost(slug);
-  if (!post) return {};
+  if (!post || !isPostLive(post)) return {};
   return {
     title: post.metaTitle,
     description: post.description,
@@ -28,15 +29,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: post.description,
       url: `/blog/${post.slug}`,
       type: "article",
-      ...(post.image
-        ? { images: [{ url: `${siteUrl}${post.image}`, width: 1200, height: 630, alt: post.imageAlt ?? post.title }] }
-        : {}),
+      images: post.image
+        ? [{ url: `${siteUrl}${post.image}`, width: 1200, height: 630, alt: post.imageAlt ?? post.title }]
+        : [defaultOgImage],
     },
     twitter: {
       card: "summary_large_image",
       title: `${post.metaTitle} · ChromaBrew`,
       description: post.description,
-      ...(post.image ? { images: [`${siteUrl}${post.image}`] } : {}),
+      images: post.image ? [`${siteUrl}${post.image}`] : [defaultOgImage.url],
     },
   };
 }
@@ -44,7 +45,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function BlogPostPage({ params }: Props) {
   const { slug } = await params;
   const post = findPost(slug);
-  if (!post) notFound();
+  if (!post || !isPostLive(post)) notFound();
 
   const related = getRelatedTools(post.relatedHrefs);
   const url = `${siteUrl}/blog/${post.slug}`;
