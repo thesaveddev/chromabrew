@@ -12,11 +12,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     select: { name: true, description: true, visibility: true },
   });
   if (!project || project.visibility === "private") {
-    return { title: "Not found" };
+    return { title: "Not found", robots: { index: false } };
   }
   return {
     title: `${project.name} · ChromaBrew`,
     description: project.description ?? `Design system: ${project.name}`,
+    robots: { index: false },
   };
 }
 

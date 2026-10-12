@@ -129,7 +129,7 @@ export function ContrastTool({
       <table className="w-full border-collapse text-left text-xs">
         <caption className="sr-only">WCAG pass/fail results</caption>
         <thead>
-          <tr className="border-b border-zinc-200 dark:border-zinc-800 text-[11px] uppercase tracking-wide text-zinc-500">
+          <tr className="border-b border-zinc-200 dark:border-zinc-800 text-[11px] uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
             <th scope="col" className="py-2 font-medium">Threshold</th>
             <th scope="col" className="py-2 font-medium">Required</th>
             <th scope="col" className="py-2 font-medium">Result</th>
@@ -144,11 +144,16 @@ export function ContrastTool({
           ].map(([label, required, pass]) => (
             <tr key={label as string} className="border-b border-zinc-100 dark:border-zinc-800/70 last:border-0">
               <td className="py-1.5">{label}</td>
-              <td className="py-1.5 font-mono text-zinc-500">{required}</td>
+              <td className="py-1.5 font-mono text-zinc-500 dark:text-zinc-400">{required}</td>
               <td className="py-1.5">
                 <span
                   className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-semibold ${
-                    pass ? "bg-emerald-100 text-emerald-800 dark:text-emerald-300" : "bg-red-100 text-red-700 dark:text-red-300"
+                    // The badge keeps a light background unless dark mode changes
+                    // it too: `dark:text-emerald-300` on `bg-emerald-100` measured
+                    // 1.34:1 in dark mode, which this product's own scanner found.
+                    pass
+                      ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300"
+                      : "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300"
                   }`}
                 >
                   <span aria-hidden>{pass ? "✓" : "✕"}</span>

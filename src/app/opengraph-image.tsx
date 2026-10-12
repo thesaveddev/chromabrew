@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "ChromaBrew — turn one color into an entire design system";
+export const alt = "ChromaBrew — free color tools and a design system generator";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -72,7 +72,7 @@ export default function OpengraphImage() {
               color: "#52525b",
             }}
           >
-            Turn one color into an entire design system
+            Free color tools and a design system generator
           </div>
         </div>
       </div>

@@ -10,7 +10,7 @@ export function SiteFooter() {
           <div>
             <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">ChromaBrew</p>
             <p className="mt-2 max-w-xs text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-              Free color palette generator, design system tool, and 15+ developer utilities.
+              Free color palette generator, design system tool, and {TOOLS.length} developer utilities.
               Create accessible palettes, extract colors from images, check contrast ratios, and generate production-ready CSS — all in your browser.
             </p>
           </div>
@@ -27,16 +27,31 @@ export function SiteFooter() {
           </nav>
         </div>
         <div className="mt-10 flex flex-col gap-4 border-t border-zinc-200 pt-6 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs text-zinc-500 dark:text-zinc-500">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">
             © {new Date().getFullYear()} ChromaBrew. All color processing runs
             in your browser.
           </p>
-          <Link
-            href="/blog"
-            className="text-xs text-zinc-500 transition-colors hover:text-zinc-900 dark:text-zinc-500 dark:hover:text-zinc-100"
-          >
-            Blog &amp; guides
-          </Link>
+          <nav aria-label="Site" className="flex flex-wrap gap-x-5 gap-y-2">
+            {[
+              ["/design-system", "Design system generator"],
+              ["/tools", "Free tools"],
+              ["/color-tools", "Color tools"],
+              ["/blog", "Blog & guides"],
+              // The audit tool lives outside the TOOLS registry, so without this
+              // its only inbound link was from a noindex share page — leaving an
+              // indexable page that no crawler could reach.
+              ["/audit", "Website audit"],
+              ["/pricing", "Pricing"],
+            ].map(([href, label]) => (
+              <Link
+                key={href}
+                href={href}
+                className="text-xs text-zinc-500 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+              >
+                {label}
+              </Link>
+            ))}
+          </nav>
           <div className="flex justify-center">
             <ProductHuntBadge />
           </div>

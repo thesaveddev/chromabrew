@@ -9,25 +9,37 @@ import { LinkButton } from "@/components/ui/primitives";
 import { TOOLS } from "@/lib/tools";
 import { siteUrl } from "@/lib/site-url";
 import { JsonLd } from "@/components/site/json-ld";
+import { defaultOgImage } from "@/lib/og";
 import { ProductHuntBadge } from "@/components/site/product-hunt-badge";
 
+/**
+ * The home page positions the whole toolkit, not just the one-color pipeline.
+ *
+ * Chromabrew is a color toolkit — palette generation, contrast checking, image
+ * color extraction, design tokens and CSS exports. Describing it only as a
+ * single-color-to-design-system generator hid every tool that does not sit on
+ * that one path, so the title, description and h1 now name the breadth and the
+ * pipeline reads as the example rather than the whole product.
+ */
 export const metadata: Metadata = {
-  title: "ChromaBrew — Free Color Palette Generator & Design System Tool",
+  title: "ChromaBrew — Free Color Tools & Design System Generator",
   description:
-    "Turn one color into a complete design system: accessible palettes, semantic tokens, light and dark themes, WCAG checks, and production-ready CSS, Tailwind v4 and shadcn/ui exports. Free, no account required.",
+    "Free browser-based color toolkit: palette generator, WCAG contrast checker, image color extraction, design tokens and Tailwind or shadcn theme exports.",
   alternates: { canonical: "/" },
   openGraph: {
-    title: "ChromaBrew — Free Color Palette Generator & Design System Tool",
+    title: "ChromaBrew — Free Color Tools & Design System Generator",
     description:
-      "Turn one color into a complete design system: accessible palettes, semantic tokens, light and dark themes, WCAG checks, and production-ready code. Free, no account.",
+      "Free color tools plus a design system generator: palettes, WCAG contrast checks, image color extraction, design tokens, and Tailwind or shadcn exports.",
     url: "/",
     type: "website",
+    images: [defaultOgImage],
   },
   twitter: {
     card: "summary_large_image",
-    title: "ChromaBrew — Free Color Palette Generator & Design System Tool",
+    title: "ChromaBrew — Free Color Tools & Design System Generator",
     description:
-      "Turn one color into a complete design system: accessible palettes, semantic tokens, light and dark themes, and production-ready code.",
+      "Free color tools and a design system generator for palettes, contrast checks, image extraction and token exports. No account required.",
+    images: [defaultOgImage.url],
   },
 };
 
@@ -75,25 +87,6 @@ export default function HomePage() {
       <JsonLd
         data={{
           "@context": "https://schema.org",
-          "@type": "WebSite",
-          name: "ChromaBrew",
-          url: siteUrl,
-          description:
-            "Free color palette generator and design system tool: accessible palettes, semantic tokens, light and dark themes, and production-ready code from one color.",
-        }}
-      />
-      <JsonLd
-        data={{
-          "@context": "https://schema.org",
-          "@type": "Organization",
-          name: "ChromaBrew",
-          url: siteUrl,
-          logo: `${siteUrl}/favicon.svg`,
-        }}
-      />
-      <JsonLd
-        data={{
-          "@context": "https://schema.org",
           "@type": "WebApplication",
           name: "ChromaBrew — Design System Generator",
           url: `${siteUrl}/design-system`,
@@ -109,11 +102,11 @@ export default function HomePage() {
       <section className="border-b border-zinc-200 dark:border-zinc-800">
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24">
           <div className="max-w-2xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500">
-              Free design system generator
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
+              Free browser-based color toolkit
             </p>
             <h1 className="mt-3 text-4xl font-bold leading-[1.1] tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-5xl">
-              Turn one color into an entire design system.
+              Free color tools and a design system generator.
             </h1>
             <p className="mt-4 text-lg leading-8 text-zinc-600 dark:text-zinc-400">
               Generate accessible palettes, semantic tokens, light and dark
@@ -123,7 +116,7 @@ export default function HomePage() {
           <div className="mt-8">
             <HeroColourForm />
           </div>
-          <p className="mt-4 text-sm text-zinc-500">
+          <p className="mt-4 text-sm text-zinc-500 dark:text-zinc-400">
             No account. No upload. Everything runs in your browser —{" "}
             <Link href="/tools" className="font-medium text-zinc-700 dark:text-zinc-300 underline decoration-zinc-300 underline-offset-4 hover:text-zinc-900 dark:hover:text-zinc-100">
               or explore the individual tools
@@ -141,7 +134,8 @@ export default function HomePage() {
         <ol className="grid gap-x-6 gap-y-6 sm:grid-cols-2 lg:grid-cols-6">
           {PIPELINE.map(([title, body], i) => (
             <li key={title} className="relative">
-              <span className="text-[11px] font-semibold uppercase tracking-wide text-zinc-400">
+              {/* zinc-400 on white measures 2.62:1 at 11px — below AA for body text. */}
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
                 Step {i + 1}
               </span>
               <h2 className="mt-1 text-sm font-semibold text-zinc-900 dark:text-zinc-100">{title}</h2>
@@ -273,7 +267,7 @@ export default function HomePage() {
                   <span className="block text-sm font-medium text-zinc-900 dark:text-zinc-100 group-hover:underline group-hover:underline-offset-4">
                     {tool.title}
                   </span>
-                  <span className="mt-1 block text-xs leading-5 text-zinc-500">
+                  <span className="mt-1 block text-xs leading-5 text-zinc-500 dark:text-zinc-400">
                     {tool.blurb}
                   </span>
                 </Link>
@@ -293,7 +287,9 @@ export default function HomePage() {
             Generate a complete color palette, semantic tokens, light and dark themes, and production-ready CSS — from a single HEX value. Free, no account required.
           </p>
           <div className="mt-6 flex justify-center">
-            <HeroColourForm idPrefix="cta" />
+            {/* The card is bg-zinc-900 in both themes, so the form needs its
+                dark-surface text colours here rather than the hero's. */}
+            <HeroColourForm idPrefix="cta" tone="dark" />
           </div>
         </div>
       </section>

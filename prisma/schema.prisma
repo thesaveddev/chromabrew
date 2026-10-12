@@ -20,6 +20,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   projects      Project[]
+  scans         Scan[]
   subscription  Subscription?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -155,5 +156,208 @@ model Subscription {
 
   @@index([userId])
   @@index([stripeSubscriptionId])
+  @@schema("chromabrew")
+}
+
+// --- Audit / Website scanning ---
+
+enum ScanStatus {
+  queued
+  running
+  completed
+  partially_completed
+  failed
+  cancelled
+  @@schema("chromabrew")
+}
+
+enum ScanScope {
+  single_page
+  homepage_plus_pages
+  selected_pages
+  @@schema("chromabrew")
+}
+
+enum FindingSeverity {
+  critical
+  high
+  medium
+  low
+  informational
+  @@schema("chromabrew")
+}
+
+enum FindingCategory {
+  color_contrast
+  accessibility
+  visual_design
+  design_system
+  technical
+  metadata
+  @@schema("chromabrew")
+}
+
+enum DetectionMethod {
+  deterministic
+  ai_assisted
+  hybrid
+  @@schema("chromabrew")
+}
+
+enum PreviewMethod {
+  annotated_original
+  illustrative_proposal
+  rendered_change
+  @@schema("chromabrew")
+}
+model Scan {
+  id                String        @id @default(cuid())
+  url               String        @db.Text
+  normalizedUrl     String        @db.Text
+  status            ScanStatus    @default(queued)
+  scope             ScanScope     @default(single_page)
+  viewportWidth     Int           @default(1280)
+  viewportHeight    Int           @default(720)
+  pagesScanned      Int           @default(0)
+  pagesTotal        Int           @default(0)
+  pagesFailed       Int           @default(0)
+  errorMessage      String?       @db.Text
+  startedAt         DateTime?
+  completedAt       DateTime?
+  durationMs        Int?
+  userAgent         String?       @db.Text
+  ipHash            String?       @db.Text
+  rulesVersion      String        @default("1.0.0")
+  scannerVersion    String        @default("1.0.0")
+  aiModel           String?
+  metadata          Json?
+  // Shareable report link (see src/lib/audit/share.ts). NULL means not shared:
+  // a report is never public because someone knows or guesses its id.
+  shareToken        String?       @unique @db.Text
+  sharedAt          DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  userId            String?
+  user              User?         @relation(fields: [userId], references: [id])
+  scannedPages      ScannedPage[]
+  findings          Finding[]
+  previews          Preview[]
+  reports           Report[]
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@schema("chromabrew")
+}
+model ScannedPage {
+  id                String        @id @default(cuid())
+  url               String        @db.Text
+  title             String?       @db.Text
+  statusCode        Int?
+  loadTimeMs        Int?
+  rendered          Boolean       @default(false)
+  screenshotPath    String?       @db.Text
+  screenshotUrl     String?       @db.Text
+  domHash           String?
+  metadata          Json?
+  errorMessage      String?       @db.Text
+  createdAt         DateTime      @default(now())
+  scanId            String
+  scan              Scan          @relation(fields: [scanId], references: [id], onDelete: Cascade)
+  findings          Finding[]
+  @@index([scanId])
+  @@schema("chromabrew")
+}
+model Finding {
+  id                String              @id @default(cuid())
+  ruleId            String
+  category          FindingCategory
+  severity          FindingSeverity
+  title             String              @db.Text
+  description       String              @db.Text
+  explanation       String?             @db.Text
+  whyMatters        String?             @db.Text
+  recommendation    String?             @db.Text
+  implementation    String?             @db.Text
+  cssSuggestion     String?             @db.Text
+  tokenSuggestion   Json?
+  evidence          Json?
+  elementSelector   String?             @db.Text
+  xpath             String?             @db.Text
+  originalValues    Json?
+  suggestedValues   Json?
+  wcagCriterion     String?
+  detectionMethod   DetectionMethod     @default(deterministic)
+  confidence        Decimal?            @db.Decimal(3,2)
+  verificationStatus String             @default("unverified")
+  isDuplicate       Boolean             @default(false)
+  duplicateGroupId  String?
+  resolved          Boolean             @default(false)
+  resolvedAt        DateTime?
+  ignored           Boolean             @default(false)
+  ignoredAt         DateTime?
+  userFeedback      String?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  scanId            String
+  scan              Scan                @relation(fields: [scanId], references: [id], onDelete: Cascade)
+  pageId            String?
+  page              ScannedPage?        @relation(fields: [pageId], references: [id])
+  proposedFix       ProposedFix?
+  previews          Preview[]
+  @@index([scanId])
+  @@index([category, severity])
+  @@index([ruleId])
+  @@schema("chromabrew")
+}
+model ProposedFix {
+  id                String        @id @default(cuid())
+  title             String        @db.Text
+  description       String?       @db.Text
+  originalValues    Json?
+  proposedValues    Json?
+  cssChanges        String?       @db.Text
+  tokenChanges      Json?
+  contrastBefore    Decimal?      @db.Decimal(4,2)
+  contrastAfter     Decimal?      @db.Decimal(4,2)
+  passesWcag        Boolean?
+  validated         Boolean       @default(false)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  findingId         String        @unique
+  finding           Finding       @relation(fields: [findingId], references: [id], onDelete: Cascade)
+  @@schema("chromabrew")
+}
+
+model Preview {
+  id                String          @id @default(cuid())
+  method            PreviewMethod
+  imagePath         String?         @db.Text
+  imageUrl          String?         @db.Text
+  htmlContent       String?         @db.Text
+  cssContent        String?         @db.Text
+  viewportWidth     Int?
+  viewportHeight    Int?
+  description       String?         @db.Text
+  isVerified        Boolean         @default(false)
+  createdAt         DateTime        @default(now())
+  scanId            String
+  scan              Scan            @relation(fields: [scanId], references: [id], onDelete: Cascade)
+  findingId         String?
+  finding           Finding?        @relation(fields: [findingId], references: [id])
+  @@index([scanId])
+  @@schema("chromabrew")
+}
+
+model Report {
+  id                String        @id @default(cuid())
+  format            String        @default("pdf")
+  filePath          String?       @db.Text
+  fileUrl           String?       @db.Text
+  generatedAt       DateTime      @default(now())
+  expiresAt         DateTime?
+  downloadCount     Int           @default(0)
+  scanId            String
+  scan              Scan          @relation(fields: [scanId], references: [id], onDelete: Cascade)
+  @@index([scanId])
   @@schema("chromabrew")
 }

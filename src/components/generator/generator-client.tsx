@@ -357,7 +357,7 @@ export function GeneratorWorkspace() {
               ))}
             </div>
             <h1 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-              Design system{" "}
+              Design system generator{" "}
               <span className="font-mono text-xs font-normal text-zinc-500 dark:text-zinc-400">
                 {system.source.primary.hex.toUpperCase()}
               </span>

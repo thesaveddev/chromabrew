@@ -23,7 +23,7 @@ test("one color becomes a full design system", async ({ page, context }) => {
 
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    "Turn one color into an entire design system",
+    "Free color tools and a design system generator",
   );
 
   // Enter the spec's example color and generate.
@@ -37,7 +37,7 @@ test("one color becomes a full design system", async ({ page, context }) => {
       timeout: 5_000,
     });
   }).toPass({ timeout: 60_000 });
-  await expect(page.getByRole("heading", { name: /design system #47003A/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /design system generator #47003A/i })).toBeVisible();
 
   // Scale panel shows the pinned source step.
   await expect(page.getByText("950").first()).toBeVisible();
@@ -68,7 +68,7 @@ test("one color becomes a full design system", async ({ page, context }) => {
 
   // A shared URL must restore the system after reload.
   await page.reload();
-  await expect(page.getByRole("heading", { name: /design system #47003A/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /design system generator #47003A/i })).toBeVisible();
 
   expect(consoleErrors, `console errors: ${consoleErrors.join(" | ")}`).toEqual([]);
 });

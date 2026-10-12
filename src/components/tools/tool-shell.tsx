@@ -74,7 +74,7 @@ export function ToolShell({
         }}
       />
 
-      <nav aria-label="Breadcrumb" className="text-xs text-zinc-500">
+      <nav aria-label="Breadcrumb" className="text-xs text-zinc-500 dark:text-zinc-400">
         <Link href="/" className="hover:text-zinc-800 dark:hover:text-zinc-200 dark:text-zinc-200">Home</Link>
         <span aria-hidden> / </span>
         <Link href="/tools" className="hover:text-zinc-800 dark:hover:text-zinc-200 dark:text-zinc-200">Tools</Link>
@@ -175,13 +175,15 @@ export function ToolShell({
                   href={`/blog/${post.slug}`}
                   className="group block h-full rounded-xl border border-zinc-200 bg-white p-4 transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-600 dark:focus-visible:outline-zinc-100"
                 >
-                  <p className="text-[11px] uppercase tracking-wide text-zinc-400">
+                  {/* zinc-400 on white measures 2.62:1 at 11px; the card is dark
+                      in dark mode, where zinc-400 is the right shade. */}
+                  <p className="text-[11px] uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
                     {post.category} · {DATE_FMT.format(new Date(`${post.publishedAt}T00:00:00Z`))}
                   </p>
                   <p className="mt-1.5 text-sm font-medium leading-5 text-zinc-800 group-hover:text-zinc-900 dark:text-zinc-200 dark:group-hover:text-zinc-100">
                     {post.title}
                   </p>
-                  <p className="mt-1.5 line-clamp-2 text-xs leading-5 text-zinc-500">{post.excerpt}</p>
+                  <p className="mt-1.5 line-clamp-2 text-xs leading-5 text-zinc-500 dark:text-zinc-400">{post.excerpt}</p>
                 </Link>
               </li>
             ))}
@@ -189,7 +191,7 @@ export function ToolShell({
         </section>
       ) : null}
 
-      <p className="mt-10 border-t border-zinc-200 pt-6 text-xs text-zinc-500 dark:border-zinc-800 dark:text-zinc-500">
+      <p className="mt-10 border-t border-zinc-200 pt-6 text-xs text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
         {tool.title} runs entirely in your browser — nothing you enter is sent to a server.
       </p>
     </div>

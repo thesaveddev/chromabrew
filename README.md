@@ -67,6 +67,10 @@ Copy `.env.example` to `.env` and fill in the values. At minimum you need
 | `/p/[id]`                    | Public view of a shared project                    |
 | `/tools`                     | Free tools index                                   |
 | `/tools/*`                   | Ten individual free tools (see `src/lib/tools.ts`) |
+| `/audit`                     | Website design and accessibility audit (single page)|
+| `/api/audit/scan`            | Create an audit; returns the scan id               |
+| `/api/audit/scan/[scanId]`   | Audit status: stage, counts, errors                |
+| `/api/audit/scan/[scanId]/results`| Findings and scanned pages for an audit       |
 | `/sitemap.xml`, `/robots.txt`| Generated SEO infrastructure                       |
 
 ## Documentation
@@ -74,6 +78,9 @@ Copy `.env.example` to `.env` and fill in the values. At minimum you need
 - [`docs/ROADMAP.md`](docs/ROADMAP.md) — phase status; Phase 1 is current
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — engines, token model,
   export adapters, testing strategy
+- [`docs/AUDIT_ARCHITECTURE.md`](docs/AUDIT_ARCHITECTURE.md) — Chromabrew
+  Premium (website audit): architecture audit, data model, security and the
+  stage-by-stage plan
 
 ## Tech stack
 

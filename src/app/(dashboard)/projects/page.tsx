@@ -4,7 +4,8 @@ import { prisma } from "@/lib/db";
 import { ProjectsList } from "@/components/projects/projects-list";
 
 export const metadata = {
-  title: "My projects · ChromaBrew",
+  title: "My projects",
+  robots: { index: false },
 };
 
 export default async function ProjectsPage() {

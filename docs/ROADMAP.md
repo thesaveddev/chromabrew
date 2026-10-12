@@ -99,6 +99,31 @@ Scope (implemented so far):
 - User menu dropdown in header (avatar, name, links)
 - SessionProvider wrapper for client-side auth state
 
+## Chromabrew Audit (premium product line)
+
+A separate, staged product line on top of ChromaBrew: enter a public URL and
+receive an evidence-based design, metadata and accessibility audit. The staged
+implementation plan and the repository audit that grounds it live in
+[`docs/AUDIT_ARCHITECTURE.md`](AUDIT_ARCHITECTURE.md).
+
+| Stage | Name                                              | Status      |
+| ----- | ------------------------------------------------- | ----------- |
+| 0     | Repository audit and architecture plan            | **COMPLETE** |
+| 1     | Premium interface and single-page scan foundation | **IMPLEMENTED** (unit-tested; needs the schema push and a browser pass before it can be called verified) |
+| 2     | Deterministic analysis engine (browser render + axe-core) | NOT STARTED |
+| 3     | AI visual design analysis                         | NOT STARTED |
+| 4     | Actionable fixes and design-system generation     | NOT STARTED |
+| 5     | Before-and-after previews                         | NOT STARTED |
+| 6     | Multi-page crawling and consolidated reporting    | NOT STARTED |
+| 7     | Reports, accounts and premium billing             | NOT STARTED |
+| 8     | Historical comparisons and monitoring             | NOT STARTED |
+
+Stage 1 currently reads the HTML the server sends; it does not execute
+JavaScript, so colour-contrast measurement, computed styles and AI review all
+wait on the browser-rendering stage.
+
+## Phase 2 — Accounts & Projects (continued)
+
 Still TODO for Phase 2:
 
 - Database migrations (connect to VPS PostgreSQL)

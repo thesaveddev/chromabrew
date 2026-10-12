@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { AccountClient } from "./account-client";
 
 export const metadata: Metadata = {
-  title: "Account · ChromaBrew",
+  title: "Account",
+  robots: { index: false },
 };
 
 export default function AccountPage() {

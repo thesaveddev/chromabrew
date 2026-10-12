@@ -9,14 +9,23 @@ import {
 } from "@/lib/design-system/exports/registry";
 import { DEFAULT_CONFIG } from "@/lib/design-system/share";
 import { CopyButton } from "@/components/ui/primitives";
+import { track } from "@/lib/analytics";
 import { SingleColourForm } from "./shared-tool-ui";
 
-function CodeResult({ code, filename }: { code: string; filename: string }) {
+function CodeResult({
+  code,
+  filename,
+  onCopied,
+}: {
+  code: string;
+  filename: string;
+  onCopied?: () => void;
+}) {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <p className="text-xs font-medium text-zinc-500">{filename}</p>
-        <CopyButton value={code} label="Copy code" className="px-2.5 py-1 text-xs" />
+        <CopyButton value={code} label="Copy code" className="px-2.5 py-1 text-xs" onCopied={onCopied} />
       </div>
       <pre className="max-h-96 overflow-auto rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-950 p-4 text-[11px] leading-5 text-zinc-100">
         <code>{code}</code>
@@ -25,18 +34,45 @@ function CodeResult({ code, filename }: { code: string; filename: string }) {
   );
 }
 
+function ScaleNameInput({ name, onNameChange }: { name: string; onNameChange: (v: string) => void }) {
+  return (
+    <div className="space-y-2">
+      <label
+        htmlFor="scale-name"
+        className="text-xs font-medium text-zinc-600 dark:text-zinc-400"
+      >
+        Scale name
+      </label>
+      <input
+        id="scale-name"
+        type="text"
+        value={name}
+        onChange={(e) => onNameChange(e.target.value)}
+        placeholder="brand"
+        className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 font-mono text-sm dark:border-zinc-700 dark:bg-zinc-800"
+      />
+    </div>
+  );
+}
+
 /** Tailwind colour generator: scale + @theme output for one colour. */
 export function TailwindColourTool({ initial = "#47003a" }: { initial?: string }) {
   const [raw, setRaw] = useState(initial);
   const [primary, setPrimary] = useState(initial);
+  const [scaleName, setScaleName] = useState("brand");
   const scale = useMemo(() => generateScale(primary), [primary]);
+
+  const safeName = useMemo(
+    () => (scaleName.trim().toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "") || "brand"),
+    [scaleName],
+  );
 
   const code = useMemo(() => {
     const vars = scale
-      .map((s) => `  --color-brand-${s.step}: ${s.hex};`)
+      .map((s) => `  --color-${safeName}-${s.step}: ${s.hex};`)
       .join("\n");
     return `@theme {\n${vars}\n}\n`;
-  }, [scale]);
+  }, [scale, safeName]);
 
   return (
     <div className="space-y-5">
@@ -48,6 +84,7 @@ export function TailwindColourTool({ initial = "#47003a" }: { initial?: string }
         onPrimaryChange={setPrimary}
         submitLabel="Generate Tailwind colors"
       />
+      <ScaleNameInput name={scaleName} onNameChange={setScaleName} />
       <div className="flex flex-wrap gap-1.5">
         {scale.map((step) => (
           <span
@@ -59,7 +96,7 @@ export function TailwindColourTool({ initial = "#47003a" }: { initial?: string }
           />
         ))}
       </div>
-      <CodeResult code={code} filename="tailwind-brand.css" />
+      <CodeResult code={code} filename={`${safeName}-theme.css`} onCopied={() => track("tailwind_theme_copied", { scale: safeName })} />
       <p className="text-sm text-zinc-600 dark:text-zinc-400">
         Need semantic tokens too?{" "}
         <a href={`/design-system?primary=${primary.replace("#", "")}`} className="font-medium text-zinc-900 dark:text-zinc-100 underline underline-offset-4">
@@ -97,6 +134,7 @@ export function ShadcnThemeTool({ initial = "#47003a" }: { initial?: string }) {
       <CodeResult
         code={shadcnAdapter.generate(system).code}
         filename={shadcnAdapter.generate(system).suggestedFilename}
+        onCopied={() => track("shadcn_theme_copied")}
       />
     </div>
   );
@@ -150,7 +188,7 @@ export function DarkModeTool({ initial = "#47003a" }: { initial?: string }) {
           </div>
         ))}
       </div>
-      <CodeResult code={css} filename="dark-theme.css" />
+      <CodeResult code={css} filename="dark-theme.css" onCopied={() => track("dark_theme_copied")} />
     </div>
   );
 }
@@ -182,6 +220,7 @@ export function DesignTokenTool({ initial = "#47003a" }: { initial?: string }) {
       <CodeResult
         code={jsonAdapter.generate(system).code}
         filename={jsonAdapter.generate(system).suggestedFilename}
+        onCopied={() => track("tokens_copied")}
       />
     </div>
   );

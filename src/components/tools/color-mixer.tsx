@@ -1,16 +1,22 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { hexToRgb, rgbToHex, rgbToHsl, hslToHex, parseColour } from "@/lib/design-system/colour/convert";
+import { hexToRgb, rgbToHsl, rgbToOklch, oklchToHex, parseColour } from "@/lib/design-system/colour/convert";
 import { CopyButton } from "@/components/ui/primitives";
+import { track } from "@/lib/analytics";
+
+function lerpHue(h1: number, h2: number, t: number): number {
+  const delta = ((h2 - h1 + 540) % 360) - 180;
+  return (h1 + delta * t + 360) % 360;
+}
 
 function mixHex(a: string, b: string, ratio: number): string {
-  const ca = hexToRgb(a);
-  const cb = hexToRgb(b);
-  return rgbToHex({
-    r: Math.round(ca.r + (cb.r - ca.r) * ratio),
-    g: Math.round(ca.g + (cb.g - ca.g) * ratio),
-    b: Math.round(ca.b + (cb.b - ca.b) * ratio),
+  const oa = rgbToOklch(hexToRgb(a));
+  const ob = rgbToOklch(hexToRgb(b));
+  return oklchToHex({
+    l: oa.l + (ob.l - oa.l) * ratio,
+    c: oa.c + (ob.c - oa.c) * ratio,
+    h: lerpHue(oa.h, ob.h, ratio),
   });
 }
 
@@ -107,17 +113,17 @@ export function ColorMixer() {
           <div className="flex items-center gap-3">
             <span className="text-xs text-zinc-500 w-10">HEX</span>
             <code className="flex-1 rounded-lg bg-zinc-950 px-3 py-1.5 font-mono text-xs text-zinc-100">{output.hex}</code>
-            <CopyButton value={output.hex} label="Copy" className="px-2 py-1 text-xs" />
+            <CopyButton value={output.hex} label="Copy" className="px-2 py-1 text-xs" onCopied={() => track("colors_mixed", { format: "hex" })} />
           </div>
           <div className="flex items-center gap-3">
             <span className="text-xs text-zinc-500 w-10">RGB</span>
             <code className="flex-1 rounded-lg bg-zinc-950 px-3 py-1.5 font-mono text-xs text-zinc-100">{output.rgb}</code>
-            <CopyButton value={output.rgb} label="Copy" className="px-2 py-1 text-xs" />
+            <CopyButton value={output.rgb} label="Copy" className="px-2 py-1 text-xs" onCopied={() => track("colors_mixed", { format: "rgb" })} />
           </div>
           <div className="flex items-center gap-3">
             <span className="text-xs text-zinc-500 w-10">HSL</span>
             <code className="flex-1 rounded-lg bg-zinc-950 px-3 py-1.5 font-mono text-xs text-zinc-100">{output.hsl}</code>
-            <CopyButton value={output.hsl} label="Copy" className="px-2 py-1 text-xs" />
+            <CopyButton value={output.hsl} label="Copy" className="px-2 py-1 text-xs" onCopied={() => track("colors_mixed", { format: "hsl" })} />
           </div>
         </div>
       </div>

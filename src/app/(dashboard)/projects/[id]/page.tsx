@@ -12,7 +12,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     where: { id },
     select: { name: true },
   });
-  return { title: project ? `${project.name} · ChromaBrew` : "Not found" };
+  return {
+    title: project ? `${project.name} · ChromaBrew` : "Not found",
+    robots: { index: false },
+  };
 }
 
 export default async function ProjectDetailPage({ params }: Props) {

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { TOOLS, categoryLabel } from "@/lib/tools";
 import { siteUrl } from "@/lib/site-url";
 import { JsonLd } from "@/components/site/json-ld";
+import { defaultOgImage } from "@/lib/og";
 
 export const metadata: Metadata = {
   title: "Color Tools — Palettes, Contrast, Names & Converters",
@@ -15,12 +16,14 @@ export const metadata: Metadata = {
       "Every color tool in one place: palette generator, brand color palettes, CSS color names finder, WCAG contrast checker, color blindness simulator, color converter and more — all free, no sign-up.",
     url: "/color-tools",
     type: "website",
+    images: [defaultOgImage],
   },
   twitter: {
     card: "summary_large_image",
     title: "Color Tools — Palettes, Contrast, Names & Converters",
     description:
       "Every color tool in one place: palette generator, WCAG contrast checker, color converter, CSS color names finder and more — all free.",
+    images: [defaultOgImage.url],
   },
 };
 
@@ -155,8 +158,11 @@ export default function ColorToolsHubPage() {
               const tool = byHref.get(`/tools/${example}`);
               return tool
                 ? {
-                    href: "/tools",
-                    title: `${categoryLabel(category as Parameters<typeof categoryLabel>[0])} tools`,
+                    // Each card opens the representative tool for its area. They
+                    // all pointed at "/tools" before, so the section advertised
+                    // three destinations and delivered one.
+                    href: tool.href,
+                    title: categoryLabel(category as Parameters<typeof categoryLabel>[0]),
                     blurb: category === "converter"
                       ? "Every color in every format, plus SVG/JPG image conversion."
                       : category === "css"

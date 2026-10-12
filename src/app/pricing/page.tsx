@@ -2,13 +2,17 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PLANS } from "@/lib/entitlements";
 import { siteUrl } from "@/lib/site-url";
+import { defaultOgImage } from "@/lib/og";
 
 export const metadata: Metadata = {
   title: "Pricing",
   description:
     "ChromaBrew is free for individual developers. Full design system generator, all color controls, WCAG checks, and core exports — forever.",
   alternates: { canonical: "/pricing" },
-  openGraph: { url: `${siteUrl}/pricing` },
+  openGraph: {
+    url: `${siteUrl}/pricing`,
+    images: [defaultOgImage],
+  },
 };
 
 export default function PricingPage() {

@@ -3,5 +3,5 @@ export const defaultOgImage = {
   url: "/opengraph-image",
   width: 1200,
   height: 630,
-  alt: "ChromaBrew — turn one color into an entire design system",
+  alt: "ChromaBrew — free color tools and a design system generator",
 } as const;

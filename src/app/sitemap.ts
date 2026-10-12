@@ -3,23 +3,36 @@ import { TOOLS } from "@/lib/tools";
 import { livePosts } from "@/lib/posts";
 import { siteUrl } from "@/lib/site-url";
 
-const buildDate = new Date();
-
+/**
+ * Only content with a real modification date carries a `lastModified`.
+ *
+ * Stamping every URL with the build time was worse than omitting it: a date
+ * that moves on each deploy without the content changing is the pattern Google
+ * learns to distrust, and it threw away the one signal that genuinely helps —
+ * when an article actually changed. `changeFrequency` is omitted because Google
+ * states it is ignored.
+ */
 export default function sitemap(): MetadataRoute.Sitemap {
-  const routes = [
+  const routes: { path: string; priority: number; lastModified?: Date }[] = [
     { path: "/", priority: 1 },
     { path: "/design-system", priority: 0.9 },
     { path: "/tools", priority: 0.8 },
+    { path: "/audit", priority: 0.8 },
     { path: "/color-tools", priority: 0.6 },
     { path: "/blog", priority: 0.8 },
     { path: "/pricing", priority: 0.5 },
     ...TOOLS.map((tool) => ({ path: tool.href, priority: 0.7 })),
-    ...livePosts().map((post) => ({ path: `/blog/${post.slug}`, priority: 0.6 })),
+    ...livePosts().map((post) => ({
+      path: `/blog/${post.slug}`,
+      priority: 0.6,
+      lastModified: new Date(`${post.updatedAt ?? post.publishedAt}T00:00:00Z`),
+    })),
   ];
-  return routes.map((route) => ({
-    url: `${siteUrl}${route.path}`,
-    lastModified: buildDate,
-    changeFrequency: "monthly",
-    priority: route.priority,
+  return routes.map(({ path, priority, lastModified }) => ({
+    // The home page canonicalises without a trailing slash, so the sitemap
+    // lists it the same way instead of publishing a second spelling of it.
+    url: path === "/" ? siteUrl : `${siteUrl}${path}`,
+    ...(lastModified ? { lastModified } : {}),
+    priority,
   }));
 }

@@ -52,6 +52,10 @@ export const TOOLS: ToolDefinition[] = [
         q: "Is this palette generator free?",
         a: "Yes — completely free with no account required. Everything runs in your browser; your colors are never uploaded.",
       },
+      {
+        q: "What do I do with the palette after generating it?",
+        a: "Copy any swatch as HEX, or open the design system generator with your base color to turn the palette into tonal scales, semantic tokens, light and dark themes and contrast-checked exports.",
+      },
     ],
   },
   {
@@ -88,11 +92,11 @@ export const TOOLS: ToolDefinition[] = [
     title: "Shade & tint scale generator",
     metaTitle: "Shade Generator — perceptual 50–950 color scales",
     description:
-      "Create perceptually even 50–950 shade scales in OKLCH from a single brand color. Copy HEX values or the full Tailwind theme.",
+      "Create perceptually even 50–950 shade scales in OKLCH from a single brand color. Copy each step's HEX or OKLCH value.",
     blurb: "Perceptual 50–950 scales in OKLCH.",
     intro: [
       "Turn any color into an eleven-step shade scale — 50 through 950 — computed in OKLCH so the steps are perceptually even. No more scales that look identical in the middle and jump at the ends.",
-      "Copy plain HEX values or the complete Tailwind-ready @theme block. The step naming matches Tailwind exactly, so tints and shades map straight onto utility classes.",
+      "Copy any step's HEX or OKLCH value. The step naming matches Tailwind exactly, and when you're ready for a Theme-ready @theme block, the Tailwind color generator turns the same 50–950 scale into a paste-in CSS file.",
     ],
     category: "color",
     faqs: [
@@ -102,7 +106,7 @@ export const TOOLS: ToolDefinition[] = [
       },
       {
         q: "Can I use these shades as a Tailwind color scale?",
-        a: "Yes — the 50–950 steps map directly onto Tailwind's scale naming, and you can copy a ready-to-paste Tailwind v4 @theme block from this tool.",
+        a: "Yes — the 50–950 steps map directly onto Tailwind's scale naming. Copy individual steps from here, or use the Tailwind color generator to export the whole 11-step scale as a ready-to-paste Tailwind v4 @theme block.",
       },
       {
         q: "How many shades do I get?",
@@ -250,7 +254,7 @@ export const TOOLS: ToolDefinition[] = [
       },
       {
         q: "Do I get both light and dark themes?",
-        a: "Every generation produces a matched .root and .dark pair with accessible foregrounds, so switching modes never breaks contrast.",
+        a: "Every generation produces a matched :root and .dark pair with accessible foregrounds, so switching modes never breaks contrast.",
       },
       {
         q: "How do I apply the theme?",
@@ -268,7 +272,7 @@ export const TOOLS: ToolDefinition[] = [
     blurb: "Semantic dark themes, not inversions.",
     intro: [
       "Turn any brand color into an accessible dark theme with real semantic tokens — backgrounds, surfaces, borders, actions and status colors — rather than a mechanical inversion of your light mode.",
-      "Foreground/background pairs are measured against WCAG contrast thresholds and adjusted automatically, and you can export the result as CSS variables or JSON for Tailwind v4 or plain CSS.",
+      "Foreground/background pairs are measured against WCAG contrast thresholds and adjusted automatically. Copy the result as a ready-to-paste .dark CSS variables block, or open the full generator when you also need JSON tokens for a design pipeline.",
     ],
     category: "color",
     faqs: [
@@ -282,7 +286,7 @@ export const TOOLS: ToolDefinition[] = [
       },
       {
         q: "What tokens are included?",
-        a: "Backgrounds, surfaces, borders, inputs, primary/secondary/accent actions and status colors — exported as CSS variables or JSON, ready for Tailwind v4 or plain CSS.",
+        a: "Backgrounds, surfaces, borders, inputs, primary/secondary/accent actions and status colors — exported as a .dark CSS variables block you can paste into plain CSS or a Tailwind v4 project. Need JSON too? The design token generator covers that.",
       },
     ],
   },
@@ -383,14 +387,14 @@ export const TOOLS: ToolDefinition[] = [
       "Build linear, radial and conic CSS gradients visually. Pick colors, adjust angles and stops, then copy production-ready CSS. Free, no sign-up, runs in your browser.",
     blurb: "Linear, radial & conic gradients visually.",
     intro: [
-      "Build linear, radial and conic CSS gradients visually — pick colors, set angles and drag color stops — then copy production-ready CSS. The code updates live and includes a plain-color fallback where useful.",
+      "Build linear, radial and conic CSS gradients visually — pick colors, set angles and drag color stops — then copy production-ready CSS. The code updates live.",
       "Switch gradient types and stop colors without touching the output; the generated CSS is standard-compliant and ready to paste into any stylesheet.",
     ],
     category: "css",
     faqs: [
       {
         q: "What gradient types are supported?",
-        a: "Linear (any angle), radial (circle or ellipse), and conic (sweep from a center point). Switch between them with one click and the CSS updates live.",
+        a: "Linear (any angle), radial (circle), and conic (sweep from a center point). Switch between them with one click and the CSS updates live.",
       },
       {
         q: "Can I add more color stops?",
@@ -398,7 +402,7 @@ export const TOOLS: ToolDefinition[] = [
       },
       {
         q: "Is the output production-ready?",
-        a: "Yes — the CSS is clean, standard-compliant and ready to paste into any stylesheet. It includes fallback plain colors for older browsers when relevant.",
+        a: "Yes — the CSS is clean and standard-compliant. For older browsers that do not support CSS gradients, declare a plain-color background before the gradient rule as a fallback.",
       },
     ],
   },
@@ -411,14 +415,14 @@ export const TOOLS: ToolDefinition[] = [
       "Blend two colors at any ratio with a live preview. Get HEX, RGB and HSL values for the mixed result, plus an 11-step blend scale. Free, instant, browser-only.",
     blurb: "Blend two colors at any ratio.",
     intro: [
-      "Blend two colors at any ratio with instant HEX, RGB and HSL readouts, plus an eleven-step scale you can use for transitions and hover states. Mixing interpolates each RGB channel, so the result is predictable.",
+      "Blend two colors at any ratio with instant HEX, RGB and HSL readouts, plus an eleven-step scale you can use for transitions and hover states. Mixing happens in OKLCH, a perceptual color space, so midpoints stay vivid instead of turning muddy.",
       "Use the scale output to build smooth color gradients or pick hover shades between two brand colors.",
     ],
     category: "color",
     faqs: [
       {
         q: "How does color mixing work?",
-        a: "Each RGB channel is interpolated linearly between the two input colors. At 50% you get an equal blend; at 75% the result leans toward the second color.",
+        a: "Each color is converted to OKLCH — a perceptual color space — and the lightness, chroma and hue are interpolated between the two inputs. At 50% you get an equal blend that keeps both hues alive; straight RGB averaging would grey the midpoint out.",
       },
       {
         q: "What output formats are supported?",
@@ -440,7 +444,7 @@ export const TOOLS: ToolDefinition[] = [
     blurb: "Visual box-shadow & text-shadow builder.",
     intro: [
       "Design box-shadow and text-shadow values with sliders — offset, blur, spread, color and opacity — and copy clean rgba() CSS the moment it looks right. Standard-compliant output for any modern browser.",
-      "Shadows combine with commas, so it is easy to layer multiple effects for depth, elevation or soft glows.",
+      "Each output is a single shadow rule. CSS stacks multiple shadows with commas, so you can build a layered elevation by combining two or three generated values in one declaration.",
     ],
     category: "css",
     faqs: [
@@ -518,12 +522,12 @@ export const TOOLS: ToolDefinition[] = [
     href: "/tools/typography-scale-generator",
     navLabel: "Typography scale generator",
     title: "Typography scale generator",
-    metaTitle: "Typography Scale Generator — modular type scale in px & rem",
+    metaTitle: "Typography Scale Generator — modular type scale for websites",
     description:
-      "Generate a modular type scale from base size and ratio (1.2 / 1.25 / 1.333). Get px & rem sizes, line heights, letter spacing, font pairings, CSS variables and a live preview. Free, no sign-up.",
+      "Generate a modular type scale for your website from a base size and ratio (1.2 / 1.25 / 1.333). Get px & rem sizes, line heights, letter spacing, font pairings, CSS variables and a live preview. Free, no sign-up.",
     blurb: "Modular type scale with live preview & CSS.",
     intro: [
-      "Generate a modular type scale from a base size and ratio — 1.2, 1.25 or 1.333 — with px and rem output, line heights, letter spacing, font pairings and CSS variables. Watch it live before you export.",
+      "Generate a modular type scale for a website from a base size and ratio — 1.2, 1.25 or 1.333 — with px and rem output, line heights, letter spacing, font pairings and CSS variables. Watch it live before you export.",
       "rem units respect the user's browser font-size setting, which is the accessible default. Six curated system-font pairings ship without loading any webfonts.",
     ],
     category: "css",
@@ -543,6 +547,10 @@ export const TOOLS: ToolDefinition[] = [
       {
         q: "Which font pairings are available?",
         a: "Six curated heading/body pairings built only from widely available system fonts — System, Grotesque, Editorial, Humanist, Geometric and Technical. No webfont loading required, so the preview and output work everywhere.",
+      },
+      {
+        q: "How do I apply the scale to my website?",
+        a: "Copy the generated CSS variables into your stylesheet, then reference them (e.g. font-size: var(--text-lg)) in your components. Because every step is a rem value derived from your base size, changing the base variable rescales the whole system.",
       },
     ],
   },

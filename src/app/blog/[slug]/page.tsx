@@ -63,7 +63,9 @@ export default async function BlogPostPage({ params }: Props) {
           author: { "@type": "Organization", name: "ChromaBrew", url: siteUrl },
           publisher: { "@type": "Organization", name: "ChromaBrew", url: siteUrl },
           mainEntityOfPage: url,
-          ...(post.image ? { image: [`${siteUrl}${post.image}`] } : {}),
+          // Always present: Google lists an image as a recommended Article
+          // property, and a post without bespoke artwork should still ship one.
+          image: [post.image ? `${siteUrl}${post.image}` : `${siteUrl}${defaultOgImage.url}`],
         }}
       />
       {post.sections.length > 0 && (

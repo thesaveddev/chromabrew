@@ -1,24 +1,34 @@
 ﻿import type { Metadata } from "next";
 import Link from "next/link";
 import { TOOLS, categoryLabel, type ToolCategory } from "@/lib/tools";
+import { siteUrl } from "@/lib/site-url";
+import { JsonLd } from "@/components/site/json-ld";
+import { defaultOgImage } from "@/lib/og";
 
 export const metadata: Metadata = {
-  title: "Free Color Tools — Palette Generator, Contrast Checker & More",
+  // Both were over the limits the audit reports: the rendered title measured 74
+  // characters (with the site-name suffix the layout appends) and the
+  // description 251, so search results truncated them.
+  title: "Free Color Tools — Palette & Contrast Checker",
+  // Counted from the registry rather than typed in, so adding a tool cannot
+  // leave this page understating what it links to.
   description:
-    "15+ free color tools for developers and designers: color palette generator, brand color palettes, image color extractor, WCAG contrast checker, color blindness simulator, CSS gradient generator, Tailwind color generator, and more. No sign-up required.",
+    `${TOOLS.length} free color tools: palette generator, brand palettes, image color extractor, WCAG contrast checker, color blindness simulator, CSS gradient generator.`,
   alternates: { canonical: "/tools" },
   openGraph: {
-    title: "Free Color Tools — Palette Generator, Contrast Checker & More",
+    title: "Free Color Tools — Palette & Contrast Checker",
     description:
-      "15+ free color tools for developers and designers: color palette generator, brand color palettes, image color extractor, WCAG contrast checker, color blindness simulator, CSS gradient generator, Tailwind color generator, and more. No sign-up required.",
+      `${TOOLS.length} free color tools: palette generator, brand palettes, image color extractor, WCAG contrast checker, color blindness simulator, CSS gradient generator.`,
     url: "/tools",
     type: "website",
+    images: [defaultOgImage],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Free Color Tools — Palette Generator, Contrast Checker & More",
+    title: "Free Color Tools — Palette & Contrast Checker",
     description:
-      "15+ free color tools: color palette generator, WCAG contrast checker, color blindness simulator, image color extractor, CSS gradient generator and more.",
+      `${TOOLS.length} free color tools: color palette generator, WCAG contrast checker, color blindness simulator, image color extractor, CSS gradient generator and more.`,
+    images: [defaultOgImage.url],
   },
 };
 
@@ -33,7 +43,27 @@ export default function ToolsIndexPage() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
-      <nav aria-label="Breadcrumb" className="text-xs text-zinc-500">
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "WebPage",
+          name: "Free Color Tools",
+          url: `${siteUrl}/tools`,
+          description: metadata.description,
+          isPartOf: { "@type": "WebSite", name: "ChromaBrew", url: siteUrl },
+        }}
+      />
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            { "@type": "ListItem", position: 1, name: "Home", item: siteUrl },
+            { "@type": "ListItem", position: 2, name: "Tools", item: `${siteUrl}/tools` },
+          ],
+        }}
+      />
+      <nav aria-label="Breadcrumb" className="text-xs text-zinc-500 dark:text-zinc-400">
         <Link href="/" className="hover:text-zinc-800 dark:hover:text-zinc-200 dark:text-zinc-200">
           Home
         </Link>
@@ -55,7 +85,7 @@ export default function ToolsIndexPage() {
           . Generate color palettes, extract colors from images, check WCAG contrast ratios,
           simulate color blindness, create CSS gradients, and build Tailwind CSS themes — all free, no sign-up.
         </p>
-        <p className="mt-3 text-sm text-zinc-500">
+        <p className="mt-3 text-sm text-zinc-500 dark:text-zinc-400">
           Want a color-focused overview? See the{" "}
           <Link href="/color-tools" className="font-medium text-zinc-700 underline underline-offset-4 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-zinc-100">
             color tools hub
@@ -79,7 +109,7 @@ export default function ToolsIndexPage() {
                   <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 group-hover:underline group-hover:underline-offset-4">
                     {tool.title}
                   </h3>
-                  <p className="mt-1.5 text-xs leading-5 text-zinc-500">
+                  <p className="mt-1.5 text-xs leading-5 text-zinc-500 dark:text-zinc-400">
                     {tool.blurb}
                   </p>
                 </Link>

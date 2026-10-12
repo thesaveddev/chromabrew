@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { findTool } from "@/lib/tools";
+import { defaultOgImage } from "@/lib/og";
 
 /** Build unique page metadata from the tool registry. */
 export function toolMetadata(href: string): Metadata {
@@ -14,11 +15,13 @@ export function toolMetadata(href: string): Metadata {
       description: tool.description,
       url: tool.href,
       type: "website",
+      images: [defaultOgImage],
     },
     twitter: {
       card: "summary_large_image",
       title: `${tool.metaTitle} · ChromaBrew`,
       description: tool.description,
+      images: [defaultOgImage.url],
     },
   };
 }

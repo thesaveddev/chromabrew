@@ -32,7 +32,12 @@ export type AnalyticsEvent =
   | "ios_exported"
   | "android_exported"
   | "feedback_submitted"
-  | "ai_palette_suggested";
+  | "ai_palette_suggested"
+  | "colors_mixed"
+  | "tailwind_theme_copied"
+  | "shadcn_theme_copied"
+  | "dark_theme_copied"
+  | "tokens_copied";
 
 type Sink = (event: AnalyticsEvent, properties?: Record<string, string | number>) => void;
 
