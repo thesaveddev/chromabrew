@@ -55,8 +55,9 @@ git clone <repository> . && git checkout <release-tag-or-commit>
 npm ci --include=dev
 npx playwright install --with-deps chromium
 
-# Database schema (see §5 below for the manual alternative).
-npx prisma migrate deploy
+# Database schema: read §5 before running the deploy below. A database that
+# already holds the pre-audit tables must be baselined once, or `migrate deploy`
+# stops with P3005 before changing anything.
 npx prisma generate
 ```
 
@@ -155,13 +156,34 @@ pm2 save && pm2 startup
 ## 5. Database prerequisite
 
 The audit tables (`Scan`, `ScannedPage`, `Finding`, `ProposedFix`, `Preview`,
-`Report`) must exist before the first run:
+`Report`) must exist before the first run. `prisma/migrations/` carries the
+history:
+
+| Migration | What it creates |
+| --------- | --------------- |
+| `20261011000000_baseline` | Everything that predates auditing — user, account, session, project, feedback, page view and subscription tables |
+| `20261012000000_audit_scanning` | The six audit tables, their indexes and foreign keys |
+| `20261013000000_share_reports` | The two share columns on `Scan` |
+
+**A database that already holds the pre-audit tables is baselined once.** The
+baseline migration describes tables that are already there, so it is *recorded*
+rather than run:
 
 ```bash
-npx prisma migrate deploy        # preferred, from the repository
-# or, if this deployment has no migration history applied yet:
-psql "$DATABASE_URL" -f prisma/audit-migration.sql
+npx prisma migrate resolve --applied 20261011000000_baseline
+npx prisma migrate deploy
+npx prisma generate
 ```
+
+`resolve --applied` writes one row to `_prisma_migrations` and executes no SQL,
+so existing rows are untouched; `deploy` then applies only the two deltas. Run
+the deploy without the resolve first and it stops with `P3005` (*The database
+schema is not empty*) before it changes anything — loud, and non-destructive.
+
+A brand-new database needs no baseline step: `npx prisma migrate deploy` on its
+own applies all three. Everything here is plain SQL, so
+`psql "$DATABASE_URL" -f prisma/migrations/<migration>/migration.sql` reproduces
+the same result on a host with no Node toolchain.
 
 Running the worker against an unmigrated database fails at the first claim,
 which it logs and backs off from — it will not spin.

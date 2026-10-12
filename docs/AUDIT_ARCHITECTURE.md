@@ -416,11 +416,13 @@ the measured values. Screenshots and report artifacts are separated from the
 structured rows, matching the plan's requirement to store them apart.
 
 **The migrations are not applied to production.** The schema validates, and the
-two SQL files (`prisma/audit-migration.sql` for the audit tables,
-`prisma/share-migration.sql` for the share columns) have been run against a
-development database, but nothing exists in the deployed database until
-`npx prisma migrate deploy` runs on the VPS. Until then every audit request
-fails, and sharing has no columns to write to.
+migration history in `prisma/migrations/` has been replayed twice against a
+throwaway PostgreSQL 16 instance — once from an empty database and once from a
+pre-audit one — and both runs leave a schema that `prisma migrate diff` reports
+as identical to `schema.prisma`. Nothing exists in the deployed database yet:
+it still needs the one-time baseline and deploy in `docs/AUDIT_WORKER_HOST.md`
+§5. Until then every audit request fails with `503`, and sharing has no columns
+to write to.
 
 ## API design
 
@@ -583,16 +585,44 @@ Stage 2 adds two:
   or a browser session. No provider dependency will be added until Stage 3 begins;
   when it does, the key belongs in the environment (or the platform's secret
   store) and the abstraction, not the call site, selects the model.
-- **A long-running worker host.** Still open, and now the only thing blocking a
-  production deployment of Stage 2. See below.
+- **A long-running worker host.** Decided: the existing VPS, as an unprivileged
+  `chromabrew-worker` service. See *Open decision* below and
+  `docs/AUDIT_WORKER_HOST.md`.
 
 ## Open decision: where the Stage 2 browser worker runs
 
 Playwright cannot run inside a Vercel serverless function. The function bundle
 size, the package's browser binaries and the execution ceiling all rule it out,
 and the platform's ephemeral filesystem cannot hold screenshots. Stage 2
-therefore needs a host that runs long-lived processes. This decision is **not
-made**.
+therefore needs a host that runs long-lived processes.
+
+**Decided: the existing VPS, as an unprivileged `chromabrew-worker` service.**
+Runbook: `docs/AUDIT_WORKER_HOST.md`.
+
+- **The claim loop is a database loop.** Every poll reads and writes the `Scan`
+  table. The VPS already hosts PostgreSQL, so those round trips stay on the host
+  rather than crossing a network on each poll, and the worker needs no public
+  ingress at all.
+- **Migrations already run there.** `prisma migrate deploy` targets the VPS, so
+  the worker and the schema it depends on are upgraded in one place and cannot
+  drift apart across two deploys.
+- **No new vendor, credential or bill.** Each of the other two options adds at
+  least one of those.
+- **Egress is firewalled at the host**, which matters more here than anywhere
+  else in the stack: this is the only process in the deployment that executes
+  JavaScript written by strangers.
+
+Accepted cost: the browser binaries and the worker's lifecycle become the
+project's responsibility, and a compromised render is adjacent to the database.
+The isolation in `docs/AUDIT_WORKER_HOST.md` §7 is therefore not optional — a
+dedicated unprivileged user, a database role that reaches the audit tables but
+not the user, account or session tables, and a write path limited to the
+screenshot directory.
+
+This stays a deployment decision rather than an architectural one: the queue is
+host-agnostic, so `claimNextScan` and `runClaimedScan` are plain functions over
+the `Scan` table, and moving the worker later changes where the loop runs, not
+what it does.
 
 | Option | What it protects | What it costs |
 | ------ | ---------------- | ------------- |
@@ -622,7 +652,7 @@ Definition of done for the stages that remain, taken from the product brief.
 ## Testing
 
 Unit tests live beside the code as `src/**/*.test.ts` and run with
-`npx vitest run` (326 passing, 6 skipped by default, 25 files — a snapshot, not a
+`npx vitest run` (395 passing, 6 skipped by default, 30 files — a snapshot, not a
 contract: the number moves as work lands).
 
 | Suite | Covers |

@@ -46,7 +46,14 @@ next-env.d.ts
 
 # marketing assets (never deployed)
 /marketing
-/scripts
+# One-off asset generators under scripts/ are not deployed, but the two that
+# package.json actually invokes are: `npm run audit:worker` is the production
+# renderer (docs/AUDIT_WORKER_HOST.md) and `npm run seo:audit` is the SEO
+# harness. A fresh clone has to contain them, so ignore the directory's
+# contents rather than the directory.
+/scripts/*
+!/scripts/audit-worker.mjs
+!/scripts/seo-audit.mjs
 
 
 /src/generated/prisma

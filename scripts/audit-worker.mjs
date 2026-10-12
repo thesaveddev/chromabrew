@@ -1,0 +1,271 @@
+#!/usr/bin/env node
+/**
+ * ChromaBrew audit worker — the process that renders untrusted pages.
+ *
+ * It runs outside Next.js on purpose. It is the only process in the deployment
+ * that executes a stranger's JavaScript, it needs a real browser and a
+ * persistent filesystem for screenshots, and it must outlive a single request.
+ * See `docs/AUDIT_WORKER_HOST.md` for why it cannot run inside the Vercel app.
+ *
+ *   node --import tsx scripts/audit-worker.mjs
+ *
+ * Environment: `DATABASE_URL` (required), `AUDIT_SCREENSHOT_DIR` (optional),
+ * `NODE_ENV`. Values are read from the process environment first, then from
+ * `.env.local` / `.env` in the repository root.
+ *
+ * The scan lifecycle itself (claiming, terminal statuses, stale-run recovery,
+ * SSRF policing, the fetch fallback) lives in `src/lib/audit/`; this file is
+ * only the loop, the startup checks and the shutdown.
+ *
+ * TypeScript entrypoints: the analysis modules are TypeScript and use the `@/`
+ * path alias from tsconfig.json, which Node cannot resolve on its own, so the
+ * `tsx` loader is named on the command line. It must be installed
+ * (`npm ci --include=dev`) *and* imported, because tsx 4.7+ refuses
+ * `module.register("tsx/esm")` with "tsx must be loaded with --import instead
+ * of --loader". Nothing is registered in-process on purpose: a half-working
+ * registration would surface much later as a confusing module error instead of
+ * as one clear line at startup.
+ */
+
+import { access, mkdir, readFile } from "node:fs/promises";
+import { constants as FS } from "node:fs";
+import path from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+
+/** Idle polling: start quick, back off to a ceiling, reset after real work. */
+const IDLE_MIN_MS = 1_000;
+const IDLE_MAX_MS = 15_000;
+const IDLE_FACTOR = 1.5;
+/** How often an idle worker says it is alive, so a quiet log is never a mystery. */
+const HEARTBEAT_MS = 60_000;
+/** Minimum Node for `node --import`, which loads the TypeScript resolver. */
+const MIN_NODE = [20, 6];
+
+let stopping = false;
+let wake = () => {};
+const signalled = new Promise((resolve) => {
+  wake = resolve;
+});
+
+const startedAt = Date.now();
+
+function stamp() {
+  return new Date().toISOString();
+}
+
+function log(message) {
+  process.stdout.write(`${stamp()} audit-worker ${message}\n`);
+}
+
+function fail(message) {
+  process.stderr.write(`${stamp()} audit-worker ERROR ${message}\n`);
+}
+
+/** One short line, never a stack trace: this output goes to a service log. */
+function short(error) {
+  const message = error instanceof Error ? error.message : String(error);
+  return message.replace(/\s+/g, " ").trim().slice(0, 200) || "unknown error";
+}
+
+function formatMs(ms) {
+  return ms < 1_000 ? `${ms}ms` : `${(ms / 1_000).toFixed(1)}s`;
+}
+
+async function sleep(ms) {
+  await Promise.race([new Promise((resolve) => setTimeout(resolve, ms)), signalled]);
+}
+
+/** Fill missing variables from the repo's env files. Never overwrite the process env. */
+async function loadEnvFiles() {
+  for (const file of [".env.local", ".env"]) {
+    let text;
+    try {
+      text = await readFile(path.join(ROOT, file), "utf8");
+    } catch {
+      continue;
+    }
+    for (const line of text.split("\n")) {
+      const match = /^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$/.exec(line);
+      if (!match) continue;
+      const [, key, raw] = match;
+      if (process.env[key] !== undefined) continue;
+      let value = raw.trim();
+      if (
+        (value.startsWith('"') && value.endsWith('"')) ||
+        (value.startsWith("'") && value.endsWith("'"))
+      ) {
+        value = value.slice(1, -1);
+      }
+      if (value.length > 0) process.env[key] = value;
+    }
+  }
+}
+
+/**
+ * Load the analysis modules.
+ *
+ * They are imported through the `tsx` loader rather than being compiled ahead
+ * of time, because the repository has no bundler entrypoint for a standalone
+ * Node process and the modules import through the `@/` alias.
+ *
+ * Every failure here is reported as one clear line: a loader that is missing,
+ * or a module that will not load, stops the worker before it claims anything.
+ */
+async function loadModules() {
+  const [major, minor] = process.versions.node.split(".").map(Number);
+  if (major < MIN_NODE[0] || (major === MIN_NODE[0] && minor < MIN_NODE[1])) {
+    fail(
+      `Node ${process.versions.node} is too old: this worker needs ${MIN_NODE.join(".")}+ to load TypeScript modules.`,
+    );
+    return null;
+  }
+
+  const module = (relative) => import(pathToFileURL(path.join(ROOT, relative)).href);
+
+  try {
+    const runner = await module("src/lib/audit/runner.ts");
+    const browser = await module("src/lib/audit/browser.ts");
+    const queries = await module("src/lib/audit/queries.ts");
+    const screenshots = await module("src/lib/audit/screenshot-store.ts");
+    return {
+      claimNextScan: runner.claimNextScan,
+      runClaimedScan: runner.runClaimedScan,
+      isBrowserRendererAvailable: browser.isBrowserRendererAvailable,
+      getScanStatusDto: queries.getScanStatusDto,
+      screenshotDir: screenshots.screenshotDir,
+    };
+  } catch (error) {
+    fail(
+      "the analysis modules could not be loaded; the usual cause is the TypeScript loader not being loaded. " +
+        "Start the worker as `node --import tsx scripts/audit-worker.mjs`, with tsx installed via " +
+        `npm ci --include=dev — ${short(error)}`,
+    );
+    return null;
+  }
+}
+
+/**
+ * Refuse to start in a state that would quietly produce worse reports.
+ *
+ * A worker without a browser still completes scans — through the fetch
+ * pipeline — so every report it writes would be missing contrast, links, the
+ * screenshot and axe-core. That is a configuration bug, not a degraded mode
+ * worth running in.
+ */
+async function checkEnvironment(modules) {
+  if (!process.env.DATABASE_URL?.trim()) {
+    fail("DATABASE_URL is not set. The worker cannot claim scans without it.");
+    return false;
+  }
+
+  if (!(await modules.isBrowserRendererAvailable())) {
+    fail(
+      "no browser renderer is available, so every scan would silently fall back to the " +
+        "fetch pipeline. Install Chromium on this host with: npx playwright install --with-deps chromium",
+    );
+    return false;
+  }
+
+  const directory = path.resolve(modules.screenshotDir());
+  try {
+    await mkdir(directory, { recursive: true });
+    await access(directory, FS.W_OK);
+  } catch (error) {
+    fail(`the screenshot directory ${directory} is not writable: ${short(error)}`);
+    return false;
+  }
+
+  log(
+    `ready · node ${process.versions.node} · screenshots ${directory} · poll ${IDLE_MIN_MS}-${IDLE_MAX_MS}ms`,
+  );
+  return true;
+}
+
+function installSignalHandlers() {
+  for (const signal of ["SIGINT", "SIGTERM"]) {
+    process.on(signal, () => {
+      if (stopping) {
+        // A second signal means "stop now"; the in-flight render is abandoned
+        // and `recoverStaleScans` closes the scan on the next worker start.
+        log(`${signal} again · exiting without waiting for the in-flight scan`);
+        process.exit(0);
+      }
+      stopping = true;
+      log(`${signal} received · finishing the in-flight scan, then exiting`);
+      wake();
+    });
+  }
+
+  // One broken scan must not take down the process that serves every other
+  // scan; the runner has already written a terminal status for it by this point.
+  process.on("unhandledRejection", (reason) => {
+    fail(`unhandled rejection: ${short(reason)}`);
+  });
+}
+
+async function main() {
+  installSignalHandlers();
+  await loadEnvFiles();
+
+  const modules = await loadModules();
+  if (!modules) {
+    process.exit(1);
+  }
+  if (!(await checkEnvironment(modules))) {
+    process.exit(1);
+  }
+
+  let idleMs = IDLE_MIN_MS;
+  let lastHeartbeat = Date.now();
+
+  while (!stopping) {
+    let scanId = null;
+    try {
+      scanId = await modules.claimNextScan();
+    } catch (error) {
+      // A database blip must back off, not spin: claim failures are the one
+      // error here that can repeat at full speed.
+      fail(`could not read the queue: ${short(error)}`);
+    }
+
+    if (scanId) {
+      idleMs = IDLE_MIN_MS;
+      lastHeartbeat = Date.now();
+      const scanStarted = Date.now();
+      try {
+        await modules.runClaimedScan(scanId);
+        const status = await modules.getScanStatusDto(scanId).catch(() => null);
+        log(
+          `scan ${scanId} ${status?.status ?? "unknown"}${
+            status?.renderMode ? ` (${status.renderMode})` : ""
+          } in ${formatMs(Date.now() - scanStarted)}`,
+        );
+      } catch (error) {
+        // The runner writes a terminal status on every failure path, so an
+        // error escaping it means the record itself could not be updated.
+        fail(`scan ${scanId} could not be processed: ${short(error)}`);
+      }
+      continue;
+    }
+
+    if (stopping) break;
+
+    if (Date.now() - lastHeartbeat >= HEARTBEAT_MS) {
+      log(`idle · queue empty · uptime ${formatMs(Date.now() - startedAt)}`);
+      lastHeartbeat = Date.now();
+    }
+
+    await sleep(idleMs);
+    idleMs = Math.min(IDLE_MAX_MS, Math.round(idleMs * IDLE_FACTOR));
+  }
+
+  log("stopped");
+  process.exit(0);
+}
+
+main().catch((error) => {
+  fail(`the worker could not start: ${short(error)}`);
+  process.exit(1);
+});
