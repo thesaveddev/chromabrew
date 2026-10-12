@@ -47,7 +47,10 @@ sudo mkdir -p /srv/chromabrew /var/lib/chromabrew/screenshots
 sudo chown -R chromabrew-worker:chromabrew-worker /srv/chromabrew /var/lib/chromabrew
 
 cd /srv/chromabrew
-git clone <repository> . && git checkout <release-tag-or-commit>
+git clone https://github.com/thesaveddev/chromabrew.git .
+# Pin a commit or tag rather than tracking the branch: a restart should not
+# silently pick up half-finished work.
+git checkout <release-tag-or-commit>
 
 # Playwright and tsx are devDependencies, so a plain `npm ci --omit=dev` would
 # remove exactly what the worker needs. Install with dev dependencies included
@@ -65,7 +68,7 @@ Environment file — `/etc/chromabrew/audit-worker.env`, mode `0640`, owned by
 `root:chromabrew-worker`:
 
 ```bash
-DATABASE_URL="postgresql://user:password@127.0.0.1:5432/chromabrew?schema=public"
+DATABASE_URL="postgresql://user:password@127.0.0.1:5432/chromabrew?schema=chromabrew"
 AUDIT_SCREENSHOT_DIR="/var/lib/chromabrew/screenshots"
 NODE_ENV=production
 ```
@@ -73,6 +76,11 @@ NODE_ENV=production
 Only `DATABASE_URL` is required. The worker reads the process environment first
 and then `.env.local` / `.env` in the repository root, so a VPS that already has
 a populated `.env` needs no environment file.
+
+The `schema=` parameter is not decoration. The datasource declares
+`schemas = ["chromabrew"]` and every model is `@@schema("chromabrew")`, so
+pointing it at `public` does create the schema but then fails the first
+migration with `P1014`, looking for `_prisma_migrations` in the wrong place.
 
 ## 4. Run it
 
@@ -237,7 +245,7 @@ sudo systemctl status chromabrew-audit-worker --no-pager
 journalctl -u chromabrew-audit-worker -n 20 --no-pager   # expect the "ready" line
 
 # 2. Queue a real scan through the web app's API.
-curl -sS -X POST https://<the-app>/api/audit/scan \
+curl -sS -X POST https://www.chromabrew.com/api/audit/scan \
   -H 'content-type: application/json' \
   -d '{"url":"https://example.com/","scope":"single_page","viewport":"desktop"}'
 # → {"id":"cmv4...","status":"queued","stage":"validating"}
@@ -247,12 +255,12 @@ journalctl -u chromabrew-audit-worker -f
 # → audit-worker scan cmv4... completed (browser) in 8.4s
 
 # 4. Confirm the record, and that the browser pipeline — not the fallback — ran.
-curl -sS https://<the-app>/api/audit/scan/<id> | jq '{status,renderMode,durationMs}'
+curl -sS https://www.chromabrew.com/api/audit/scan/<id> | jq '{status,renderMode,durationMs}'
 # → {"status":"completed","renderMode":"browser","durationMs":8412}
 
 # 5. A screenshot exists and is served.
 ls -l /var/lib/chromabrew/screenshots
-curl -sSI "https://<the-app>/api/audit/scan/<id>/screenshot?page=<pageId>" | head -1
+curl -sSI "https://www.chromabrew.com/api/audit/scan/<id>/screenshot?page=<pageId>" | head -1
 # → HTTP/2 200
 ```
 
