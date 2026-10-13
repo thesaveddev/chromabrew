@@ -87,7 +87,11 @@ async function loadEnvFiles() {
       continue;
     }
     for (const line of text.split("\n")) {
-      const match = /^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$/.exec(line);
+      // The trailing `\r` of a CRLF file has to go first: `.` does not match it,
+      // so `$` cannot sit before it and *every* line of an `.env` written on
+      // Windows is skipped in silence — the worker then exits claiming
+      // DATABASE_URL is missing while the file plainly contains it.
+      const match = /^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$/.exec(line.replace(/\r$/, ""));
       if (!match) continue;
       const [, key, raw] = match;
       if (process.env[key] !== undefined) continue;

@@ -227,4 +227,8 @@ share-link restore — and fails on any browser console error.
 
 - Vercel Analytics only loads on Vercel deployments (gated by `process.env.VERCEL`).
 - E2E runs in Chromium, Firefox and WebKit; clipboard is stubbed for headless engines.
-- Database migrations must be run manually (`npx prisma migrate deploy`) on the VPS.
+- Database migrations are not run by hand: `npm run build` applies them through
+  `scripts/db-migrate.mjs`, which baselines a database that predates
+  `prisma/migrations/` before deploying the deltas. A host that runs no web build
+  uses `RUN_DB_MIGRATE=1 node scripts/db-migrate.mjs` (see
+  `docs/AUDIT_WORKER_HOST.md` §5).

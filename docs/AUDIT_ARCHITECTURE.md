@@ -415,20 +415,22 @@ WCAG criterion, the detection method, a confidence value and JSON evidence for
 the measured values. Screenshots and report artifacts are separated from the
 structured rows, matching the plan's requirement to store them apart.
 
-**The migrations are not applied to production.** The schema validates, and the
-migration history in `prisma/migrations/` has been replayed twice against a
-throwaway PostgreSQL 16 instance — once from an empty database and once from a
-pre-audit one — and both runs leave a schema that `prisma migrate diff` reports
-as identical to `schema.prisma`. Nothing exists in the deployed database yet:
-it still needs the one-time baseline and deploy in `docs/AUDIT_WORKER_HOST.md`
-§5. Until then every audit request fails with `503`, and sharing has no columns
-to write to.
+**The schema is applied by the build, not by hand.** `npm run build` runs
+`scripts/db-migrate.mjs` between `prisma generate` and `next build`, so a deploy
+cannot ship code whose tables are missing: it records the baseline automatically
+on a database that has tables but no migration history, deploys the deltas, and
+fails the build if the six audit tables are not visible in the schema the app
+queries. The migration history has also been replayed twice against a throwaway
+PostgreSQL 16 instance — once from an empty database and once from a pre-audit
+one — and both runs leave a schema `prisma migrate diff` reports as identical to
+`schema.prisma`. The three database states, and the same script run by hand on a
+host that does no web build, are in `docs/AUDIT_WORKER_HOST.md` §5.
 
 ## API design
 
 | Route | Method | Purpose | Response |
 | ----- | ------ | ------- | -------- |
-| `/api/audit/scan` | POST | Create a scan | `202` with `{ id, status, stage }`; `400` for an invalid URL or unsupported scope; `429` with `Retry-After` when the quota is exhausted |
+| `/api/audit/scan` | POST | Create a scan | `202` with `{ id, status, stage }`; `400` for an invalid URL or unsupported scope; `429` with `Retry-After` when the quota is exhausted; `503` when the database is unavailable |
 | `/api/audit/scan/[scanId]` | GET | Status and stage | `ScanStatusDto`, or `404` |
 | `/api/audit/scan/[scanId]/results` | GET | Findings, pages and coverage | `ScanResultsDto`, or `404` |
 | `/api/audit/scan/[scanId]/screenshot` | GET | The stored screenshot of one page of the scan | `image/png`, or `404` when there is none |
@@ -447,6 +449,15 @@ The request body is `{ url, scope?, viewport? }`. `scope` accepts only
 `single_page`; `homepage_plus_pages` and `selected_pages` exist in the enum and
 in the UI, but `enqueueScan` rejects them with a clear message rather than
 silently auditing one page and pretending otherwise.
+
+`viewport` names an entry in `VIEWPORTS` — `desktop` (1280×720, the default) or
+`mobile` (390×844). It is written to the row the worker renders with, and an
+unrecognised value falls back to the default rather than failing the request.
+
+The URL and the scope are judged *before* the quota is consulted. That order is
+deliberate: a load limit must not decide whether a typo is a typo, or a busy
+scanner answers an unparseable URL with "try again shortly" and the interface
+shows a rate-limit message for something the reader can simply fix.
 
 Responses are built by `queries.ts`, so internal columns (`ipHash`,
 `userAgent`, raw `metadata`) are never returned. A scan is readable by anyone
@@ -538,9 +549,12 @@ to say so, and the data sent must be minimised to the page content required.
 
 ## Deployment plan
 
-1. Apply the migration on the VPS: `npx prisma migrate deploy`. This creates
-   `scans`, `scanned_pages`, `findings`, `proposed_fixes`, `previews` and
-   `reports` in the `chromabrew` schema.
+1. The deployment applies the schema itself: `npm run build` runs
+   `scripts/db-migrate.mjs`, which baselines a database that predates
+   `prisma/migrations/`, deploys the deltas, and fails the build if the audit
+   tables are missing. The VPS worker host runs no web build, so it uses
+   `RUN_DB_MIGRATE=1 node scripts/db-migrate.mjs`. The six audit tables are
+   created in the `chromabrew` schema either way.
 2. Deploy the application. Stage 1 adds no environment variables — the database
    and auth secrets it needs already exist in `.env.example`.
 3. Stage 1 can run on Vercel as-is, because the analysis is an HTTP fetch and

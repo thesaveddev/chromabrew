@@ -46,14 +46,16 @@ next-env.d.ts
 
 # marketing assets (never deployed)
 /marketing
-# One-off asset generators under scripts/ are not deployed, but the two that
-# package.json actually invokes are: `npm run audit:worker` is the production
-# renderer (docs/AUDIT_WORKER_HOST.md) and `npm run seo:audit` is the SEO
-# harness. A fresh clone has to contain them, so ignore the directory's
-# contents rather than the directory.
-/scripts/*
-!/scripts/audit-worker.mjs
-!/scripts/seo-audit.mjs
+# scripts/ is tracked by default. The build runs scripts/db-migrate.mjs, the
+# audit worker is a production component the VPS checks out
+# (docs/AUDIT_WORKER_HOST.md), and a fresh clone has to contain both. Only the
+# one-off asset generators below stay out.
+#
+# The exceptions are listed rather than the inclusions on purpose: a whitelist
+# silently drops anything new, which is how `scripts/audit-worker.mjs` went
+# missing from the repository while its runbook told you to run it.
+/scripts/generate-blog-heroes.mjs
+/scripts/render-flow-gif.mjs
 
 
 /src/generated/prisma

@@ -58,9 +58,11 @@ git checkout <release-tag-or-commit>
 npm ci --include=dev
 npx playwright install --with-deps chromium
 
-# Database schema: read §5 before running the deploy below. A database that
-# already holds the pre-audit tables must be baselined once, or `migrate deploy`
-# stops with P3005 before changing anything.
+# Database schema — see §5. This host runs no web build, so apply it directly:
+#   RUN_DB_MIGRATE=1 node scripts/db-migrate.mjs
+# It records the baseline first on a database that has tables but no migration
+# history (a bare `prisma migrate deploy` stops there with P3005) and then
+# deploys the deltas.
 npx prisma generate
 ```
 
@@ -173,20 +175,46 @@ history:
 | `20261012000000_audit_scanning` | The six audit tables, their indexes and foreign keys |
 | `20261013000000_share_reports` | The two share columns on `Scan` |
 
-**A database that already holds the pre-audit tables is baselined once.** The
-baseline migration describes tables that are already there, so it is *recorded*
-rather than run:
+**The web deploy applies these for you.** `npm run build` runs
+`scripts/db-migrate.mjs` between `prisma generate` and `next build`, so a deploy
+cannot ship code whose tables are missing — it stops before `next build` rather
+than serving `500`s and finding out from a user. The script reads the schema
+name from `prisma/schema.prisma`, works out which of three states the database
+is in, and says which one it found:
+
+| State | What happens |
+| ----- | ------------ |
+| fresh — no schema, no tables | `prisma migrate deploy` creates everything |
+| existing — tables, no `_prisma_migrations` | the baseline is recorded, then the deltas are deployed |
+| managed — `_prisma_migrations` present | anything pending is deployed |
+
+The middle state is this production database: it predates `prisma/migrations/`
+entirely, because the schema was created by hand, and a bare `migrate deploy`
+refuses it with `P3005` (*The database schema is not empty*) before changing
+anything. Recording the baseline is Prisma's documented answer to exactly that:
+one row in `_prisma_migrations`, no SQL, so no existing table or row is touched.
+All three migrations are additive, and the script finishes by asserting the six
+audit tables are really visible in the schema the app queries.
+
+The step is skipped unless `VERCEL_ENV=production` or `RUN_DB_MIGRATE=1` is set,
+and skipped when `DATABASE_URL` is unset, so previews and local builds never
+migrate a shared database.
+
+On this host — no web build — run the same script directly:
 
 ```bash
-npx prisma migrate resolve --applied 20261011000000_baseline
-npx prisma migrate deploy
+cd /srv/chromabrew
+RUN_DB_MIGRATE=1 node scripts/db-migrate.mjs
 npx prisma generate
 ```
 
-`resolve --applied` writes one row to `_prisma_migrations` and executes no SQL,
-so existing rows are untouched; `deploy` then applies only the two deltas. Run
-the deploy without the resolve first and it stops with `P3005` (*The database
-schema is not empty*) before it changes anything — loud, and non-destructive.
+That is the three commands it wraps, if you would rather see them:
+
+```bash
+npx prisma migrate resolve --applied 20261011000000_baseline  # only when history is missing
+npx prisma migrate deploy
+npx prisma generate
+```
 
 A brand-new database needs no baseline step: `npx prisma migrate deploy` on its
 own applies all three. Everything here is plain SQL, so
@@ -274,6 +302,8 @@ claimed the scan first — see §2.
   `src/lib/audit/types.ts` still bounds how much work the database will accept.
 - `recoverStaleScans()` runs on every poll and fails scans left `running` for
   more than ten minutes, so a crash or deploy cannot strand a job.
-- Upgrading: `git pull`, `npm ci --include=dev`, `npx prisma migrate deploy`,
+- Upgrading: `git pull`, `npm ci --include=dev`,
+  `RUN_DB_MIGRATE=1 node scripts/db-migrate.mjs` (it baselines a pre-migration
+  database itself, so there is no resolve step to remember),
   `npx playwright install --with-deps chromium`, then
   `sudo systemctl restart chromabrew-audit-worker`.
