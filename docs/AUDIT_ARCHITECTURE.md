@@ -417,10 +417,13 @@ structured rows, matching the plan's requirement to store them apart.
 
 **The schema is applied by the build, not by hand.** `npm run build` runs
 `scripts/db-migrate.mjs` between `prisma generate` and `next build`, so a deploy
-cannot ship code whose tables are missing: it records the baseline automatically
-on a database that has tables but no migration history, deploys the deltas, and
-fails the build if the six audit tables are not visible in the schema the app
-queries. The migration history has also been replayed twice against a throwaway
+cannot ship code whose tables are missing: it records the baseline on a database
+with no migration history, records any migration whose objects are already in
+the database — this one was built by hand, so *relation already exists* is the
+expected starting point, not an error — recovers a migration left unfinished by
+an interrupted run, applies what is genuinely missing, and fails the build if
+the six audit tables and the two share columns are not visible in the schema
+the app queries. The migration history has also been replayed twice against a throwaway
 PostgreSQL 16 instance — once from an empty database and once from a pre-audit
 one — and both runs leave a schema `prisma migrate diff` reports as identical to
 `schema.prisma`. The three database states, and the same script run by hand on a

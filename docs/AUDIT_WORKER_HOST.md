@@ -178,23 +178,35 @@ history:
 **The web deploy applies these for you.** `npm run build` runs
 `scripts/db-migrate.mjs` between `prisma generate` and `next build`, so a deploy
 cannot ship code whose tables are missing — it stops before `next build` rather
-than serving `500`s and finding out from a user. The script reads the schema
-name from `prisma/schema.prisma`, works out which of three states the database
-is in, and says which one it found:
+than serving `500`s and finding out from a user.
 
-| State | What happens |
-| ----- | ------------ |
-| fresh — no schema, no tables | `prisma migrate deploy` creates everything |
-| existing — tables, no `_prisma_migrations` | the baseline is recorded, then the deltas are deployed |
-| managed — `_prisma_migrations` present | anything pending is deployed |
+The script reads the schema name from `prisma/schema.prisma` and asks the
+database what has already happened. Each migration declares the objects it
+creates, so a database that already has them is *recorded* rather than replayed:
 
-The middle state is this production database: it predates `prisma/migrations/`
-entirely, because the schema was created by hand, and a bare `migrate deploy`
-refuses it with `P3005` (*The database schema is not empty*) before changing
-anything. Recording the baseline is Prisma's documented answer to exactly that:
-one row in `_prisma_migrations`, no SQL, so no existing table or row is touched.
-All three migrations are additive, and the script finishes by asserting the six
-audit tables are really visible in the schema the app queries.
+| Situation | What happens |
+| --------- | ------------ |
+| fresh — no tables | every migration is applied |
+| objects present, no `_prisma_migrations` | those migrations are recorded as applied, the rest are applied |
+| a migration left unfinished by an interrupted run | it is marked rolled back, then applied again |
+| history complete | anything genuinely pending is applied |
+
+That second row is this production database. It predates `prisma/migrations/`
+entirely and was built by hand — the pre-audit schema first, then
+`psql -f prisma/audit-migration.sql` — so a bare `prisma migrate deploy` refuses
+it with `P3005` (*The database schema is not empty*), and once the baseline is
+recorded it tries to re-create tables that are already there: the first
+`CREATE TABLE "Scan"` fails with *relation already exists*, Prisma records that
+migration as failed, and every later migration — and so every later deploy — is
+blocked with `P3009` until someone resolves it. Recording what is already
+present avoids both. Nothing that exists is touched: `migrate resolve` writes
+one row to `_prisma_migrations`, and the deploy applies only what is genuinely
+missing.
+
+The step ends by asserting the six audit tables **and** the two share columns on
+`Scan` are visible in the schema the app queries. A part-migrated database
+passes a table check and still fails on the first scan, with *The column
+Scan.shareToken does not exist in the current database*.
 
 The step is skipped unless `VERCEL_ENV=production` or `RUN_DB_MIGRATE=1` is set,
 and skipped when `DATABASE_URL` is unset, so previews and local builds never
@@ -208,16 +220,20 @@ RUN_DB_MIGRATE=1 node scripts/db-migrate.mjs
 npx prisma generate
 ```
 
-That is the three commands it wraps, if you would rather see them:
+Driving Prisma by hand means the same decisions in the same order — record the
+baseline when the history is missing, record any migration whose objects are
+already in the database, resolve a migration left unfinished, then deploy:
 
 ```bash
-npx prisma migrate resolve --applied 20261011000000_baseline  # only when history is missing
+npx prisma migrate resolve --rolled-back <an unfinished migration>   # only if one exists
+npx prisma migrate resolve --applied 20261011000000_baseline        # only if history is missing
+npx prisma migrate resolve --applied 20261012000000_audit_scanning  # only if its tables exist
 npx prisma migrate deploy
 npx prisma generate
 ```
 
-A brand-new database needs no baseline step: `npx prisma migrate deploy` on its
-own applies all three. Everything here is plain SQL, so
+A brand-new database needs none of the resolves: `npx prisma migrate deploy` on
+its own applies all three. Everything here is plain SQL, so
 `psql "$DATABASE_URL" -f prisma/migrations/<migration>/migration.sql` reproduces
 the same result on a host with no Node toolchain.
 

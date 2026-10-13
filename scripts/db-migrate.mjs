@@ -11,24 +11,28 @@
  * `next build`, which means a deploy refuses to ship code whose schema is not
  * there — fail closed, rather than shipping 500s and finding out from a user.
  *
- * Three database states have to work, and only the first is the happy one:
+ * The hard part is not running migrations; it is reading a database that was
+ * never migrated by Prisma. This project's production database predates
+ * `prisma/migrations/` and was built by hand — first with the pre-audit schema,
+ * later with `psql -f prisma/audit-migration.sql` — so parts of the history are
+ * already sitting in that database with no record of who put them there:
  *
- *   fresh      no schema at all                  -> deploy creates everything
- *   existing   tables but no migration history   -> record the baseline, then deploy
- *   managed    `_prisma_migrations` present      -> deploy what is pending
+ *   baseline            recorded,  tables present        -> nothing to do
+ *   audit_scanning      unrecorded, tables present       -> record it, do not replay it
+ *   share_reports       unrecorded, columns absent       -> apply it
  *
- * The middle state is the production database: it predates `prisma/migrations/`
- * entirely, because the schema was created by hand. `prisma migrate deploy`
- * refuses such a database with P3005, and its refusal is right — it cannot know
- * whether those tables match the baseline migration. Recording the baseline as
- * applied is the answer Prisma documents for exactly this: it writes a single
- * row to `_prisma_migrations` and runs no SQL, so no existing table or row is
- * touched. The deploy afterwards applies only the genuine deltas, all of which
- * are additive.
+ * Replaying the second row's SQL is what a bare `prisma migrate deploy` does,
+ * and it stops on the first `CREATE TABLE "Scan"` with "relation already
+ * exists", leaving the migration recorded as failed — which then blocks every
+ * later migration (and so every later deploy) with P3009 until someone resolves
+ * it. So each migration declares the objects it creates, and a database that
+ * already has them is *recorded* rather than re-run. A migration left failed by
+ * an interrupted attempt is rolled back first, for the same reason: its DDL
+ * went with the transaction, and its row is the only thing still in the way.
  *
  * Nothing in this file is destructive. Every path is one of three things:
- * `migrate resolve --applied` (one INSERT), `migrate deploy` (only migrations
- * not yet recorded), or a read.
+ * `migrate resolve` (one INSERT or one UPDATE to `_prisma_migrations`),
+ * `migrate deploy` (only migrations not yet recorded), or a read.
  *
  * Environment:
  *   DATABASE_URL      the connection string; without it the step is skipped
@@ -55,19 +59,50 @@ import pg from "pg";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
-/** The migration that describes everything which predates the audit work. */
-const BASELINE = "20261011000000_baseline";
+/**
+ * The history, oldest first, and the objects each migration creates.
+ *
+ * A migration whose objects are all present is recorded as applied instead of
+ * being replayed. The markers are deliberately the tables and columns the app
+ * queries, not a checksum: this asserts what a deploy actually needs, and it
+ * does not care about the unrelated differences a hand-managed database has
+ * accumulated over the years.
+ */
+const MIGRATIONS = [
+  {
+    name: "20261011000000_baseline",
+    /** Everything that predates auditing, created by hand long before Prisma. */
+    tables: ["User", "Account", "Session", "VerificationToken", "Project"],
+  },
+  {
+    name: "20261012000000_audit_scanning",
+    tables: ["Scan", "ScannedPage", "Finding", "ProposedFix", "Preview", "Report"],
+  },
+  {
+    name: "20261013000000_share_reports",
+    columns: [
+      { table: "Scan", column: "shareToken" },
+      { table: "Scan", column: "sharedAt" },
+    ],
+  },
+];
 
 /**
- * The tables a deployed app must be able to query.
- *
- * Checked by name rather than with `prisma migrate diff`, which would also
- * report every unrelated difference between an old hand-managed database and
- * `schema.prisma` — legacy columns or leftovers would fail every build for
- * reasons the audit feature has nothing to do with. This asserts what the app
- * actually needs.
+ * What a deployed app must be able to query. Checked by name rather than with
+ * `prisma migrate diff`, which would also report every unrelated difference
+ * between an old hand-managed database and `schema.prisma` — legacy columns or
+ * leftovers would fail every build for reasons the audit feature has nothing to
+ * do with. This asserts what the app actually needs, including the share
+ * columns: without them every scan fails with
+ * `The column Scan.shareToken does not exist in the current database`.
  */
-const REQUIRED_TABLES = ["Scan", "ScannedPage", "Finding", "ProposedFix", "Preview", "Report"];
+const REQUIRED = {
+  tables: ["Scan", "ScannedPage", "Finding", "ProposedFix", "Preview", "Report"],
+  columns: [
+    { table: "Scan", column: "shareToken" },
+    { table: "Scan", column: "sharedAt" },
+  ],
+};
 
 function log(message) {
   process.stdout.write(`db-migrate ${message}\n`);
@@ -98,20 +133,6 @@ function readSchemaName() {
     fail("the datasource declares no `schemas = [...]`, so the target schema is unknown.");
   }
   return name;
-}
-
-/**
- * The pg driver rejects `channel_binding`, which Neon's pooled URL carries by
- * default — the same reason `src/lib/db.ts` strips it for the app.
- */
-function sanitize(connectionString) {
-  try {
-    const url = new URL(connectionString);
-    url.searchParams.delete("channel_binding");
-    return url.toString();
-  } catch {
-    return connectionString;
-  }
 }
 
 /**
@@ -149,6 +170,20 @@ async function loadEnvFiles() {
   }
 }
 
+/**
+ * The pg driver rejects `channel_binding`, which Neon's pooled URL carries by
+ * default — the same reason `src/lib/db.ts` strips it for the app.
+ */
+function sanitize(connectionString) {
+  try {
+    const url = new URL(connectionString);
+    url.searchParams.delete("channel_binding");
+    return url.toString();
+  } catch {
+    return connectionString;
+  }
+}
+
 /** Run the repository's own Prisma CLI, whatever the platform calls it. */
 function prisma(args) {
   const cli = path.join(ROOT, "node_modules", "prisma", "build", "index.js");
@@ -168,38 +203,74 @@ function prisma(args) {
   }
 }
 
-/** How far along the database is, without assuming anything about it. */
-async function inspect(client, schema) {
-  const { rows } = await client.query(
-    `select
-       exists(select 1 from information_schema.schemata where schema_name = $1) as has_schema,
-       exists(
-         select 1 from information_schema.tables
-         where table_schema = $1 and table_name = '_prisma_migrations'
-       ) as has_history,
-       (
-         select count(*) from information_schema.tables
-         where table_schema = $1 and table_name <> '_prisma_migrations'
-       ) as tables`,
-    [schema],
-  );
+async function connect(connectionString) {
+  const client = new pg.Client({ connectionString: sanitize(connectionString) });
+  try {
+    await client.connect();
+  } catch (error) {
+    // Unreachable is not the same as "nothing to do": carrying on would build a
+    // deploy against a database whose state is unknown.
+    fail(`cannot reach the database: ${error instanceof Error ? error.message : String(error)}`);
+  }
+  return client;
+}
 
-  const row = rows[0] ?? {};
+/** Every table and column in the target schema, as `table` and `table.column`. */
+async function readSchemaObjects(client, schema) {
+  const [tables, columns] = await Promise.all([
+    client.query(
+      `select table_name from information_schema.tables
+       where table_schema = $1 and table_type = 'BASE TABLE'`,
+      [schema],
+    ),
+    client.query(
+      `select table_name, column_name from information_schema.columns where table_schema = $1`,
+      [schema],
+    ),
+  ]);
+
   return {
-    hasSchema: row.has_schema === true,
-    hasHistory: row.has_history === true,
-    tables: Number(row.tables ?? 0),
+    tables: new Set(tables.rows.map((row) => row.table_name)),
+    columns: new Set(columns.rows.map((row) => `${row.table_name}.${row.column_name}`)),
   };
 }
 
-/** The tables the app will query, once the migrations are done. */
-async function presentTables(client, schema) {
-  const { rows } = await client.query(
-    `select table_name from information_schema.tables
-     where table_schema = $1 and table_name = any($2::text[])`,
-    [schema, REQUIRED_TABLES],
+/**
+ * What `_prisma_migrations` says, or nothing at all when the table is absent —
+ * which is the normal case for a database Prisma has never migrated.
+ *
+ * A row with no `finished_at` and no `rolled_back_at` is a migration that began
+ * and did not finish. Its DDL was rolled back with the transaction, but the row
+ * it left behind blocks every later migration until it is resolved.
+ */
+async function readMigrationHistory(client, schema) {
+  const hasHistory = await client.query(
+    `select 1 from information_schema.tables
+     where table_schema = $1 and table_name = '_prisma_migrations'`,
+    [schema],
   );
-  return new Set(rows.map((row) => row.table_name));
+  if (hasHistory.rowCount === 0) return { recorded: new Set(), unfinished: [] };
+
+  const { rows } = await client.query(
+    `select migration_name, finished_at, rolled_back_at
+     from "${schema}"."_prisma_migrations"`,
+  );
+
+  return {
+    recorded: new Set(rows.filter((row) => row.finished_at || row.rolled_back_at).map((row) => row.migration_name)),
+    unfinished: rows
+      .filter((row) => !row.finished_at && !row.rolled_back_at)
+      .map((row) => row.migration_name),
+  };
+}
+
+/** True when every object a migration creates is already in the database. */
+function alreadyPresent(migration, objects) {
+  const tables = (migration.tables ?? []).every((table) => objects.tables.has(table));
+  const columns = (migration.columns ?? []).every((column) =>
+    objects.columns.has(`${column.table}.${column.column}`),
+  );
+  return tables && columns;
 }
 
 async function main() {
@@ -220,30 +291,31 @@ async function main() {
   }
 
   const schema = readSchemaName();
-  const client = new pg.Client({ connectionString: sanitize(connectionString) });
+  const client = await connect(connectionString);
 
   try {
-    await client.connect();
-  } catch (error) {
-    // Unreachable is not the same as "nothing to do": carrying on would build a
-    // deploy against a database whose state is unknown.
-    fail(`cannot reach the database: ${error instanceof Error ? error.message : String(error)}`);
-  }
+    const objects = await readSchemaObjects(client, schema);
+    const history = await readMigrationHistory(client, schema);
 
-  try {
-    const before = await inspect(client, schema);
+    if (objects.tables.size === 0) {
+      log(`fresh database · applying all ${MIGRATIONS.length} migrations to schema "${schema}"`);
+    }
 
-    if (!before.hasSchema || before.tables === 0) {
-      log(`fresh database · applying all migrations to schema "${schema}"`);
-    } else if (!before.hasHistory) {
-      log(
-        `existing database · ${before.tables} table(s) in "${schema}" with no migration ` +
-          `history, so the baseline is being recorded before the deltas are applied`,
-      );
-      // Records the baseline; runs no SQL. Existing tables and rows are untouched.
-      prisma(["migrate", "resolve", "--applied", BASELINE]);
-    } else {
-      log(`managed database · applying anything pending in schema "${schema}"`);
+    for (const name of history.unfinished) {
+      // Only the row is in the way: the migration's DDL went with its
+      // transaction, so the honest record is "rolled back", and re-running it is
+      // what the deploy below does.
+      log(`recovering · ${name} is recorded as unfinished, marking it rolled back`);
+      prisma(["migrate", "resolve", "--rolled-back", name]);
+    }
+
+    for (const migration of MIGRATIONS) {
+      if (history.recorded.has(migration.name)) continue;
+      if (!alreadyPresent(migration, objects)) continue;
+      // Its objects are already here — applied by hand before the history
+      // existed. Recording it runs no SQL, so nothing that exists is touched.
+      log(`recording · ${migration.name} is already present but unrecorded, marking it applied`);
+      prisma(["migrate", "resolve", "--applied", migration.name]);
     }
   } finally {
     await client.end();
@@ -252,13 +324,20 @@ async function main() {
   prisma(["migrate", "deploy"]);
 
   // `migrate deploy` succeeded, so its migrations are recorded. This confirms the
-  // tables the app will query are really visible in the schema the app uses —
-  // the one failure mode this whole step exists to prevent.
-  const verify = new pg.Client({ connectionString: sanitize(connectionString) });
-  await verify.connect();
+  // objects the app will query are really visible in the schema the app uses —
+  // the one failure mode this whole step exists to prevent. A part-migrated
+  // database passes a table check and still fails on the first scan, which is
+  // why columns are checked too.
+  const verify = await connect(connectionString);
   try {
-    const present = await presentTables(verify, schema);
-    const missing = REQUIRED_TABLES.filter((table) => !present.has(table));
+    const objects = await readSchemaObjects(verify, schema);
+    const missing = [
+      ...REQUIRED.tables.filter((table) => !objects.tables.has(table)),
+      ...REQUIRED.columns
+        .filter((column) => !objects.columns.has(`${column.table}.${column.column}`))
+        .map((column) => `${column.table}.${column.column}`),
+    ];
+
     if (missing.length > 0) {
       fail(
         `migrations reported success but ${missing.join(", ")} ${missing.length === 1 ? "is" : "are"} ` +
@@ -269,7 +348,7 @@ async function main() {
     await verify.end();
   }
 
-  log(`ready · ${REQUIRED_TABLES.length} audit tables present in schema "${schema}"`);
+  log(`ready · ${REQUIRED.tables.length} audit tables and the share columns are present in "${schema}"`);
 }
 
 await main();
