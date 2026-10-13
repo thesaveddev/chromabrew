@@ -24,6 +24,7 @@ import { normalizeUrl, UrlValidationError, validateScanUrl } from "./url-validat
 import {
   AUDIT_RULES_VERSION,
   AUDIT_SCANNER_VERSION,
+  SCAN_QUEUE_ABANDON_MS,
   isScopeImplemented,
   scopeOption,
   viewportOption,
@@ -364,22 +365,74 @@ export async function runClaimedScan(scanId: string, options: RunOptions = {}): 
   }
 }
 
+/** Shown to a reader whose audit nobody ever picked up. */
+const ABANDONED_QUEUE_MESSAGE =
+  "No scanner started this audit in time, so it was cancelled. That usually means the scanner was offline — run the audit again.";
+
 /**
- * Mark scans that were interrupted mid-flight (process restart, deploy) as
- * failed, so they cannot sit in "running" forever and inflate the concurrency
- * counter that guards the queue.
+ * Close the two ways a scan can be left in the air by a process that stopped.
+ *
+ * `running` for longer than the stale window: the worker died mid-render.
+ * `queued` for longer than the queue's own window: nothing ever claimed it —
+ * the worker was down, or gone. The second is the worse one, because a queued
+ * row holds one of the two scanner slots: a worker that never comes back does
+ * not merely leave old rows lying around, it closes the gate on every new
+ * audit for everybody. Clearing them is what lets the queue recover on its own.
  */
 export async function recoverStaleScans(): Promise<number> {
-  const cutoff = new Date(Date.now() - STALE_SCAN_MS);
+  const now = Date.now();
+  const staleRunning = new Date(now - STALE_SCAN_MS);
+  const abandonedQueued = new Date(now - SCAN_QUEUE_ABANDON_MS);
+
+  const [running, queued] = await Promise.all([
+    prisma.scan.updateMany({
+      where: { status: "running", startedAt: { lt: staleRunning } },
+      data: {
+        status: "failed",
+        errorMessage: "The audit was interrupted before it finished. Run it again.",
+        completedAt: new Date(),
+      },
+    }),
+    prisma.scan.updateMany({
+      where: { status: "queued", createdAt: { lt: abandonedQueued } },
+      data: {
+        status: "failed",
+        errorMessage: ABANDONED_QUEUE_MESSAGE,
+        completedAt: new Date(),
+      },
+    }),
+  ]);
+
+  return running.count + queued.count;
+}
+
+/**
+ * Close one scan that has sat queued past the queue's window.
+ *
+ * `recoverStaleScans` sweeps, but it is called by the worker — precisely the
+ * process that is missing when a queue goes stale — so a reader waiting on an
+ * abandoned scan needs the poll they are already making to be able to end it.
+ * Without that, a dead worker leaves them watching a progress view that can
+ * never change.
+ *
+ * Scoped to one id and guarded by status and age, so it is a no-op against a
+ * live scan and a single write against an abandoned one: after it, the row is
+ * `failed` and the guard no longer matches.
+ */
+export async function expireAbandonedScan(scanId: string, now = Date.now()): Promise<boolean> {
   const result = await prisma.scan.updateMany({
-    where: { status: "running", startedAt: { lt: cutoff } },
+    where: {
+      id: scanId,
+      status: "queued",
+      createdAt: { lt: new Date(now - SCAN_QUEUE_ABANDON_MS) },
+    },
     data: {
       status: "failed",
-      errorMessage: "The audit was interrupted before it finished. Run it again.",
+      errorMessage: ABANDONED_QUEUE_MESSAGE,
       completedAt: new Date(),
     },
   });
-  return result.count;
+  return result.count > 0;
 }
 
 /**

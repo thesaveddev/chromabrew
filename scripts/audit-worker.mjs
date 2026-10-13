@@ -10,12 +10,18 @@
  *   node --import tsx scripts/audit-worker.mjs
  *
  * Environment: `DATABASE_URL` (required), `AUDIT_SCREENSHOT_DIR` (optional),
+ * `AUDIT_WORKER_ID` (optional, for hosts running more than one worker),
  * `NODE_ENV`. Values are read from the process environment first, then from
  * `.env.local` / `.env` in the repository root.
  *
  * The scan lifecycle itself (claiming, terminal statuses, stale-run recovery,
  * SSRF policing, the fetch fallback) lives in `src/lib/audit/`; this file is
- * only the loop, the startup checks and the shutdown.
+ * only the loop, the startup checks, the heartbeat and the shutdown.
+ *
+ * It also announces itself (see `src/lib/audit/heartbeat.ts`). The web tier
+ * reads that beat before it accepts an audit, so the beat is written only after
+ * every startup check has passed: a worker that cannot render, cannot claim or
+ * cannot write screenshots must not tell the form it is available.
  *
  * TypeScript entrypoints: the analysis modules are TypeScript and use the `@/`
  * path alias from tsconfig.json, which Node cannot resolve on its own, so the
@@ -29,6 +35,7 @@
 
 import { access, mkdir, readFile } from "node:fs/promises";
 import { constants as FS } from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
@@ -38,8 +45,13 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const IDLE_MIN_MS = 1_000;
 const IDLE_MAX_MS = 15_000;
 const IDLE_FACTOR = 1.5;
-/** How often an idle worker says it is alive, so a quiet log is never a mystery. */
-const HEARTBEAT_MS = 60_000;
+/**
+ * How often an idle worker says so in the log, so a quiet one is never a mystery.
+ *
+ * Distinct from the heartbeat row the web tier reads: this is a line for a
+ * person reading a service log, and it is deliberately the slower of the two.
+ */
+const IDLE_NOTICE_MS = 60_000;
 /** Minimum Node for `node --import`, which loads the TypeScript resolver. */
 const MIN_NODE = [20, 6];
 
@@ -126,19 +138,30 @@ async function loadModules() {
     return null;
   }
 
-  const module = (relative) => import(pathToFileURL(path.join(ROOT, relative)).href);
+  // Not named `module`: that shadows the CommonJS binding the rule set warns
+  // about, and a bare `module(...)` call reads like the Node built-in.
+  const loadModule = (relative) => import(pathToFileURL(path.join(ROOT, relative)).href);
 
   try {
-    const runner = await module("src/lib/audit/runner.ts");
-    const browser = await module("src/lib/audit/browser.ts");
-    const queries = await module("src/lib/audit/queries.ts");
-    const screenshots = await module("src/lib/audit/screenshot-store.ts");
+    const runner = await loadModule("src/lib/audit/runner.ts");
+    const browser = await loadModule("src/lib/audit/browser.ts");
+    const queries = await loadModule("src/lib/audit/queries.ts");
+    const screenshots = await loadModule("src/lib/audit/screenshot-store.ts");
+    const heartbeat = await loadModule("src/lib/audit/heartbeat.ts");
+    const types = await loadModule("src/lib/audit/types.ts");
     return {
       claimNextScan: runner.claimNextScan,
       runClaimedScan: runner.runClaimedScan,
       isBrowserRendererAvailable: browser.isBrowserRendererAvailable,
       getScanStatusDto: queries.getScanStatusDto,
       screenshotDir: screenshots.screenshotDir,
+      recordWorkerHeartbeat: heartbeat.recordWorkerHeartbeat,
+      retireWorkerHeartbeat: heartbeat.retireWorkerHeartbeat,
+      // Taken from the module the worker and the web tier share, so the interval
+      // the worker beats at and the window the web tier grades it against are
+      // read from one place and cannot drift apart.
+      heartbeatMs: types.WORKER_HEARTBEAT_MS,
+      scannerVersion: types.AUDIT_SCANNER_VERSION,
     };
   } catch (error) {
     fail(
@@ -157,6 +180,10 @@ async function loadModules() {
  * pipeline — so every report it writes would be missing contrast, links, the
  * screenshot and axe-core. That is a configuration bug, not a degraded mode
  * worth running in.
+ *
+ * Nothing may announce this worker as available before these checks pass: the
+ * heartbeat is a claim that audits can be run here, and a worker that cannot
+ * render or cannot write a screenshot must not make it.
  */
 async function checkEnvironment(modules) {
   if (!process.env.DATABASE_URL?.trim()) {
@@ -185,6 +212,70 @@ async function checkEnvironment(modules) {
     `ready · node ${process.versions.node} · screenshots ${directory} · poll ${IDLE_MIN_MS}-${IDLE_MAX_MS}ms`,
   );
   return true;
+}
+
+/**
+ * This worker's identity in the heartbeat table.
+ *
+ * The hostname by default, so that a restart rewrites its own row instead of
+ * adding one per run: the table is a map of who is alive, not a log of who ever
+ * was. A crash leaves the row behind and the restarted worker reclaims it. A
+ * host running more than one worker gives each a distinct `AUDIT_WORKER_ID` —
+ * without one they share a row, which still answers "a scanner is up" but hides
+ * that only one of them is.
+ */
+function workerId() {
+  return process.env.AUDIT_WORKER_ID?.trim() || os.hostname();
+}
+
+/**
+ * Announce this worker while it runs, and return the way to take the
+ * announcement back.
+ *
+ * On a timer of its own rather than as a step in the poll loop. The loop can
+ * spend tens of seconds inside `runClaimedScan` rendering a stranger's page, and
+ * a beat written only between polls would report exactly the workers that are
+ * busy as gone — the ones a queued audit is waiting for.
+ *
+ * A failed write is logged and nothing else. The window the web tier grades
+ * against is four beats wide, so one blip cannot change the answer, and a
+ * database that has stopped accepting beats is one no scan can be claimed from
+ * either — the loop's own errors report that at more useful speed.
+ */
+function installHeartbeat(modules) {
+  const id = workerId();
+
+  const beat = async () => {
+    try {
+      await modules.recordWorkerHeartbeat({
+        workerId: id,
+        startedAt: new Date(startedAt),
+        version: modules.scannerVersion,
+        host: os.hostname(),
+      });
+    } catch (error) {
+      fail(`could not write the heartbeat: ${short(error)}`);
+    }
+  };
+
+  // Announced before the first poll rather than after it: the point of the beat
+  // is that a freshly started worker is usable immediately.
+  void beat();
+  const timer = setInterval(() => void beat(), modules.heartbeatMs);
+  // A timer must never be a reason for the process to stay up. The poll loop
+  // decides when this worker ends.
+  timer.unref?.();
+
+  return async () => {
+    clearInterval(timer);
+    try {
+      await modules.retireWorkerHeartbeat(id);
+    } catch (error) {
+      // Not fatal, and not silent: an uncleared beat goes stale on its own
+      // within the window, so the cost is a few minutes of a stale "online".
+      fail(`could not clear the heartbeat: ${short(error)}`);
+    }
+  };
 }
 
 function installSignalHandlers() {
@@ -221,8 +312,12 @@ async function main() {
     process.exit(1);
   }
 
+  // Only now, and deliberately not earlier: everything above this line is what
+  // makes a beat true. From here on the web tier will offer the form.
+  const stopHeartbeat = installHeartbeat(modules);
+
   let idleMs = IDLE_MIN_MS;
-  let lastHeartbeat = Date.now();
+  let lastIdleNotice = Date.now();
 
   while (!stopping) {
     let scanId = null;
@@ -236,7 +331,7 @@ async function main() {
 
     if (scanId) {
       idleMs = IDLE_MIN_MS;
-      lastHeartbeat = Date.now();
+      lastIdleNotice = Date.now();
       const scanStarted = Date.now();
       try {
         await modules.runClaimedScan(scanId);
@@ -256,14 +351,18 @@ async function main() {
 
     if (stopping) break;
 
-    if (Date.now() - lastHeartbeat >= HEARTBEAT_MS) {
+    if (Date.now() - lastIdleNotice >= IDLE_NOTICE_MS) {
       log(`idle · queue empty · uptime ${formatMs(Date.now() - startedAt)}`);
-      lastHeartbeat = Date.now();
+      lastIdleNotice = Date.now();
     }
 
     await sleep(idleMs);
     idleMs = Math.min(IDLE_MAX_MS, Math.round(idleMs * IDLE_FACTOR));
   }
+
+  // Before the final line, so a clean stop takes the announcement back at once
+  // instead of leaving the form offering a scanner that has already gone.
+  await stopHeartbeat();
 
   log("stopped");
   process.exit(0);

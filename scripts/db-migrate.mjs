@@ -100,10 +100,27 @@ const MIGRATIONS = [
  * `The column Scan.shareToken does not exist in the current database`.
  */
 const REQUIRED = {
-  tables: ["Scan", "ScannedPage", "Finding", "ProposedFix", "Preview", "Report"],
+  tables: [
+    "Scan",
+    "ScannedPage",
+    "Finding",
+    "ProposedFix",
+    "Preview",
+    "Report",
+    // Not a report table: it holds the worker's liveness beat, which the web
+    // tier reads before it accepts a scan. A deployment missing it answers
+    // every audit form with an error instead of a report, so it belongs in the
+    // list of objects this step exists to prove are really there.
+    "WorkerHeartbeat",
+  ],
   columns: [
     { table: "Scan", column: "shareToken" },
     { table: "Scan", column: "sharedAt" },
+    // The heartbeat's clean-shutdown mark. A table that exists without it
+    // answers "is any worker still beating" by throwing, which is worse than
+    // not having the table: the form reports an internal error for a feature
+    // that is only meant to be a courtesy.
+    { table: "WorkerHeartbeat", column: "stoppedAt" },
   ],
 };
 

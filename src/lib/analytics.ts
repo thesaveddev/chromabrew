@@ -37,7 +37,8 @@ export type AnalyticsEvent =
   | "tailwind_theme_copied"
   | "shadcn_theme_copied"
   | "dark_theme_copied"
-  | "tokens_copied";
+  | "tokens_copied"
+  | "audit_started";
 
 type Sink = (event: AnalyticsEvent, properties?: Record<string, string | number>) => void;
 

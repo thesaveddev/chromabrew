@@ -62,3 +62,5 @@ next-env.d.ts
 
 # audit scanner screenshots (runtime artifacts)
 /.audit-screenshots
+# reports written by scripts/capture-audit-report.mjs, deleted after the shot
+/.audit-capture-report.json

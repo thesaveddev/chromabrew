@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { getScanStatusDto } from "@/lib/audit/queries";
+import { expireAbandonedScan } from "@/lib/audit/runner";
+import { scanQueueState } from "@/lib/audit/types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -18,10 +20,21 @@ export async function GET(
 ) {
   const { scanId } = await params;
   try {
-    const scan = await getScanStatusDto(scanId);
+    let scan = await getScanStatusDto(scanId);
     if (!scan) {
       return NextResponse.json({ error: "Scan not found" }, { status: 404 });
     }
+
+    // The one caller who cannot be left waiting is the one polling right now: if
+    // no worker is coming for this scan, close it before answering. The sweep
+    // that normally does this runs inside the worker — the very process that is
+    // missing when a queue goes stale — so the poll has to be able to end it.
+    if (scanQueueState(scan.status, scan.createdAt) === "abandoned") {
+      if (await expireAbandonedScan(scanId)) {
+        scan = (await getScanStatusDto(scanId)) ?? scan;
+      }
+    }
+
     // A scan's state is specific to its caller; never let a proxy cache it.
     return NextResponse.json(scan, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {

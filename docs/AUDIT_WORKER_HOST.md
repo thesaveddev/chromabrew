@@ -6,7 +6,10 @@ findings. Architecture and analysis logic: `docs/AUDIT_ARCHITECTURE.md`.
 
 The worker is `scripts/audit-worker.mjs`. It polls the `Scan` table, claims the
 oldest `queued` row, and drives it to a terminal state. Claiming is a
-conditional update, so running two workers is safe; one is enough for now.
+conditional update, so running two workers is safe; one is enough for now. It
+also writes the `WorkerHeartbeat` row the web tier reads before it accepts a
+scan, which is why **a stopped worker refuses new audits rather than queueing
+them** — see §4.
 
 ## 1. Why it cannot run inside the Vercel app
 
@@ -113,6 +116,52 @@ naming the fix — never a stack trace.
 exits 0; a second signal exits immediately, and the interrupted scan is closed
 as failed by `recoverStaleScans()` the next time a worker polls.
 
+### The heartbeat, and why the web tier needs it
+
+Once the startup checks pass and before the first poll, this worker starts
+writing a row into `WorkerHeartbeat` every 30 seconds, and refreshes it on
+timers of its own rather than from the poll loop — a worker in the middle of a
+slow render is exactly as available as an idle one, and a beat written only
+between polls would report the busy workers as gone. The row is marked
+`stoppedAt` on a clean shutdown, which takes the announcement back immediately
+instead of leaving it to expire.
+
+`GET /api/audit/scanner` reads it, and `POST /api/audit/scan` calls the same
+check before it writes anything. **With no worker beating, the endpoint answers
+`503 { code: "scanner_offline" }` and no `Scan` row is created** — the audit form
+says the scanner is offline instead of accepting a URL that would sit `queued`
+for ten minutes and then fail. The heartbeat is a four-beat window (two minutes),
+so a single lost write does not refuse anybody, and a worker that is killed
+rather than stopped goes quiet on its own.
+
+**Deploy this host before the web tier, never the other way round.** A web
+deploy that carries the heartbeat check while the worker is still running older
+code finds an empty `WorkerHeartbeat` table, reads it as "no scanner" and
+refuses every audit for everybody — the interface answers `503 scanner_offline`
+and the form disables itself, whether or not a worker is sitting there able to
+claim scans. The failure is safe but total, and it lasts until the new worker is
+running. The reverse order is harmless: an old web tier ignores the heartbeat
+and merely sees an extra row.
+
+The order is also why the beat is written *after* the startup checks and why the
+row is per-worker rather than per-deployment: the question the web tier asks is
+"is anyone able to take this scan", and one restarted worker is enough to make
+the answer yes again.
+
+Consequences worth knowing before you run this:
+
+- **A worker that cannot start serves nothing.** The beat is written after the
+  startup checks, so a host without Chromium or without a writable screenshot
+  directory does not announce itself as available. Watch for the `ready` line,
+  not just a running process.
+- **Two workers on one host need distinct `AUDIT_WORKER_ID`s.** The default id is
+  the hostname, which is what makes a restart reclaim its own row instead of
+  adding one. Two workers sharing it still answer "a scanner is up", but the
+  stopped one can mark the pair silent; give each its own id and neither can
+  retire the other.
+- **The heartbeat is not a queue metric.** It says whether a scanner exists, not
+  how busy it is — a full queue is still `429 queue_full`.
+
 ### systemd
 
 `/etc/systemd/system/chromabrew-audit-worker.service`:
@@ -166,14 +215,15 @@ pm2 save && pm2 startup
 ## 5. Database prerequisite
 
 The audit tables (`Scan`, `ScannedPage`, `Finding`, `ProposedFix`, `Preview`,
-`Report`) must exist before the first run. `prisma/migrations/` carries the
-history:
+`Report`, `WorkerHeartbeat`) must exist before the first run. `prisma/migrations/`
+carries the history:
 
 | Migration | What it creates |
 | --------- | --------------- |
 | `20261011000000_baseline` | Everything that predates auditing — user, account, session, project, feedback, page view and subscription tables |
 | `20261012000000_audit_scanning` | The six audit tables, their indexes and foreign keys |
 | `20261013000000_share_reports` | The two share columns on `Scan` |
+| `20261014000000_worker_heartbeat` | `WorkerHeartbeat` — the liveness row the web tier reads before it accepts a scan |
 
 **The web deploy applies these for you.** `npm run build` runs
 `scripts/db-migrate.mjs` between `prisma generate` and `next build`, so a deploy
@@ -211,10 +261,11 @@ present avoids both. Nothing that exists is touched: `migrate resolve` writes
 one row to `_prisma_migrations`, and the deploy applies only what is genuinely
 missing.
 
-The step ends by asserting the six audit tables **and** the two share columns on
-`Scan` are visible in the schema the app queries. A part-migrated database
-passes a table check and still fails on the first scan, with *The column
-Scan.shareToken does not exist in the current database*.
+The step ends by asserting the seven audit tables **and** the three checked
+columns — the two share columns on `Scan` and `stoppedAt` on `WorkerHeartbeat` —
+are visible in the schema the app queries. A part-migrated database passes a
+table check and still fails on the first scan, with *The column Scan.shareToken
+does not exist in the current database*.
 
 The step is skipped unless `VERCEL_ENV=production` or `RUN_DB_MIGRATE=1` is set,
 and skipped when `DATABASE_URL` is unset, so previews and local builds never
@@ -296,21 +347,29 @@ ids, statuses, durations and file paths only.
 sudo systemctl status chromabrew-audit-worker --no-pager
 journalctl -u chromabrew-audit-worker -n 20 --no-pager   # expect the "ready" line
 
-# 2. Queue a real scan through the web app's API.
+# 2. The web tier can see the worker. This is the same check the audit form makes,
+#    so a fail here means the public form is telling visitors the scanner is down.
+curl -sS https://www.chromabrew.com/api/audit/scanner | jq
+# → {"online":true,"lastSeenAt":"2026-10-11T22:50:03.481Z","ageMs":900,"workerId":"vps-1"}
+# If it says false, the worker is running but not beating: check the same
+# DATABASE_URL on both hosts, and that the startup checks printed their "ready" line.
+
+# 3. Queue a real scan through the web app's API.
 curl -sS -X POST https://www.chromabrew.com/api/audit/scan \
   -H 'content-type: application/json' \
   -d '{"url":"https://example.com/","scope":"single_page","viewport":"desktop"}'
 # → {"id":"cmv4...","status":"queued","stage":"validating"}
+# → or 503 {"code":"scanner_offline"}, which means step 2 was false
 
-# 3. Watch the worker log for exactly one line for that id.
+# 4. Watch the worker log for exactly one line for that id.
 journalctl -u chromabrew-audit-worker -f
 # → audit-worker scan cmv4... completed (browser) in 8.4s
 
-# 4. Confirm the record, and that the browser pipeline — not the fallback — ran.
+# 5. Confirm the record, and that the browser pipeline — not the fallback — ran.
 curl -sS https://www.chromabrew.com/api/audit/scan/<id> | jq '{status,renderMode,durationMs}'
 # → {"status":"completed","renderMode":"browser","durationMs":8412}
 
-# 5. A screenshot exists and is served.
+# 6. A screenshot exists and is served.
 ls -l /var/lib/chromabrew/screenshots
 curl -sSI "https://www.chromabrew.com/api/audit/scan/<id>/screenshot?page=<pageId>" | head -1
 # → HTTP/2 200
@@ -324,10 +383,34 @@ claimed the scan first — see §2.
 - One worker processes scans sequentially. Running a second process doubles
   throughput safely (claiming is atomic); the global concurrency cap in
   `src/lib/audit/types.ts` still bounds how much work the database will accept.
+- **Stopping the worker stops new audits, on purpose.** The heartbeat goes stale
+  two minutes after the last beat, and `POST /api/audit/scan` then refuses with
+  `503 scanner_offline` rather than queueing a scan nothing will claim. Planned
+  downtime therefore shows up in the interface as "the scanner is offline" —
+  which is the intended reading, not a bug to route around by starting a second
+  worker that cannot render.
+- If the web tier answers `503 scanner_offline` while the worker is plainly up,
+  the two processes are not looking at the same database, or the worker never
+  passed its startup checks (it beats only after them). Check `/api/audit/scanner`
+  for the value it is actually reading before touching anything else.
 - `recoverStaleScans()` runs on every poll and fails scans left `running` for
-  more than ten minutes, so a crash or deploy cannot strand a job.
+  more than ten minutes, so a crash or deploy cannot strand a job. It also fails
+  scans left `queued` for more than ten minutes — rows nothing ever claimed.
+  Those hold the two global scanner slots, so leaving them alone meant this
+  service being down also shut the public endpoint: `POST /api/audit/scan`
+  answered "every scanner is busy" for everyone until somebody cleared the rows
+  by hand. A reader polling their own abandoned scan closes it too, so the
+  feature recovers while the worker is still down — with an honest failure
+  rather than a report.
 - Upgrading: `git pull`, `npm ci --include=dev`,
   `RUN_DB_MIGRATE=1 node scripts/db-migrate.mjs` (it baselines a pre-migration
   database itself, so there is no resolve step to remember),
   `npx playwright install --with-deps chromium`, then
   `sudo systemctl restart chromabrew-audit-worker`.
+  **Finishing the worker upgrade before the web deploy is not a preference.**
+  Upgrading the web tier first leaves the heartbeat check live in front of a
+  worker that does not write beats, and audits are refused platform-wide until
+  this host is restarted — see §4.
+- If the web tier reports `scanner_offline` the moment it is deployed, check the
+  deploy order above before diagnosing anything else, then
+  `/api/audit/scanner` for what it is actually reading.

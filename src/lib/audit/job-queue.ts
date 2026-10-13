@@ -1,7 +1,8 @@
 interface Job {
   id: string;
   type: string;
-  payload: any;
+  /** Opaque to the queue: it stores work, it does not inspect it. */
+  payload: unknown;
   status: "queued" | "running" | "completed" | "failed";
   createdAt: Date;
   startedAt?: Date;

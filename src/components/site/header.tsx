@@ -22,6 +22,20 @@ export function SiteHeader() {
           >
             Free tools
           </Link>
+          {/* The audit sits outside the TOOLS registry, so the nav is where it is
+              reachable from every page — the footer alone left it to be found at
+              the very bottom of the landing page. It is the one nav item shown at
+              every width, and the label shortens on phones only because "Website
+              audit" plus the wordmark does not fit a 375px header: the hidden
+              span is display:none, so assistive technology reads one label, not
+              both. */}
+          <Link
+            href="/audit"
+            className="rounded-md px-2 py-2 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100 dark:focus-visible:outline-zinc-100 sm:px-3"
+          >
+            <span className="sm:hidden">Audit</span>
+            <span className="hidden sm:inline">Website audit</span>
+          </Link>
           <ToolSearch />
           <AuthNav />
           <ThemeToggle />

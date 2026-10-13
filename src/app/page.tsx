@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { AuditSection } from "@/components/home/audit-section";
 import { HeroColourForm } from "@/components/home/hero-form";
 import { buildDesignSystem } from "@/lib/design-system";
 import { DEFAULT_CONFIG } from "@/lib/design-system/share";
@@ -23,13 +24,15 @@ import { ProductHuntBadge } from "@/components/site/product-hunt-badge";
  */
 export const metadata: Metadata = {
   title: "ChromaBrew — Free Color Tools & Design System Generator",
+  // The audit is named here and given its own landing page for search intent;
+  // this description stays led by the toolkit, which is what the page is.
   description:
-    "Free browser-based color toolkit: palette generator, WCAG contrast checker, image color extraction, design tokens and Tailwind or shadcn theme exports.",
+    "Free browser-based color toolkit: palette generator, WCAG contrast checker, image color extraction, design tokens and Tailwind or shadcn exports — plus a free website audit for any live page.",
   alternates: { canonical: "/" },
   openGraph: {
     title: "ChromaBrew — Free Color Tools & Design System Generator",
     description:
-      "Free color tools plus a design system generator: palettes, WCAG contrast checks, image color extraction, design tokens, and Tailwind or shadcn exports.",
+      "Free color tools plus a design system generator: palettes, WCAG contrast checks, image color extraction, design tokens, and Tailwind or shadcn exports. A free website audit measures a live page's contrast, accessibility and metadata.",
     url: "/",
     type: "website",
     images: [defaultOgImage],
@@ -38,7 +41,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "ChromaBrew — Free Color Tools & Design System Generator",
     description:
-      "Free color tools and a design system generator for palettes, contrast checks, image extraction and token exports. No account required.",
+      "Free color tools and a design system generator for palettes, contrast checks, image extraction and token exports — plus a website audit. No account required.",
     images: [defaultOgImage.url],
   },
 };
@@ -121,6 +124,10 @@ export default function HomePage() {
             <Link href="/tools" className="font-medium text-zinc-700 dark:text-zinc-300 underline decoration-zinc-300 underline-offset-4 hover:text-zinc-900 dark:hover:text-zinc-100">
               or explore the individual tools
             </Link>
+            . Already have a site?{" "}
+            <Link href="/audit" className="font-medium text-zinc-700 dark:text-zinc-300 underline decoration-zinc-300 underline-offset-4 hover:text-zinc-900 dark:hover:text-zinc-100">
+              audit it for accessibility problems
+            </Link>
             .
           </p>
           <div className="mt-6">
@@ -183,6 +190,11 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+
+      {/* The website audit is the one capability that looks at work already
+          shipped. Its section lives in its own component so its claims and
+          links are asserted in a test. */}
+      <AuditSection />
 
       {/* Use cases — keyword-rich copy for search engines */}
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">

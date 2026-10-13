@@ -648,3 +648,165 @@ export const MAX_CONCURRENT_SCANS = 2;
 export const SCAN_FETCH_TIMEOUT_MS = 20_000;
 export const SCAN_MAX_RESPONSE_BYTES = 5 * 1024 * 1024;
 export const SCAN_MAX_REDIRECTS = 5;
+
+/**
+ * How long a scan may sit `queued` before the interface stops implying it is
+ * about to start.
+ *
+ * The worker polls at most fifteen seconds apart, so a scan that is genuinely
+ * next in line is claimed well inside this window. Past it, "in progress" is a
+ * claim the client cannot support, and the progress view says what is actually
+ * happening instead: the audit is waiting for a scanner.
+ */
+export const SCAN_QUEUE_NOTICE_MS = 20_000;
+
+/**
+ * How long a scan may sit `queued` before the queue gives up on it.
+ *
+ * Deliberately the same ten minutes as a scan left `running` (`STALE_SCAN_MS`
+ * in `runner.ts`): that is this system's existing definition of "nobody is
+ * coming back for this". The two cases differ in cause but not in consequence —
+ * no worker will ever finish either — and both have to end, because a `queued`
+ * row occupies a scanner slot and would otherwise hold one forever.
+ */
+export const SCAN_QUEUE_ABANDON_MS = 10 * 60 * 1000;
+
+/**
+ * Where a scan stands with respect to the queue.
+ *
+ * `pending` covers everything that is not queued at all — running, finished,
+ * failed — and a queued scan still inside the notice window. `abandoned` is the
+ * server's business: it is the age at which the row may be closed. Both
+ * progress views branch on `awaiting_scanner`, which is the state a reader can
+ * actually be told about.
+ */
+export type ScanQueueState = "pending" | "awaiting_scanner" | "abandoned";
+
+/**
+ * Classify a scan's time in the queue.
+ *
+ * `createdAt` is a date string on the wire and a `Date` straight from the
+ * database, so both are accepted rather than making every caller convert. A
+ * timestamp that cannot be read is treated as pending: an unreadable clock is
+ * not evidence that a scan was abandoned, and guessing either way would be
+ * worse than doing nothing.
+ */
+export function scanQueueState(
+  status: ScanStatusId,
+  createdAt: string | Date,
+  now: number = Date.now(),
+): ScanQueueState {
+  if (status !== "queued") return "pending";
+  const created = createdAt instanceof Date ? createdAt.getTime() : Date.parse(createdAt);
+  if (!Number.isFinite(created)) return "pending";
+  const waited = now - created;
+  if (waited >= SCAN_QUEUE_ABANDON_MS) return "abandoned";
+  if (waited >= SCAN_QUEUE_NOTICE_MS) return "awaiting_scanner";
+  return "pending";
+}
+
+/** A short, readable wait for the queue panel: "8s", "1m 05s". */
+export function formatQueueWait(ms: number): string {
+  const total = Math.max(0, Math.round(ms / 1000));
+  const minutes = Math.floor(total / 60);
+  if (minutes === 0) return `${total}s`;
+  return `${minutes}m ${String(total % 60).padStart(2, "0")}s`;
+}
+
+/* ------------------------------------------------------------------ */
+/* Worker liveness                                                     */
+/* ------------------------------------------------------------------ */
+
+/**
+ * How often a live worker refreshes its heartbeat.
+ *
+ * The worker writes this on a timer rather than from its poll loop, because a
+ * worker in the middle of a slow render is exactly as alive as an idle one and
+ * the loop cannot say so while it is inside `runClaimedScan`.
+ */
+export const WORKER_HEARTBEAT_MS = 30_000;
+
+/**
+ * A heartbeat older than this means there is no scanner.
+ *
+ * Four missed beats, so one failed write or a pause between polls is not
+ * mistaken for a dead host. The two ways of being wrong are not symmetrical and
+ * the window leans the safe way: believing a stale row would put a reader back
+ * where this whole mechanism came from — a form that accepts an audit no worker
+ * will ever claim, and ten minutes of waiting to find out
+ * (`SCAN_QUEUE_ABANDON_MS`) — while disbelieving a live one costs a retry.
+ */
+export const WORKER_HEARTBEAT_STALE_MS = 4 * WORKER_HEARTBEAT_MS;
+
+/**
+ * What the web tier can say about the scanner right now.
+ *
+ * There is deliberately no "unknown". A scanner either checked in recently
+ * enough to accept work or it did not, and a third state would only move the
+ * guess into a different place — a form still has to decide whether to accept
+ * a URL. `lastSeenAt` is what lets the copy distinguish "has never run" from
+ * "last seen three minutes ago".
+ */
+export interface ScannerAvailability {
+  online: boolean;
+  /** ISO timestamp of the most recent beat, or null when none ever arrived. */
+  lastSeenAt: string | null;
+  /** How long ago that beat was; null when there is no beat at all. */
+  ageMs: number | null;
+  /** Which worker wrote it, when there is one. */
+  workerId: string | null;
+}
+
+/** No scanner has ever checked in. */
+export const NO_SCANNER: ScannerAvailability = {
+  online: false,
+  lastSeenAt: null,
+  ageMs: null,
+  workerId: null,
+};
+
+/**
+ * Classify a heartbeat against the clock.
+ *
+ * `lastSeenAt` is a date string over the wire and a `Date` straight from the
+ * database, so both are accepted, as `scanQueueState` does. A timestamp that
+ * cannot be read is treated as *offline* — the opposite of the choice
+ * `scanQueueState` makes for an unreadable queue age, and deliberately: there,
+ * guessing "abandoned" would close a scan that might be fine, while here
+ * guessing "online" would accept one that cannot be run. An unreadable clock is
+ * no evidence that a scanner exists.
+ */
+export function scannerAvailability(
+  lastSeenAt: string | Date | null | undefined,
+  workerId: string | null = null,
+  now: number = Date.now(),
+): ScannerAvailability {
+  if (lastSeenAt === null || lastSeenAt === undefined) return NO_SCANNER;
+
+  const seen = lastSeenAt instanceof Date ? lastSeenAt.getTime() : Date.parse(lastSeenAt);
+  if (!Number.isFinite(seen)) return NO_SCANNER;
+
+  const ageMs = now - seen;
+  return {
+    online: ageMs < WORKER_HEARTBEAT_STALE_MS,
+    lastSeenAt: new Date(seen).toISOString(),
+    ageMs,
+    workerId,
+  };
+}
+
+/** The machine-readable reason `POST /api/audit/scan` refuses while offline. */
+export const SCANNER_OFFLINE_CODE = "scanner_offline";
+
+/**
+ * What a reader is told when there is no scanner to run their audit.
+ *
+ * One string because both ends of the exchange say it — the API refuses with it
+ * and the form prints it — and the two drifting apart is how the same moment
+ * ends up reading "try again shortly" in one place and "the scanner is offline"
+ * in another. It states the queue as well as the refusal: the fear it answers is
+ * not "I cannot scan" but "did I just queue a scan that will fail in ten
+ * minutes".
+ */
+export const SCANNER_OFFLINE_MESSAGE =
+  "The scanner is offline right now, so audits cannot start. Nothing was queued — try again once the scanner is back.";

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/primitives";
 import { ScanReport } from "@/components/audit/scan-report";
+import { useQueueClock } from "@/components/audit/use-queue-clock";
 import {
   ANONYMOUS_SCANS_PER_IP_PER_DAY,
   ANONYMOUS_SCANS_PER_IP_PER_HOUR,
@@ -10,8 +11,10 @@ import {
   SCAN_SCOPES,
   SCAN_STAGES,
   VIEWPORTS,
+  formatQueueWait,
   isScopeImplemented,
   isTerminalStatus,
+  scanQueueState,
   type ScanResultsDto,
   type ScanScopeId,
   type ScanStageId,
@@ -83,6 +86,7 @@ export function AuditClient() {
   const [scanId, setScanId] = useState<string | null>(null);
   const [status, setStatus] = useState<ScanStatusDto | null>(null);
   const [results, setResults] = useState<ScanResultsDto | null>(null);
+  const now = useQueueClock();
 
   // Derived, never stored: we are polling exactly while we hold a scan id that
   // has not reached a terminal status. Deriving it keeps the button state and
@@ -182,6 +186,7 @@ export function AuditClient() {
       const payload = (await response.json().catch(() => ({}))) as {
         id?: string;
         error?: string;
+        code?: string;
       };
 
       if (response.status === 202 && payload.id) {
@@ -193,10 +198,16 @@ export function AuditClient() {
         return;
       }
       if (response.status === 429) {
+        // Two different refusals wear the same status code. A full queue is a
+        // busy moment and nothing the caller did; their own allowance is theirs
+        // and worth naming. Appending the per-day limits to a busy queue told
+        // people they had used up audits they never ran.
         setRequestError(
-          `${
-            payload.error ?? "You have reached the audit limit."
-          } Free audits are limited to ${ANONYMOUS_SCANS_PER_IP_PER_HOUR} per hour and ${ANONYMOUS_SCANS_PER_IP_PER_DAY} per day.`,
+          payload.code === "queue_full"
+            ? (payload.error ?? "Every scanner is busy with other audits right now.")
+            : `${
+                payload.error ?? "You have reached the audit limit."
+              } Free audits are limited to ${ANONYMOUS_SCANS_PER_IP_PER_HOUR} per hour and ${ANONYMOUS_SCANS_PER_IP_PER_DAY} per day.`,
         );
         return;
       }
@@ -211,6 +222,17 @@ export function AuditClient() {
   const activeScan = results?.scan ?? status;
   const showProgress = scanId !== null && !results && activeScan?.status !== "failed";
   const failed = activeScan?.status === "failed";
+  // Queued but not yet claimed is not the same as in progress, and the checklist
+  // below would sit on "Validating URL" either way. Past the notice window this
+  // says what is really happening.
+  // Anything but "pending" means a queued scan past the notice window — the
+  // abandoned window included, until the server closes it on the next poll.
+  const awaitingScanner =
+    activeScan !== null && scanQueueState(activeScan.status, activeScan.createdAt, now) !== "pending";
+  // Only read while the panel that shows it is up, and only after the clock has
+  // ticked: `awaiting_scanner` is unreachable until `now` is a real time.
+  const waitedMs =
+    activeScan && awaitingScanner ? Math.max(0, now - Date.parse(activeScan.createdAt)) : 0;
 
   return (
     <div className="space-y-8">
@@ -335,13 +357,23 @@ export function AuditClient() {
           className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900"
         >
           <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
-            Auditing {activeScan.normalizedUrl}
+            {awaitingScanner ? "Waiting for a scanner" : `Auditing ${activeScan.normalizedUrl}`}
           </h2>
-          <StageChecklist status={activeScan} />
-          <p className="mt-4 text-xs text-zinc-500">
-            {activeScan.ruleCount} rules will run against the served HTML. You can leave this page
-            open — the audit continues.
-          </p>
+          {awaitingScanner ? (
+            <p className="mt-3 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+              Every scanner is busy with other audits, so yours is queued — waiting{" "}
+              {formatQueueWait(waitedMs)}. Only a couple of audits run at the same time, so a short
+              wait is normal. This page keeps checking and the report appears on its own.
+            </p>
+          ) : (
+            <>
+              <StageChecklist status={activeScan} />
+              <p className="mt-4 text-xs text-zinc-500">
+                {activeScan.ruleCount} rules will run against the served HTML. You can leave this
+                page open — the audit continues.
+              </p>
+            </>
+          )}
         </section>
       ) : null}
 

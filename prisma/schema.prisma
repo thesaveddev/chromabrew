@@ -361,3 +361,24 @@ model Report {
   @@index([scanId])
   @@schema("chromabrew")
 }
+
+// Liveness of the audit worker (see src/lib/audit/heartbeat.ts). The worker and
+// the web tier share no filesystem and no network path, so the database is the
+// only place the web tier can ask whether anything is there to claim a scan.
+// One row per worker process; `workerId` is its identity, so a restart rewrites
+// its own row rather than adding one. A row is a beat, not a record of work: a
+// worker that stops cleanly marks itself `stoppedAt` and one that is killed
+// simply goes stale. Either way the answer is the same to a reader, but the mark
+// arrives at once instead of after the stale window, and the row is kept so that
+// "stopped" stays distinguishable from "never ran".
+model WorkerHeartbeat {
+  workerId          String        @id @db.Text
+  lastSeenAt        DateTime
+  startedAt         DateTime
+  // Set on a clean shutdown, cleared by the next beat from this id.
+  stoppedAt         DateTime?
+  version           String?
+  host              String?
+  @@index([lastSeenAt])
+  @@schema("chromabrew")
+}

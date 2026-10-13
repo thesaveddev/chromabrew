@@ -181,7 +181,10 @@ alone it is cited: `img-alt` against WCAG 1.1.1, `html-lang` against 3.1.1,
 
 ### Job lifecycle
 
-1. `POST` creates a `Scan` row with status `queued` and returns the id.
+1. `POST` first establishes that a scanner exists at all, then creates a `Scan`
+   row with status `queued` and returns the id. With nothing beating, the request
+   is refused with `503 { code: "scanner_offline" }` and **no row is written** —
+   see *Scanner liveness* below.
 2. The row is left `queued`. Nothing runs inside the request: a long-lived
    process claims it (the worker in `docs/AUDIT_WORKER_HOST.md`; `runQueuedScan`
    is the same loop for a local process). Enqueueing goes through `enqueueScan`,
@@ -194,11 +197,44 @@ alone it is cited: `img-alt` against WCAG 1.1.1, `html-lang` against 3.1.1,
    `validating` → `rendering` → `analyzing` → `preparing`.
 5. Findings and the scanned page are persisted, then the scan is closed as
    `completed`, `partially_completed` (the page answered 4xx/5xx) or `failed`.
-6. `recoverStaleScans` closes scans left `running` for more than ten minutes, so
-   a redeploy cannot leave a job stuck and inflating the concurrency counter.
+6. `recoverStaleScans` closes the two ways a process that stopped can leave a
+   scan in the air: `running` for more than ten minutes (a crash or a redeploy
+   mid-render) and `queued` for more than ten minutes (nothing ever claimed it).
+   Both would otherwise inflate the concurrency counter — and the queued case is
+   worse than untidy, because a queued row holds a scanner slot, so a worker
+   that never comes back closes admission for every new audit, for everybody.
+   The worker sweeps on every poll; a reader's own status poll also closes their
+   abandoned scan, because the sweep runs in the process that is missing exactly
+   when this happens.
 
 Failure paths always write a terminal status and a user-facing message. No path
 reports a failed scan as a success.
+
+### Scanner liveness
+
+The worker runs on a different host from the web tier, and the two share nothing
+but the database. That is why liveness lives there too: one row per worker in
+`WorkerHeartbeat`, rewritten every 30 seconds, graded by the reader against its
+own clock.
+
+It exists because of how the queue behaves when it is left alone. A `queued` row
+with no worker behind it is not a pending audit; it is a ten-minute wait ending
+in `ABANDONED_QUEUE_MESSAGE`, and it holds one of the two scanner slots while it
+lasts — so the reader waits, the queue fills with rows nobody will claim, and the
+refusal they eventually get reads "every scanner is busy" about a scanner that
+is not there. Writing the row and explaining it later was the wrong order.
+
+The check is deliberately **binary and pessimistic**. There is no "unknown": a
+scanner either beat inside the window or it did not, because a third state would
+only move the guess to wherever the form decides whether to accept a URL. An
+unreadable timestamp is read as offline, the opposite of the choice
+`scanQueueState` makes for an unreadable queue age — there, guessing "abandoned"
+would close a scan that might be fine, while here guessing "online" would accept
+one that cannot be run.
+
+Availability is *not* capacity. A live-but-busy scanner is still `429
+queue_full`; failing to distinguish the two would mean the interface said
+"offline" every time two audits were in flight.
 
 ### Limits
 
@@ -209,6 +245,10 @@ reports a failed scan as a success.
 | Signed-in scans per hour | 10 | `rate-limit.ts` |
 | Signed-in scans per day | 50 | `rate-limit.ts` |
 | Concurrent scans (global) | 2 | `types.ts` |
+| Queue: "waiting for a scanner" notice | 20s | `types.ts` |
+| Queue: give up on a queued scan | 10 min | `types.ts` |
+| Worker heartbeat interval | 30s | `types.ts` |
+| Heartbeat stale window — no scanner | 2 min | `types.ts` |
 | Fetch timeout | 20s | `types.ts` |
 | Response size cap | 5 MiB | `types.ts` |
 | Redirect limit | 5 | `types.ts` |
@@ -216,6 +256,13 @@ reports a failed scan as a success.
 Counters are derived from the `Scan` table itself, so the limit a caller hits is
 the limit the database can see. The client IP is stored only as a salted,
 truncated SHA-256 (`hashIp`), never in the clear.
+
+Scanner occupancy is judged by age as well as status: a `queued` row older than
+the abandonment window is not outstanding work, so it cannot hold a slot against
+new audits once whatever was going to claim it has gone. Without that, the
+admission gate was permanent — two rows no worker ever picked up refused every
+submission afterwards, for everyone, with "the scanner is busy with other
+audits", and only a hand-written `UPDATE` could reopen it.
 
 ## What Stage 2 implements
 
@@ -404,6 +451,11 @@ a `scans` relation on `User`.
 Stage 1 writes to `Scan`, `ScannedPage` and `Finding`. `ProposedFix`, `Preview`
 and `Report` are defined but unused — they belong to Stages 4, 5 and 7.
 
+`WorkerHeartbeat` is not a report table: one row per worker process, holding when
+it last checked in, when it started, an optional clean-shutdown mark, and the
+scanner version and host. It is the only table the web tier reads *before* it
+accepts work, and the only one it never writes.
+
 `Scan` also carries the share columns — `shareToken` (unique, nullable) and
 `sharedAt`. `shareToken IS NULL` means "not shared", so a report is never public
 merely because somebody knows or guesses its id; see *Sharing* under Security.
@@ -422,8 +474,8 @@ with no migration history, records any migration whose objects are already in
 the database — this one was built by hand, so *relation already exists* is the
 expected starting point, not an error — recovers a migration left unfinished by
 an interrupted run, applies what is genuinely missing, and fails the build if
-the six audit tables and the two share columns are not visible in the schema
-the app queries. The migration history has also been replayed twice against a throwaway
+the seven audit tables and the three checked columns are not visible in the
+schema the app queries. The migration history has also been replayed twice against a throwaway
 PostgreSQL 16 instance — once from an empty database and once from a pre-audit
 one — and both runs leave a schema `prisma migrate diff` reports as identical to
 `schema.prisma`. The three database states, and the same script run by hand on a
@@ -433,7 +485,8 @@ host that does no web build, are in `docs/AUDIT_WORKER_HOST.md` §5.
 
 | Route | Method | Purpose | Response |
 | ----- | ------ | ------- | -------- |
-| `/api/audit/scan` | POST | Create a scan | `202` with `{ id, status, stage }`; `400` for an invalid URL or unsupported scope; `429` with `Retry-After` when the quota is exhausted; `503` when the database is unavailable |
+| `/api/audit/scan` | POST | Create a scan | `202` with `{ id, status, stage }`; `400` for an invalid URL or unsupported scope; `429` with `Retry-After` and a `code` of `queue_full` (every scanner slot busy) or `quota` (the caller's own allowance); `503` with a `code` of `scanner_offline` when no worker is beating, or `internal` when the database is unavailable |
+| `/api/audit/scanner` | GET | Whether a scanner exists, for the audit form | `ScannerAvailability` (`online`, `lastSeenAt`, `ageMs`, `workerId`); `503` if the database cannot be read. Never cached |
 | `/api/audit/scan/[scanId]` | GET | Status and stage | `ScanStatusDto`, or `404` |
 | `/api/audit/scan/[scanId]/results` | GET | Findings, pages and coverage | `ScanResultsDto`, or `404` |
 | `/api/audit/scan/[scanId]/screenshot` | GET | The stored screenshot of one page of the scan | `image/png`, or `404` when there is none |
@@ -556,10 +609,17 @@ to say so, and the data sent must be minimised to the page content required.
    `scripts/db-migrate.mjs`, which baselines a database that predates
    `prisma/migrations/`, deploys the deltas, and fails the build if the audit
    tables are missing. The VPS worker host runs no web build, so it uses
-   `RUN_DB_MIGRATE=1 node scripts/db-migrate.mjs`. The six audit tables are
+   `RUN_DB_MIGRATE=1 node scripts/db-migrate.mjs`. The seven audit tables are
    created in the `chromabrew` schema either way.
-2. Deploy the application. Stage 1 adds no environment variables — the database
-   and auth secrets it needs already exist in `.env.example`.
+2. Deploy the browser worker host first, then the application — in that order,
+   not the reverse. The web tier refuses audits while no worker is beating, so a
+   deploy that puts the check in front of a worker still running older code
+   disables the audit feature until that host is restarted. The failure is safe
+   (nothing is queued that cannot run) and total (every visitor sees "scanner
+   offline"), which is why the runbook states the order rather than leaving it
+   to whichever deploy finishes first. See `docs/AUDIT_WORKER_HOST.md` §4.
+   Stage 1 adds no environment variables — the database and auth secrets it
+   needs already exist in `.env.example`.
 3. Stage 1 can run on Vercel as-is, because the analysis is an HTTP fetch and
    the route declares its own `maxDuration`. Scans remain bounded by the
    platform's function duration; `recoverStaleScans` keeps that bounded failure

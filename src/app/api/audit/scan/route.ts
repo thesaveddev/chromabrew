@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
+import { ScannerOfflineError, requireScanner } from "@/lib/audit/heartbeat";
 import { getScanStatusDto } from "@/lib/audit/queries";
 import { checkScanQuota, clientIpFromHeaders, hashIp } from "@/lib/audit/rate-limit";
 import { ScanRequestError, enqueueScan, validateScanRequest } from "@/lib/audit/runner";
@@ -21,6 +22,11 @@ export const runtime = "nodejs";
  * (leaving the UI to create a scan and then report "the audit could not be
  * started"), and handed the caller a `400` naming the failing Prisma call when a
  * database table was simply missing.
+ *
+ * It also refuses while no scanner is running, which is the one failure it can
+ * answer without writing anything. A `queued` row with no worker is not a
+ * queued audit, it is a ten-minute wait ending in a failure, and writing it
+ * costs the reader that wait and occupies a scanner slot while it lasts.
  */
 export async function POST(request: Request) {
   let body: unknown;
@@ -49,6 +55,13 @@ export async function POST(request: Request) {
     // shortly". `enqueueScan` runs the same check again when it writes.
     validateScanRequest({ url, scope: scopeId, viewportId });
 
+    // Then whether anything is there to run it, and before the quota. With no
+    // scanner the true answer is "the scanner is offline"; a quota refusal
+    // reading "try again in a few moments" would send the reader straight back
+    // into the same wall for as long as the worker is down, and the queue being
+    // full of unattended rows is a symptom of this, not a separate condition.
+    await requireScanner();
+
     const session = await auth();
     const userId = session?.user?.id ?? null;
     const ipHash = hashIp(clientIpFromHeaders(request.headers));
@@ -58,7 +71,13 @@ export async function POST(request: Request) {
     const quota = await checkScanQuota({ userId, ipHash });
     if (!quota.allowed) {
       return NextResponse.json(
-        { error: quota.reason ?? "Too many scans just now. Try again shortly.", code: "rate_limited" },
+        {
+          error: quota.reason ?? "Too many scans just now. Try again shortly.",
+          // The specific limit, not a generic refusal: the scanner being busy
+          // and the caller having used up their day are different answers, and
+          // the interface tells the reader which one they got.
+          code: quota.code ?? "quota",
+        },
         {
           status: 429,
           headers: quota.retryAfterSeconds
@@ -80,6 +99,15 @@ export async function POST(request: Request) {
     // caller only that it failed.
     if (error instanceof UrlValidationError || error instanceof ScanRequestError) {
       return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+    // 503, not 429: the caller has done nothing wrong and waiting is not the
+    // remedy — the scanner has to come back. The code is what the form branches
+    // on to render the offline state instead of an error message.
+    if (error instanceof ScannerOfflineError) {
+      return NextResponse.json(
+        { error: error.message, code: error.code },
+        { status: 503 },
+      );
     }
     console.error("audit scan enqueue failed", error);
     return NextResponse.json(
