@@ -28,7 +28,9 @@ import {
   scopeOption,
   viewportOption,
   type ScanScopeId,
+  type ScanScopeOption,
   type ScanStageId,
+  type ViewportOption,
 } from "./types";
 
 /** A scan left running longer than this is treated as interrupted. */
@@ -53,10 +55,29 @@ export class ScanRequestError extends Error {
 }
 
 /**
- * Create a queued scan row. The URL is syntax-checked here so obvious junk is
- * rejected synchronously, while DNS work happens in the worker.
+ * Everything about a scan request that can be judged without the database.
+ *
+ * Split out of `enqueueScan` so a caller can reject bad input *before* it
+ * consults the quota. The order matters: a load limit must not decide whether a
+ * typo is a typo. Checking the quota first meant that while two scans were in
+ * flight the public endpoint answered every request — including an unparseable
+ * URL — with "the scanner is busy", and the UI showed a rate-limit message for
+ * something the reader could simply fix.
+ *
+ * Throws `ScanRequestError` for an unimplemented scope and `UrlValidationError`
+ * for a URL the scanner will not accept; both messages are written to be shown.
+ *
+ * `normalizeUrl` both syntax-checks the URL (throwing for junk) and strips
+ * tracking parameters, so the row stores the same canonical form the worker
+ * validates. `assertAllowedUrlSyntax` returns `{ url, hostname }`, and using it
+ * here wrote the literal string "[object Object]" into normalizedUrl, so every
+ * scan enqueued this way failed validation in the worker.
  */
-export async function enqueueScan(input: EnqueueInput): Promise<{ id: string }> {
+export function validateScanRequest(input: {
+  url: string;
+  scope: ScanScopeId;
+  viewportId: string;
+}): { normalizedUrl: string; viewport: ViewportOption; scope: ScanScopeOption } {
   if (!isScopeImplemented(input.scope)) {
     throw new ScanRequestError(
       "scope_not_implemented",
@@ -64,15 +85,23 @@ export async function enqueueScan(input: EnqueueInput): Promise<{ id: string }> 
     );
   }
 
-  const viewport = viewportOption(input.viewportId);
-  const scope = scopeOption(input.scope);
+  return {
+    normalizedUrl: normalizeUrl(input.url),
+    viewport: viewportOption(input.viewportId),
+    scope: scopeOption(input.scope),
+  };
+}
 
-  // `normalizeUrl` both syntax-checks the URL (throwing for junk) and strips
-  // tracking parameters, so the row stores the same canonical form the API
-  // route writes. `assertAllowedUrlSyntax` returns `{ url, hostname }`, so using
-  // it here wrote the literal string "[object Object]" into normalizedUrl and
-  // every scan enqueued this way failed validation in the worker.
-  const normalizedUrl = normalizeUrl(input.url);
+/**
+ * Create a queued scan row. The URL is syntax-checked here so obvious junk is
+ * rejected synchronously, while DNS work happens in the worker.
+ */
+export async function enqueueScan(input: EnqueueInput): Promise<{ id: string }> {
+  const { normalizedUrl, viewport, scope } = validateScanRequest({
+    url: input.url,
+    scope: input.scope,
+    viewportId: input.viewportId,
+  });
 
   const scan = await prisma.scan.create({
     data: {

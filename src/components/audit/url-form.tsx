@@ -31,8 +31,11 @@ export function UrlForm() {
         throw new Error(data.error || "Failed to start scan");
       }
 
+      // `id` is what POST /api/audit/scan returns (202) — the same field the
+      // scanner UI reads. This used to read `scanId`, which the route stopped
+      // sending, so the push went to /audit/undefined.
       const data = await res.json();
-      router.push(`/audit/${data.scanId}`);
+      router.push(`/audit/${data.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
