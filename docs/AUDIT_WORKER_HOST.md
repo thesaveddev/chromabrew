@@ -189,7 +189,15 @@ creates, so a database that already has them is *recorded* rather than replayed:
 | fresh — no tables | every migration is applied |
 | objects present, no `_prisma_migrations` | those migrations are recorded as applied, the rest are applied |
 | a migration left unfinished by an interrupted run | it is marked rolled back, then applied again |
+| a migration half applied — some objects there, others not | it stops and names them; neither replaying the SQL nor recording it as applied would be true |
 | history complete | anything genuinely pending is applied |
+
+Every Prisma command it runs carries an explicit `schema`, because the history
+table is found through the *connection* while `migrate deploy` looks for it in
+the schema the datasource declares. A URL without `schema=` therefore puts the
+history in `public` and leaves the deploy unable to see it (`P1014`) — which is
+exactly what happened here, and why a database can hold the app's tables in
+`chromabrew` and its migration history in `public` at the same time.
 
 That second row is this production database. It predates `prisma/migrations/`
 entirely and was built by hand — the pre-audit schema first, then

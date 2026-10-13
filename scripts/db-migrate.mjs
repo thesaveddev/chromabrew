@@ -12,23 +12,26 @@
  * there — fail closed, rather than shipping 500s and finding out from a user.
  *
  * The hard part is not running migrations; it is reading a database that was
- * never migrated by Prisma. This project's production database predates
- * `prisma/migrations/` and was built by hand — first with the pre-audit schema,
- * later with `psql -f prisma/audit-migration.sql` — so parts of the history are
- * already sitting in that database with no record of who put them there:
+ * never migrated by Prisma, and whose URL does not name the schema. Three
+ * separate failures came out of that, and each one left a rule behind:
  *
- *   baseline            recorded,  tables present        -> nothing to do
- *   audit_scanning      unrecorded, tables present       -> record it, do not replay it
- *   share_reports       unrecorded, columns absent       -> apply it
- *
- * Replaying the second row's SQL is what a bare `prisma migrate deploy` does,
- * and it stops on the first `CREATE TABLE "Scan"` with "relation already
- * exists", leaving the migration recorded as failed — which then blocks every
- * later migration (and so every later deploy) with P3009 until someone resolves
- * it. So each migration declares the objects it creates, and a database that
- * already has them is *recorded* rather than re-run. A migration left failed by
- * an interrupted attempt is rolled back first, for the same reason: its DDL
- * went with the transaction, and its row is the only thing still in the way.
+ *   1. The history table is found through the *connection*, while `migrate
+ *      deploy` looks for it in the schema the datasource declares. With no
+ *      `schema=` on the URL, `resolve` recorded the baseline in `public` and the
+ *      deploy that followed could not find it (P1014) — so every command below
+ *      carries an explicit `schema`, and the history stays where the app's
+ *      tables are.
+ *   2. The database was built by hand (`psql -f prisma/audit-migration.sql`),
+ *      so parts of the history are already in it with no record of who put them
+ *      there. Re-running that SQL stops on `CREATE TABLE "Scan"` with "relation
+ *      already exists" and records the migration as failed, which then blocks
+ *      every later deploy with P3009. So each migration declares the objects it
+ *      creates, and one whose objects are all present is *recorded* rather than
+ *      replayed.
+ *   3. A half-applied migration cannot be resolved by guessing. If some of a
+ *      migration's objects exist and others do not, this stops and lists them,
+ *      because replaying the SQL would fail and recording it as applied would
+ *      claim a schema that is not there.
  *
  * Nothing in this file is destructive. Every path is one of three things:
  * `migrate resolve` (one INSERT or one UPDATE to `_prisma_migrations`),
@@ -46,8 +49,8 @@
  * `.env`: without the fallback the documented upgrade step would print
  * "skipped · DATABASE_URL is not set" and migrate nothing.
  *
- * The connection string is never printed. Prisma's own output for a migration
- * is limited to the database name, the schema and the host.
+ * The connection string is never printed, and neither is any part of it except
+ * the database name, the schema and the host, which is what Prisma prints too.
  */
 
 import { spawnSync } from "node:child_process";
@@ -114,9 +117,9 @@ function fail(message) {
 }
 
 /**
- * The schema name, read from the datasource so this cannot drift from the
- * Prisma schema. A hardcoded copy is one rename away from migrating the wrong
- * place.
+ * The schema the app's models live in, read from the datasource so this cannot
+ * drift from the Prisma schema. A hardcoded copy is one rename away from
+ * migrating the wrong place.
  */
 function readSchemaName() {
   const schemaPath = path.join(ROOT, "prisma", "schema.prisma");
@@ -171,7 +174,7 @@ async function loadEnvFiles() {
 }
 
 /**
- * The pg driver rejects `channel_binding`, which Neon's pooled URL carries by
+ * The `pg` driver rejects `channel_binding`, which Neon's pooled URL carries by
  * default — the same reason `src/lib/db.ts` strips it for the app.
  */
 function sanitize(connectionString) {
@@ -184,23 +187,61 @@ function sanitize(connectionString) {
   }
 }
 
-/** Run the repository's own Prisma CLI, whatever the platform calls it. */
-function prisma(args) {
+/**
+ * The same connection string with an explicit `schema`.
+ *
+ * The migrations themselves say `SET search_path TO <schema>` and the app's
+ * models are all `@@schema("<schema>")`, so naming it on the connection only
+ * makes explicit what both of them already assume — and it keeps
+ * `_prisma_migrations` in that schema, where `migrate deploy` looks for it.
+ */
+function withSchema(connectionString, schema) {
+  try {
+    const url = new URL(connectionString);
+    if (!url.searchParams.get("schema")) url.searchParams.set("schema", schema);
+    return url.toString();
+  } catch {
+    return connectionString;
+  }
+}
+
+/**
+ * Run the repository's own Prisma CLI, whatever the platform calls it, against
+ * the schema the app uses.
+ *
+ * Output is captured and echoed rather than inherited so a failure can be read
+ * as well as shown — one specific failure is not a failure: `resolve --applied`
+ * on a migration the database already records leaves everything exactly as it
+ * should be, so it is treated as done. That is what a second deploy of the same
+ * commit does, and it must not fail the build.
+ */
+function prisma(args, databaseUrl) {
   const cli = path.join(ROOT, "node_modules", "prisma", "build", "index.js");
+  const command = `prisma ${args.join(" ")}`;
   const result = spawnSync(process.execPath, [cli, ...args], {
     cwd: ROOT,
-    stdio: "inherit",
+    env: { ...process.env, DATABASE_URL: databaseUrl },
+    encoding: "utf8",
   });
 
+  if (result.stdout) process.stdout.write(result.stdout);
+  if (result.stderr) process.stderr.write(result.stderr);
+
   if (result.error) {
-    fail(`could not run \`prisma ${args.join(" ")}\`: ${result.error.message}`);
+    fail(`could not run \`${command}\`: ${result.error.message}`);
   }
-  if (result.status !== 0) {
-    fail(
-      `\`prisma ${args.join(" ")}\` exited ${result.status}. The schema was not applied, ` +
-        "so this deploy is stopping rather than serving an app whose tables are missing.",
-    );
+  if (result.status === 0) return;
+
+  const output = `${result.stdout ?? ""}\n${result.stderr ?? ""}`;
+  if (/P3008/.test(output) || /already recorded as applied/i.test(output)) {
+    log("note · the database already records that migration as applied, which is the state we wanted");
+    return;
   }
+
+  fail(
+    `\`${command}\` exited ${result.status}. The schema was not applied, ` +
+      "so this deploy is stopping rather than serving an app whose tables are missing.",
+  );
 }
 
 async function connect(connectionString) {
@@ -257,20 +298,60 @@ async function readMigrationHistory(client, schema) {
   );
 
   return {
-    recorded: new Set(rows.filter((row) => row.finished_at || row.rolled_back_at).map((row) => row.migration_name)),
+    recorded: new Set(
+      rows.filter((row) => row.finished_at || row.rolled_back_at).map((row) => row.migration_name),
+    ),
     unfinished: rows
       .filter((row) => !row.finished_at && !row.rolled_back_at)
       .map((row) => row.migration_name),
   };
 }
 
-/** True when every object a migration creates is already in the database. */
-function alreadyPresent(migration, objects) {
-  const tables = (migration.tables ?? []).every((table) => objects.tables.has(table));
-  const columns = (migration.columns ?? []).every((column) =>
-    objects.columns.has(`${column.table}.${column.column}`),
+/**
+ * Schemas, other than the target one, that also hold a migration history.
+ *
+ * Not an error — a history recorded through a connection that named no schema
+ * lands in `public` — but it is worth one line, because it explains why a
+ * migration can look unrecorded to this script and recorded to Prisma.
+ */
+async function otherHistorySchemas(client, schema) {
+  const { rows } = await client.query(
+    `select table_schema from information_schema.tables
+     where table_name = '_prisma_migrations' and table_schema <> $1
+     order by table_schema`,
+    [schema],
   );
-  return tables && columns;
+  return rows.map((row) => row.table_schema);
+}
+
+/** Which of a migration's objects are in the database, and which are not. */
+function describeMigration(migration, objects) {
+  const wanted = [
+    ...(migration.tables ?? []).map((table) => ({ label: table, present: objects.tables.has(table) })),
+    ...(migration.columns ?? []).map((column) => ({
+      label: `${column.table}.${column.column}`,
+      present: objects.columns.has(`${column.table}.${column.column}`),
+    })),
+  ];
+
+  return {
+    present: wanted.filter((entry) => entry.present).map((entry) => entry.label),
+    missing: wanted.filter((entry) => !entry.present).map((entry) => entry.label),
+  };
+}
+
+/** One line naming everything a refusal was based on, so the log is enough. */
+function inventory(schema, objects, history, stray = []) {
+  const tables = [...objects.tables].sort();
+  return [
+    `schema "${schema}" holds ${tables.length} table(s)${tables.length ? `: ${tables.join(", ")}` : ""}`,
+    `migration history in "${schema}": ${
+      history.recorded.size ? [...history.recorded].sort().join(", ") : "(none)"
+    }`,
+    stray.length ? `a history also exists in ${stray.map((s) => `"${s}"`).join(", ")}` : "",
+  ]
+    .filter(Boolean)
+    .join("; ");
 }
 
 async function main() {
@@ -291,50 +372,87 @@ async function main() {
   }
 
   const schema = readSchemaName();
-  const client = await connect(connectionString);
+  const connection = withSchema(connectionString, schema);
+  const client = await connect(connection);
 
+  let objects;
+  let history;
+  let stray;
   try {
-    const objects = await readSchemaObjects(client, schema);
-    const history = await readMigrationHistory(client, schema);
-
-    if (objects.tables.size === 0) {
-      log(`fresh database · applying all ${MIGRATIONS.length} migrations to schema "${schema}"`);
-    }
-
-    for (const name of history.unfinished) {
-      // Only the row is in the way: the migration's DDL went with its
-      // transaction, so the honest record is "rolled back", and re-running it is
-      // what the deploy below does.
-      log(`recovering · ${name} is recorded as unfinished, marking it rolled back`);
-      prisma(["migrate", "resolve", "--rolled-back", name]);
-    }
-
-    for (const migration of MIGRATIONS) {
-      if (history.recorded.has(migration.name)) continue;
-      if (!alreadyPresent(migration, objects)) continue;
-      // Its objects are already here — applied by hand before the history
-      // existed. Recording it runs no SQL, so nothing that exists is touched.
-      log(`recording · ${migration.name} is already present but unrecorded, marking it applied`);
-      prisma(["migrate", "resolve", "--applied", migration.name]);
-    }
+    objects = await readSchemaObjects(client, schema);
+    history = await readMigrationHistory(client, schema);
+    stray = await otherHistorySchemas(client, schema);
   } finally {
     await client.end();
   }
 
-  prisma(["migrate", "deploy"]);
+  if (stray.length > 0) {
+    log(
+      `note · a migration history also exists in ${stray.map((s) => `"${s}"`).join(", ")}; ` +
+        `every command here uses "${schema}", where the app's tables are`,
+    );
+  }
+
+  if (objects.tables.size === 0) {
+    log(`fresh database · applying all ${MIGRATIONS.length} migrations to schema "${schema}"`);
+  } else {
+    const baseline = MIGRATIONS[0];
+    if (!history.recorded.has(baseline.name) && describeMigration(baseline, objects).present.length === 0) {
+      // Replaying the baseline here would create a second, empty copy of the
+      // app's own tables in the schema it queries — which no deploy should do on
+      // a guess. A database this shape needs a human deciding what it is.
+      fail(
+        "the database is not empty but holds none of the baseline's tables, so replaying the " +
+          `baseline over it is not something this script will guess at. ${inventory(schema, objects, history, stray)}`,
+      );
+    }
+  }
+
+  for (const name of history.unfinished) {
+    // Only the row is in the way: the migration's DDL went with its transaction,
+    // so the honest record is "rolled back", and re-running it is what the
+    // deploy below does.
+    log(`recovering · ${name} is recorded as unfinished, marking it rolled back`);
+    prisma(["migrate", "resolve", "--rolled-back", name], connection);
+  }
+
+  for (const migration of MIGRATIONS) {
+    if (history.recorded.has(migration.name)) continue;
+
+    const { present, missing } = describeMigration(migration, objects);
+    if (present.length === 0) continue; // nothing of it is here; the deploy brings all of it
+
+    if (missing.length > 0) {
+      // Recording this as applied would claim a schema that is not there, and
+      // replaying its SQL would stop on the first object that exists. Neither is
+      // a decision to make on someone's production database.
+      fail(
+        `${migration.name} looks half applied: ${present.join(", ")} exist but ${missing.join(", ")} ` +
+          `do not. Resolve it deliberately — either apply what is missing or record it as applied — ` +
+          `then deploy again. ${inventory(schema, objects, history, stray)}`,
+      );
+    }
+
+    // Its objects are all here — applied by hand before the history existed.
+    // Recording it runs no SQL, so nothing that exists is touched.
+    log(`recording · ${migration.name} is already present but unrecorded, marking it applied`);
+    prisma(["migrate", "resolve", "--applied", migration.name], connection);
+  }
+
+  prisma(["migrate", "deploy"], connection);
 
   // `migrate deploy` succeeded, so its migrations are recorded. This confirms the
   // objects the app will query are really visible in the schema the app uses —
   // the one failure mode this whole step exists to prevent. A part-migrated
   // database passes a table check and still fails on the first scan, which is
   // why columns are checked too.
-  const verify = await connect(connectionString);
+  const verify = await connect(connection);
   try {
-    const objects = await readSchemaObjects(verify, schema);
+    const after = await readSchemaObjects(verify, schema);
     const missing = [
-      ...REQUIRED.tables.filter((table) => !objects.tables.has(table)),
+      ...REQUIRED.tables.filter((table) => !after.tables.has(table)),
       ...REQUIRED.columns
-        .filter((column) => !objects.columns.has(`${column.table}.${column.column}`))
+        .filter((column) => !after.columns.has(`${column.table}.${column.column}`))
         .map((column) => `${column.table}.${column.column}`),
     ];
 
