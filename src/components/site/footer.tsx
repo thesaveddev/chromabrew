@@ -42,6 +42,10 @@ export function SiteFooter() {
               // indexable page that no crawler could reach.
               ["/audit", "Website audit"],
               ["/pricing", "Pricing"],
+              ["/about", "About"],
+              ["/contact", "Contact"],
+              ["/privacy", "Privacy"],
+              ["/terms", "Terms"],
             ].map(([href, label]) => (
               <Link
                 key={href}

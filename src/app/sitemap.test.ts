@@ -4,8 +4,8 @@ import { TOOLS } from "@/lib/tools";
 import { livePosts } from "@/lib/posts";
 import { siteUrl } from "@/lib/site-url";
 
-/** The seven hand-listed hub routes, which carry no honest modification date. */
-const HUBS = ["/", "/design-system", "/tools", "/audit", "/color-tools", "/blog", "/pricing"];
+/** The hand-listed hub routes, which carry no honest modification date. */
+const HUBS = ["/", "/design-system", "/tools", "/audit", "/color-tools", "/blog", "/pricing", "/about", "/contact", "/privacy", "/terms"];
 
 describe("sitemap", () => {
   const entries = sitemap();

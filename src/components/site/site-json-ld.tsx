@@ -22,6 +22,13 @@ export function SiteJsonLd() {
           name: "ChromaBrew",
           url: siteUrl,
           logo: `${siteUrl}/favicon.svg`,
+          contactPoint: {
+            "@type": "ContactPoint",
+            email: "hello@chromabrew.com",
+            contactType: "customer support",
+            url: `${siteUrl}/contact`,
+          },
+          sameAs: [],
         }}
       />
     </>
