@@ -5,7 +5,7 @@ export const TUTORIAL_POSTS_C: BlogPost[] = [
   {
     slug: "mix-brand-colors-tints",
     title: "Mix tints and blends from two brand colors",
-    metaTitle: "Mix Brand Colors Tutorial — Tints & Blends That Stay Vivid",
+    metaTitle: "Mix Brand Colors: Tints & Blends Tutorial",
     description:
       "A worked tutorial: blend two brand colors at any ratio in OKLCH, build an 11-step transition scale, and use it for gradients and hovers.",
     excerpt:
@@ -50,7 +50,7 @@ export const TUTORIAL_POSTS_C: BlogPost[] = [
   {
     slug: "find-exact-color-name",
     title: "Name any color and use names well in code",
-    metaTitle: "Find Color Names Tutorial — CSS Names & When to Use Them",
+    metaTitle: "Find Color Names Tutorial",
     description:
       "A worked tutorial: identify the closest named color for any value, learn the names worth memorizing, and know when names must give way to hex.",
     excerpt:
@@ -95,7 +95,7 @@ export const TUTORIAL_POSTS_C: BlogPost[] = [
   {
     slug: "convert-hex-rgb-hsl-oklch",
     title: "Convert between HEX, RGB, HSL, and OKLCH confidently",
-    metaTitle: "Convert Color Formats Tutorial — HEX, RGB, HSL, OKLCH",
+    metaTitle: "Convert HEX, RGB, HSL & OKLCH Tutorial",
     description:
       "A worked tutorial: see one color in every format at once, learn which format each job wants, and stop fearing OKLCH values.",
     excerpt:
@@ -180,7 +180,7 @@ export const TUTORIAL_POSTS_C: BlogPost[] = [
   {
     slug: "audit-palette-wcag-matrix",
     title: "Audit a whole palette for WCAG in one matrix",
-    metaTitle: "Audit Palette WCAG Matrix Tutorial — Every Pair at Once",
+    metaTitle: "Audit Palette WCAG Matrix Tutorial",
     description:
       "A worked tutorial: load every palette color into the matrix, read AA grades for all pairs, and turn failures into a fix list.",
     excerpt:
@@ -224,7 +224,7 @@ export const TUTORIAL_POSTS_C: BlogPost[] = [
   {
     slug: "pair-type-scale-with-color",
     title: "Pair a type scale with your color system",
-    metaTitle: "Pair Type Scale with Color Tutorial — Typography & Contrast",
+    metaTitle: "Pair Type Scale with Color Tutorial",
     description:
       "A worked tutorial: build a type scale, assign colors per level with contrast that holds, and keep display type expressive yet legible.",
     excerpt:
@@ -307,7 +307,7 @@ export const TUTORIAL_POSTS_C: BlogPost[] = [
   {
     slug: "vectorize-raster-to-svg",
     title: "Convert JPG logos and icons to clean SVG",
-    metaTitle: "Convert JPG to SVG Tutorial — Clean Vectors from Rasters",
+    metaTitle: "Convert JPG to SVG Tutorial",
     description:
       "A worked tutorial: vectorize raster logos and icons with the right color count, clean the result, and know when redrawing beats converting.",
     excerpt:
@@ -348,7 +348,7 @@ export const TUTORIAL_POSTS_C: BlogPost[] = [
   {
     slug: "brand-palette-case-study-workflow",
     title: "From a brand you admire to a system of your own",
-    metaTitle: "Brand Palette Case Study Tutorial — Learn, Don't Copy",
+    metaTitle: "Brand Palette Case Study Tutorial",
     description:
       "A worked tutorial: study a famous brand palette, extract its principles, and build an original system — inspiration with clean hands.",
     excerpt:
@@ -393,7 +393,7 @@ export const TUTORIAL_POSTS_C: BlogPost[] = [
   {
     slug: "first-website-audit-walkthrough",
     title: "Run your first website audit and read the report",
-    metaTitle: "First Website Audit Tutorial — Scan & Read the Report",
+    metaTitle: "First Website Audit Tutorial",
     description:
       "A worked tutorial: scan your site, understand render modes, read findings by severity, apply the first fixes, and re-scan to prove it.",
     excerpt:

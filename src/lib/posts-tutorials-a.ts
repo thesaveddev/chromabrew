@@ -11,7 +11,7 @@ export const TUTORIAL_POSTS_A: BlogPost[] = [
   {
     slug: "complementary-color-palette-tutorial",
     title: "Build a complementary palette that doesn't clash",
-    metaTitle: "Complementary Color Palette Tutorial — Opposites That Work",
+    metaTitle: "Complementary Palette Tutorial That Works",
     description:
       "A worked tutorial: take one brand color, find its complement, and tame the pair into a palette with neutrals, roles, and contrast-safe text.",
     excerpt:
@@ -56,7 +56,7 @@ export const TUTORIAL_POSTS_A: BlogPost[] = [
   {
     slug: "triadic-tetradic-palettes-explained",
     title: "Triadic and tetradic palettes without the rainbow mess",
-    metaTitle: "Triadic & Tetradic Palettes — Three and Four Hues That Work",
+    metaTitle: "Triadic & Tetradic Palettes Explained",
     description:
       "A worked tutorial on three- and four-hue palettes: when to reach for them, how to keep one hue in charge, and the saturation trick that prevents chaos.",
     excerpt:
@@ -101,7 +101,7 @@ export const TUTORIAL_POSTS_A: BlogPost[] = [
   {
     slug: "analogous-palette-brand-design",
     title: "Design a calm brand palette with analogous hues",
-    metaTitle: "Analogous Palette Tutorial — Calm, Cohesive Brand Color",
+    metaTitle: "Analogous Palette Tutorial for Brands",
     description:
       "A worked tutorial: build a serene brand palette from neighboring hues, add depth with lightness steps, and keep it from going flat.",
     excerpt:
@@ -236,7 +236,7 @@ export const TUTORIAL_POSTS_A: BlogPost[] = [
   {
     slug: "check-text-contrast-wcag",
     title: "Check your text contrast the WCAG way",
-    metaTitle: "Check Text Contrast for WCAG — Step-by-Step Tutorial",
+    metaTitle: "Check Text Contrast: WCAG Tutorial",
     description:
       "A worked tutorial: measure any text/background pair, read AA and AAA results for normal and large text, and know exactly what to fix.",
     excerpt:
@@ -321,7 +321,7 @@ export const TUTORIAL_POSTS_A: BlogPost[] = [
   {
     slug: "fix-failing-contrast-pair",
     title: "Fix a failing contrast pair without wrecking the design",
-    metaTitle: "Fix Failing Contrast — Keep the Hue, Pass the Ratio",
+    metaTitle: "Fix Failing Contrast, Keep the Hue",
     description:
       "A worked tutorial: take a real failing pair, find the nearest passing color that preserves the hue, and verify it in both themes.",
     excerpt:
@@ -411,7 +411,7 @@ export const TUTORIAL_POSTS_A: BlogPost[] = [
   {
     slug: "hover-states-from-color-scale",
     title: "Derive hover, active, and disabled states from your scale",
-    metaTitle: "Hover, Active & Disabled States from a Color Scale",
+    metaTitle: "Hover, Active & Disabled States Tutorial",
     description:
       "A worked tutorial: stop eyeballing interactive states — derive hover, active, focus, and disabled directly from scale steps with rules that hold.",
     excerpt:

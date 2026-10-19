@@ -49,7 +49,7 @@ export const TUTORIAL_POSTS_B: BlogPost[] = [
   {
     slug: "shadcn-theme-from-brand-color",
     title: "Theme shadcn/ui with your brand in five minutes",
-    metaTitle: "shadcn/ui Brand Theme Tutorial — oklch Variables",
+    metaTitle: "shadcn/ui Brand Theme Tutorial",
     description:
       "A worked tutorial: paste a brand color, get light and dark shadcn variable blocks, apply them, and keep charts and sidebar coherent.",
     excerpt:
@@ -90,7 +90,7 @@ export const TUTORIAL_POSTS_B: BlogPost[] = [
   {
     slug: "dark-mode-palette-from-scratch",
     title: "Build a dark mode palette that isn't inverted light mode",
-    metaTitle: "Dark Mode Palette Tutorial — Real Dark Semantics",
+    metaTitle: "Dark Mode Palette Tutorial",
     description:
       "A worked tutorial: derive dark surfaces, text, accents, and status colors from your brand, with elevation and contrast handled properly.",
     excerpt:
@@ -134,7 +134,7 @@ export const TUTORIAL_POSTS_B: BlogPost[] = [
   {
     slug: "gradient-hero-background-tutorial",
     title: "Design a hero gradient people remember",
-    metaTitle: "Hero Gradient Background Tutorial — Tasteful & Vivid",
+    metaTitle: "Hero Gradient Background Tutorial",
     description:
       "A worked tutorial: build a hero background gradient with real lightness travel, place content over it safely, and export production CSS.",
     excerpt:
@@ -264,7 +264,7 @@ export const TUTORIAL_POSTS_B: BlogPost[] = [
   {
     slug: "focus-rings-glow-shadows",
     title: "Focus rings and glows people can actually see",
-    metaTitle: "Focus Rings & Glow Shadows Tutorial — Visible Keyboard UX",
+    metaTitle: "Focus Rings & Glow Shadows Tutorial",
     description:
       "A worked tutorial: build 3:1 focus indicators with box-shadow rings, add tasteful glows, and test the tab order like a keyboard user.",
     excerpt:
@@ -308,7 +308,7 @@ export const TUTORIAL_POSTS_B: BlogPost[] = [
   {
     slug: "transparency-ui-overlays",
     title: "Transparency in UI: scrims, glass, and overlays",
-    metaTitle: "Transparency in UI Tutorial — Scrims, Glass & Overlays",
+    metaTitle: "Transparency in UI: Scrims & Overlays",
     description:
       "A worked tutorial: use rgba and HEX8 for scrims, glass cards, and modal dims — with contrast checks for the blended result.",
     excerpt:
@@ -352,7 +352,7 @@ export const TUTORIAL_POSTS_B: BlogPost[] = [
   {
     slug: "design-tokens-developer-handoff",
     title: "Hand off design tokens developers will actually use",
-    metaTitle: "Design Tokens Handoff Tutorial — From Palette to Code",
+    metaTitle: "Design Tokens Handoff Tutorial",
     description:
       "A worked tutorial: export semantic tokens as CSS and JSON, document the roles, and set up a handoff no one has to guess at.",
     excerpt:
