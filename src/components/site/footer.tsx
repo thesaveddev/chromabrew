@@ -41,6 +41,7 @@ export function SiteFooter() {
               // its only inbound link was from a noindex share page — leaving an
               // indexable page that no crawler could reach.
               ["/audit", "Website audit"],
+              ["/palettes", "Palette gallery"],
               ["/pricing", "Pricing"],
               ["/about", "About"],
               ["/contact", "Contact"],

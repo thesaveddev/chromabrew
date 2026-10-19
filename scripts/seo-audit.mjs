@@ -16,6 +16,7 @@
  */
 import { TOOLS } from "../src/lib/tools.ts";
 import { BLOG_POSTS, livePosts } from "../src/lib/posts.ts";
+import { PALETTE_THEMES, GALLERY_PALETTES } from "../src/lib/palettes.ts";
 import { siteUrl } from "../src/lib/site-url.ts";
 
 const BASE = process.env.BASE ?? "http://127.0.0.1:3300";
@@ -29,6 +30,9 @@ const REGISTRY_ROUTES = new Set([
   "/", "/design-system", "/tools", "/color-tools", "/blog", "/pricing", "/audit",
   ...TOOLS.map((t) => t.href),
   ...BLOG_POSTS.map((p) => `/blog/${p.slug}`),
+  "/palettes",
+  ...PALETTE_THEMES.map((t) => `/palettes/${t.slug}`),
+  ...GALLERY_PALETTES.map((p) => `/palettes/${p.theme}/${p.slug}`),
 ]);
 
 const hard = [];
@@ -108,8 +112,11 @@ const grab = (html, re) => (html.match(re) ? decode(html.match(re)[1].trim()) : 
 
 const TARGETS = [
   "/", "/design-system", "/tools", "/color-tools", "/blog", "/pricing", "/audit",
+  "/palettes",
   ...TOOLS.map((t) => t.href),
   ...livePosts().map((p) => `/blog/${p.slug}`),
+  ...PALETTE_THEMES.map((t) => `/palettes/${t.slug}`),
+  ...GALLERY_PALETTES.map((p) => `/palettes/${p.theme}/${p.slug}`),
 ];
 
 console.log(`\n${"─".repeat(72)}\nSERVED HTML  (BASE ${BASE})\n${"─".repeat(72)}`);

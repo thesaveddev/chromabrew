@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import sitemap from "./sitemap";
 import { TOOLS } from "@/lib/tools";
 import { livePosts } from "@/lib/posts";
+import { PALETTE_THEMES, GALLERY_PALETTES } from "@/lib/palettes";
 import { siteUrl } from "@/lib/site-url";
 
 /** The hand-listed hub routes, which carry no honest modification date. */
@@ -12,7 +13,13 @@ describe("sitemap", () => {
   const byUrl = new Map(entries.map((entry) => [entry.url, entry]));
 
   it("lists every indexable route exactly once", () => {
-    const expected = HUBS.length + TOOLS.length + livePosts().length;
+    const expected =
+      HUBS.length +
+      TOOLS.length +
+      livePosts().length +
+      1 +
+      PALETTE_THEMES.length +
+      GALLERY_PALETTES.length;
     expect(entries).toHaveLength(expected);
 
     const urls = entries.map((entry) => entry.url);
@@ -42,6 +49,18 @@ describe("sitemap", () => {
     for (const tool of TOOLS) {
       const entry = byUrl.get(`${siteUrl}${tool.href}`);
       expect(entry, `missing sitemap entry for ${tool.href}`).toBeDefined();
+      expect("lastModified" in entry!).toBe(false);
+    }
+
+    for (const theme of PALETTE_THEMES) {
+      const entry = byUrl.get(`${siteUrl}/palettes/${theme.slug}`);
+      expect(entry, `missing sitemap entry for theme ${theme.slug}`).toBeDefined();
+      expect("lastModified" in entry!).toBe(false);
+    }
+
+    for (const palette of GALLERY_PALETTES) {
+      const entry = byUrl.get(`${siteUrl}/palettes/${palette.theme}/${palette.slug}`);
+      expect(entry, `missing sitemap entry for palette ${palette.slug}`).toBeDefined();
       expect("lastModified" in entry!).toBe(false);
     }
 

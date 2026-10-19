@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { TOOLS } from "@/lib/tools";
 import { livePosts } from "@/lib/posts";
+import { PALETTE_THEMES, GALLERY_PALETTES } from "@/lib/palettes";
 import { siteUrl } from "@/lib/site-url";
 
 /**
@@ -25,6 +26,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/contact", priority: 0.5 },
     { path: "/privacy", priority: 0.3 },
     { path: "/terms", priority: 0.3 },
+    { path: "/palettes", priority: 0.8 },
+    ...PALETTE_THEMES.map((theme) => ({ path: `/palettes/${theme.slug}`, priority: 0.6 })),
+    ...GALLERY_PALETTES.map((palette) => ({
+      path: `/palettes/${palette.theme}/${palette.slug}`,
+      priority: 0.6,
+    })),
     ...TOOLS.map((tool) => ({ path: tool.href, priority: 0.7 })),
     ...livePosts().map((post) => ({
       path: `/blog/${post.slug}`,
