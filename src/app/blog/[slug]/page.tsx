@@ -60,7 +60,12 @@ export default async function BlogPostPage({ params }: Props) {
           description: post.description,
           datePublished: post.publishedAt,
           ...(post.updatedAt ? { dateModified: post.updatedAt } : {}),
-          author: { "@type": "Organization", name: "ChromaBrew", url: siteUrl },
+          author: {
+            "@type": "Person",
+            name: "Opeyemi Olorunfemi",
+            url: `${siteUrl}/about`,
+            jobTitle: "Founder, ChromaBrew",
+          },
           publisher: { "@type": "Organization", name: "ChromaBrew", url: siteUrl },
           mainEntityOfPage: url,
           // Always present: Google lists an image as a recommended Article
@@ -107,6 +112,13 @@ export default async function BlogPostPage({ params }: Props) {
           <span className="font-medium uppercase tracking-wider text-zinc-500">{post.category}</span>
           <span aria-hidden>·</span>
           <time dateTime={post.publishedAt}>{formatPostDate(post.publishedAt)}</time>
+          <span aria-hidden>·</span>
+          <span>
+            By{" "}
+            <Link href="/about" className="font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-zinc-100">
+              Opeyemi Olorunfemi
+            </Link>
+          </span>
         </div>
         <h1 className="mt-3 text-3xl font-bold leading-tight tracking-tight text-zinc-900 dark:text-zinc-100">
           {post.title}

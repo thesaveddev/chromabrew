@@ -245,6 +245,7 @@ export const TOOLS: ToolDefinition[] = [
     intro: [
       "Build a complete shadcn/ui theme from one brand color in the current oklch() convention. The generator emits matched light and dark variable blocks, including chart-1…chart-5 and sidebar tokens.",
       "Paste the CSS into your global stylesheet and every shadcn component — buttons, cards, dialogs and charts — picks up the theme automatically.",
+      "Your brand hue drives --primary in both modes, but the two blocks are not copies: dark-mode primaries are lifted in lightness and softened in chroma so buttons stay vivid on dark surfaces, and every foreground is measured for contrast rather than assumed. Chart colors are spread around the hue wheel so series stay distinguishable, and --radius is carried through so your corner style survives the paste.",
     ],
     category: "css",
     faqs: [
@@ -259,6 +260,10 @@ export const TOOLS: ToolDefinition[] = [
       {
         q: "How do I apply the theme?",
         a: "Paste the CSS into your global stylesheet (e.g. globals.css). The variables override shadcn's defaults everywhere — buttons, cards, dialogs and charts pick them up automatically.",
+      },
+      {
+        q: "Will my brand color survive as the primary button color?",
+        a: "Yes — the generator keeps your hue recognisable in --primary for both modes and adjusts lightness and chroma around it for legibility, rather than replacing it with a generic blue. If the exact brand hex must appear somewhere (a logo lockup, a marketing banner), use it as an accent alongside the theme primary.",
       },
     ],
   },
@@ -389,6 +394,7 @@ export const TOOLS: ToolDefinition[] = [
     intro: [
       "Build linear, radial and conic CSS gradients visually — pick colors, set angles and drag color stops — then copy production-ready CSS. The code updates live.",
       "Switch gradient types and stop colors without touching the output; the generated CSS is standard-compliant and ready to paste into any stylesheet.",
+      "The most common professional use is the scrim: a transparent-to-near-black linear gradient laid over a photo so white headline text stays legible. Build it with two stops of the same hue (transparent → ~80% black) rather than two different colors — it reads as lighting, not decoration, and never fights the page's palette.",
     ],
     category: "css",
     faqs: [
@@ -403,6 +409,10 @@ export const TOOLS: ToolDefinition[] = [
       {
         q: "Is the output production-ready?",
         a: "Yes — the CSS is clean and standard-compliant. For older browsers that do not support CSS gradients, declare a plain-color background before the gradient rule as a fallback.",
+      },
+      {
+        q: "Can I put text over my gradient?",
+        a: "Only if the text zone stays contrast-safe: keep body copy off gradients entirely, and for headlines over an image-plus-gradient scrim, check the lightest point of the text area against your text color in the contrast checker — gradients fail WCAG at their lightest stop first.",
       },
     ],
   },
@@ -445,6 +455,7 @@ export const TOOLS: ToolDefinition[] = [
     intro: [
       "Design box-shadow and text-shadow values with sliders — offset, blur, spread, color and opacity — and copy clean rgba() CSS the moment it looks right. Standard-compliant output for any modern browser.",
       "Each output is a single shadow rule. CSS stacks multiple shadows with commas, so you can build a layered elevation by combining two or three generated values in one declaration.",
+      "For dark mode, design shadows separately rather than reusing light-mode values: on a dark surface the shadow color should stay near-black but drop to roughly half the opacity, because the background itself already absorbs the contrast a shadow needs to read. If a dark card looks flat, widen the blur before raising the opacity.",
     ],
     category: "css",
     faqs: [
@@ -460,6 +471,10 @@ export const TOOLS: ToolDefinition[] = [
         q: "Can I create layered shadows?",
         a: "This tool generates single shadows. For layered effects, generate multiple shadows and combine them with commas in your CSS.",
       },
+      {
+        q: "What is spread for, and when should I leave it at zero?",
+        a: "Spread grows or shrinks the shadow's footprint before blur is applied — useful for solid borders that glow (focus rings) or for shrinking a shadow tighter than its element. For elevation shadows that mimic real light, leave spread at zero and control the shape with offset and blur instead.",
+      },
     ],
   },
   {
@@ -473,6 +488,7 @@ export const TOOLS: ToolDefinition[] = [
     intro: [
       "Add transparency to any color and get the HEX8, RGBA and percentage opacity values at once, previewed on white, gray and black backgrounds. HEX8 extends a hex code with two alpha digits.",
       "Preview on multiple backgrounds catches contrast problems before they ship, because transparency reads differently depending on what sits beneath it.",
+      "Prefer transparent colors over the opacity property when only part of an element should fade: opacity dims the element and everything inside it (including its text), while an rgba() background fades just the layer you point it at. That distinction is the difference between a readable glass card and washed-out text.",
     ],
     category: "color",
     faqs: [
@@ -488,6 +504,10 @@ export const TOOLS: ToolDefinition[] = [
         q: "Why preview on multiple backgrounds?",
         a: "Transparency looks different depending on what's behind it. Previewing on white, gray and black helps you catch contrast issues before shipping.",
       },
+      {
+        q: "Does a transparent color keep its WCAG rating?",
+        a: "No — a contrast ratio is only valid for the final blended color on a specific background. A 50% black overlay on white is effectively gray, so always measure the composited result (eyedropper the rendered pixel if you must) rather than the base color.",
+      },
     ],
   },
   {
@@ -501,6 +521,7 @@ export const TOOLS: ToolDefinition[] = [
     intro: [
       "Check an entire color palette for WCAG contrast failures in one matrix view. Every foreground/background pair is graded for AA normal and large text, with failures flagged at a glance.",
       "Add as many colors as you need; the matrix scales automatically and makes obvious which combinations need fixing before you export.",
+      "Run the check before you lock the palette, not after the UI is built: the cheapest fix for a failing pair is shifting the palette color one step darker or lighter while the scale is still fluid. Pairs that fail at normal text but pass at large text are still usable for headings and icons — the matrix tells you which is which so the decision is deliberate.",
     ],
     category: "color",
     faqs: [
@@ -515,6 +536,10 @@ export const TOOLS: ToolDefinition[] = [
       {
         q: "How many colors can I add?",
         a: "As many as you need. The matrix scales automatically, though it becomes harder to read beyond about 8 colors.",
+      },
+      {
+        q: "Does passing text contrast cover my whole UI?",
+        a: "Not quite — WCAG also requires 3:1 for UI components and graphical objects (borders, input outlines, focus indicators, icons that carry meaning). A palette that passes for text usually covers these too, but check your border and focus colors explicitly; they are the most common silent failures.",
       },
     ],
   },

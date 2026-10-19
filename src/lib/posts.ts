@@ -1277,6 +1277,28 @@ slug: "oklch-explained-for-frontend-developers",
         ],
         tip: "Photos with too much similar tone (a golden-hour shot, say) collapse to one hue. If extraction gives you a nearly monochrome set, flip to a photo with more color range, or force a hue shift to find your accent.",
       },
+      {
+        heading: "Turn seeds into usable scales",
+        body: [
+          "A raw extracted hex is a single point — a UI needs a ramp. Take each seed color and generate a perceptual scale around it (light tints for backgrounds, dark shades for text and hover states) so one photo color becomes ten usable stops. This is the step most people skip, and it is why photo palettes so often stall at a mood board that never ships.",
+          "Keep the count tight: one primary scale, one secondary, one accent, plus a neutral derived from the photo's grayest tone. Four scales is a system; twelve extracted swatches is a souvenir. If two seeds sit within a few degrees of hue, merge them — near-duplicate ramps just double every later decision.",
+        ],
+        links: [
+          { label: "Generate even scales from your seed", href: "/tools/shade-generator" },
+          { label: "Build the full system from one color", href: "/design-system" },
+        ],
+      },
+      {
+        heading: "Give text its own contrast pass",
+        body: [
+          "Photo colors are chosen for mood, and mood colors are usually mid-tone — exactly where text contrast goes to die. So treat legibility as a separate pass: run every text-on-surface pair from your photo palette through a contrast check, and be willing to darken the text stop two steps past what looks right on the swatch card.",
+          "The accent deserves the same honesty. A beautiful dusty-rose accent at 2.8:1 on white is fine for illustrations and large display type, but it is not a link color. Decide per color whether it is decoration or communication, and only the second group needs to pass — but that group must actually pass.",
+        ],
+        links: [
+          { label: "Check your pairs against WCAG", href: "/tools/contrast-checker" },
+          { label: "Grade the whole palette at once", href: "/tools/wcag-palette-checker" },
+        ],
+      },
     ],
   },
   {
@@ -1302,6 +1324,27 @@ slug: "oklch-explained-for-frontend-developers",
         ],
         tip: "Shadows are easier to judge with a live preview over a real background, and they harden into tokens fast: define shadow-sm / shadow / shadow-lg from elevation levels once, and reference the token everywhere.",
       },
+      {
+        heading: "An elevation scale in three levels",
+        body: [
+          "Most interfaces need exactly three elevations: resting cards, raised elements (dropdowns, popovers), and overlays (modals, toasts). Give each a fixed two-layer recipe — a tight contact shadow plus a soft ambient one — and never invent a fourth on the fly. Consistency is what makes depth feel systematic instead of decorative.",
+          "A practical starting scale in light mode: resting gets a whisper of contact plus a wide faint ambient; raised doubles the offsets and deepens the contact layer; overlays go further still and add a backdrop dim so the layering reads even before the shadow registers. Tune the numbers below against your own background rather than copying them blind — shadow opacity is relative to what sits behind it.",
+        ],
+        code: ".card    { box-shadow: 0 1px 2px rgb(0 0 0 / 0.08), 0 4px 16px rgb(0 0 0 / 0.08); }\n.raised  { box-shadow: 0 2px 6px rgb(0 0 0 / 0.12), 0 12px 32px rgb(0 0 0 / 0.14); }\n.overlay { box-shadow: 0 4px 12px rgb(0 0 0 / 0.16), 0 24px 64px rgb(0 0 0 / 0.22); }",
+        codeLang: "css",
+        links: [
+          { label: "Design each layer visually", href: "/tools/css-shadow-generator" },
+          { label: "Tokenise the scale", href: "/tools/design-token-generator" },
+        ],
+      },
+      {
+        heading: "Dark mode needs its own shadows",
+        body: [
+          "Shadows obey light, and dark interfaces have almost no light to obey — a 20%-opacity black shadow on a near-black surface is invisible. Dark-mode elevation is carried mostly by lighter surfaces and borders, with shadows reduced to a supporting role at roughly half their light-mode opacity.",
+          "The reliable dark-mode recipe: lift each elevation level one surface step lighter than the background, add a faint top highlight (a 1px inset of white at 4–6%) to suggest the light source, and keep one soft black shadow to ground the layer. If a dark card still looks pasted on, reach for the border and surface first — more shadow opacity is rarely the fix.",
+        ],
+        tip: "Judge dark-mode shadows at full screen brightness and at low brightness. Phone users in bed are your toughest shadow critics.",
+      },
     ],
   },
   {
@@ -1326,6 +1369,29 @@ slug: "oklch-explained-for-frontend-developers",
           "Direction and stretch matter too. A gradient that's allowed to breathe across a full container looks expensive; a tight 45-degree sweep that barely shifts looks accidental. Know which of the two you want.",
         ],
         tip: "When a gradient looks off but you can't place it, drop one stop's lightness instead of reaching for a third color — three stops rarely rescue a pairing that two proper stops was too lazy to nail.",
+      },
+      {
+        heading: "A recipe for a tasteful hero gradient",
+        body: [
+          "The highest-success-rate hero gradient is almost boring: your primary hue at two clearly separated lightnesses, stretched across the full container at a shallow angle, with a whisper of a neighboring hue at one end for life. Two stops, one hue family, real lightness travel — that combination reads as expensive almost regardless of the hue you start from.",
+          "If you want two hues, pick them like a lighting designer: adjacent on the wheel (violet into blue, teal into green) for calm, or across it (amber into rose) for energy — and keep both stops at similar saturation so neither end looks neon against the other. Mismatched saturation is the quiet killer of two-hue gradients.",
+        ],
+        code: ".hero {\n  background: linear-gradient(160deg, oklch(0.72 0.14 285), oklch(0.52 0.18 320));\n}",
+        codeLang: "css",
+        links: [
+          { label: "Build it visually, copy the CSS", href: "/tools/css-gradient-generator" },
+          { label: "Find stops with real lightness travel", href: "/tools/color-mixer" },
+        ],
+      },
+      {
+        heading: "Keep text legible over gradients",
+        body: [
+          "A gradient behind text is a contrast gamble that changes along the container: the pairing passes at the dark end and fails at the light end, and WCAG grades the failure. The professional fixes are a scrim (a transparent-to-black overlay between image and text), a solid text panel, or restricting the gradient to decoration zones with copy on flat color.",
+          "If display type must sit directly on a gradient, test the lightest point under the text, not the average — and re-test in dark mode, where the same gradient often inverts its risk. When in doubt, the scrim wins: it preserves the gradient's drama while giving the text one predictable background to pass against.",
+        ],
+        links: [
+          { label: "Verify the lightest point passes", href: "/tools/contrast-checker" },
+        ],
       },
     ],
   },
