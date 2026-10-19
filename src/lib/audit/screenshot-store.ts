@@ -1,9 +1,9 @@
 /**
  * Screenshot storage for the audit scanner.
  *
- * Screenshots live on the local filesystem for now (the schema already has
- * `ScannedPage.screenshotPath`, so moving to object storage later means changing
- * this module alone). Two rules keep it safe:
+ * Screenshots live in two places: the bytes on the `ScannedPage` row (what the
+ * web tier serves — it never sees the worker's disk) and a local filesystem
+ * copy on the worker (what retention cleans up). Two rules keep it safe:
  *
  *   1. A request can never name a file. Filenames come only from validated scan
  *      and page ids; the path served back is read from the database row.

@@ -204,17 +204,25 @@ export async function getSharedReport(token: string): Promise<SharedReport | nul
 
 /**
  * The page a shared screenshot belongs to: the token must name the scan, and the
- * page must belong to that scan. Returns the stored path, never a request value.
+ * page must belong to that scan. Returns the stored bytes when the worker saved
+ * them, else the stored path — never a request value.
  */
 export async function resolveSharedScreenshot(
   token: string,
   pageId: string,
-): Promise<string | null> {
+): Promise<{ data: Uint8Array | null; path: string | null } | null> {
   if (!isValidShareToken(token)) return null;
 
   const page = await prisma.scannedPage.findFirst({
     where: { id: pageId, scan: { shareToken: token } },
-    select: { screenshotPath: true },
+    select: { screenshotPath: true, screenshotData: true },
   });
-  return page?.screenshotPath ?? null;
+  if (!page) return null;
+  return {
+    data:
+      page.screenshotData && page.screenshotData.length > 0
+        ? new Uint8Array(page.screenshotData)
+        : null,
+    path: page.screenshotPath,
+  };
 }

@@ -26,10 +26,12 @@ export async function GET(
   if (!pageId) return notFound();
 
   try {
-    const screenshotPath = await resolveSharedScreenshot(token, pageId);
-    if (!screenshotPath) return notFound();
+    const resolved = await resolveSharedScreenshot(token, pageId);
+    if (!resolved) return notFound();
 
-    const png = await readScreenshot(screenshotPath);
+    const png =
+      resolved.data ??
+      (resolved.path ? await readScreenshot(resolved.path) : null);
     if (!png) return notFound();
 
     return new NextResponse(new Uint8Array(png), {

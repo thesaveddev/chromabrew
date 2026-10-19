@@ -286,7 +286,13 @@ export async function runClaimedScan(scanId: string, options: RunOptions = {}): 
         const storedPath = await saveScreenshot(scanId, page.id, outcome.screenshot);
         await prisma.scannedPage.update({
           where: { id: page.id },
-          data: { screenshotPath: storedPath },
+          data: {
+            screenshotPath: storedPath,
+            // The bytes travel with the row so the web tier can serve them
+            // without ever seeing the worker's disk. The file stays as the
+            // worker-local copy retention cleans up.
+            screenshotData: Buffer.from(outcome.screenshot),
+          },
         });
       } catch {
         // A screenshot that cannot be stored is missing evidence, not a failed

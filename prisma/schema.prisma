@@ -257,6 +257,7 @@ model ScannedPage {
   rendered          Boolean       @default(false)
   screenshotPath    String?       @db.Text
   screenshotUrl     String?       @db.Text
+  screenshotData    Bytes?
   domHash           String?
   metadata          Json?
   errorMessage      String?       @db.Text

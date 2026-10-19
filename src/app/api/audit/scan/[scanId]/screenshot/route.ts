@@ -27,11 +27,18 @@ export async function GET(
   try {
     const page = await prisma.scannedPage.findFirst({
       where: { id: pageId, scanId },
-      select: { screenshotPath: true },
+      select: { screenshotPath: true, screenshotData: true },
     });
-    if (!page?.screenshotPath) return notFound();
+    if (!page) return notFound();
 
-    const png = await readScreenshot(page.screenshotPath);
+    // The bytes live on the row so the web tier needs no access to the
+    // worker's disk; the filesystem copy is only the worker-local fallback.
+    const png =
+      page.screenshotData && page.screenshotData.length > 0
+        ? Buffer.from(page.screenshotData)
+        : page.screenshotPath
+          ? await readScreenshot(page.screenshotPath)
+          : null;
     // The row can outlive the file (retention, a wiped worker volume); that is a
     // missing screenshot, not a server fault.
     if (!png) return notFound();
