@@ -8,12 +8,36 @@ on:
     - cron: '0 9 14 10 *'  # Oct 14
     - cron: '0 9 16 10 *'  # Oct 16
     - cron: '0 9 19 10 *'  # Oct 19
+    - cron: '0 9 20 10 *'  # Oct 20 — daily tutorials begin
+    - cron: '0 9 21 10 *'  # Oct 21
     - cron: '0 9 22 10 *'  # Oct 22
+    - cron: '0 9 23 10 *'  # Oct 23
+    - cron: '0 9 24 10 *'  # Oct 24
+    - cron: '0 9 25 10 *'  # Oct 25
     - cron: '0 9 26 10 *'  # Oct 26
+    - cron: '0 9 27 10 *'  # Oct 27
+    - cron: '0 9 28 10 *'  # Oct 28
     - cron: '0 9 29 10 *'  # Oct 29
+    - cron: '0 9 30 10 *'  # Oct 30
+    - cron: '0 9 31 10 *'  # Oct 31
+    - cron: '0 9 1 11 *'   # Nov 1
     - cron: '0 9 2 11 *'   # Nov 2
+    - cron: '0 9 3 11 *'   # Nov 3
+    - cron: '0 9 4 11 *'   # Nov 4
     - cron: '0 9 5 11 *'   # Nov 5
+    - cron: '0 9 6 11 *'   # Nov 6
+    - cron: '0 9 7 11 *'   # Nov 7
     - cron: '0 9 8 11 *'   # Nov 8
+    - cron: '0 9 9 11 *'   # Nov 9
+    - cron: '0 9 10 11 *'  # Nov 10
+    - cron: '0 9 11 11 *'  # Nov 11
+    - cron: '0 9 12 11 *'  # Nov 12
+    - cron: '0 9 13 11 *'  # Nov 13
+    - cron: '0 9 14 11 *'  # Nov 14
+    - cron: '0 9 15 11 *'  # Nov 15
+    - cron: '0 9 16 11 *'  # Nov 16
+    - cron: '0 9 17 11 *'  # Nov 17
+    - cron: '0 9 18 11 *'  # Nov 18 — daily tutorials end
 
   workflow_dispatch:
 

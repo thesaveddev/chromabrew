@@ -1,3 +1,7 @@
+import { TUTORIAL_POSTS_A } from "./posts-tutorials-a";
+import { TUTORIAL_POSTS_B } from "./posts-tutorials-b";
+import { TUTORIAL_POSTS_C } from "./posts-tutorials-c";
+
 export interface PostSection {
   heading: string;
   /** Paragraphs / list items rendered under the heading. */
@@ -2990,6 +2994,9 @@ Blues/grays/lights: aliceblue, azure, mintcream, honeydew, ghostwhite, lavenderb
     ],
   },
 ];
+
+/* Daily tutorials, one going live per day — see posts-tutorials-{a,b,c}. */
+BLOG_POSTS.push(...TUTORIAL_POSTS_A, ...TUTORIAL_POSTS_B, ...TUTORIAL_POSTS_C);
 
 export function findPost(slug: string): BlogPost | undefined {
   return BLOG_POSTS.find((post) => post.slug === slug);

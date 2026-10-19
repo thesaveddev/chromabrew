@@ -106,6 +106,14 @@ export function ScanReport({ results }: { results: ScanResultsDto }) {
         ) : null}
       </div>
 
+      {page && !page.screenshotUrl ? (
+        <p className="rounded-xl border border-dashed border-zinc-300 bg-zinc-50 px-4 py-3 text-xs leading-5 text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800/40 dark:text-zinc-400">
+          No screenshot was captured for this scan — usually because the page
+          blocked rendering or the capture failed. The findings below stand on
+          their own measurements.
+        </p>
+      ) : null}
+
       {page?.screenshotUrl ? (
         <figure className="overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
           <Image
