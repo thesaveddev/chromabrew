@@ -17,6 +17,9 @@
 import { TOOLS } from "../src/lib/tools.ts";
 import { BLOG_POSTS, livePosts } from "../src/lib/posts.ts";
 import { PALETTE_THEMES, GALLERY_PALETTES } from "../src/lib/palettes.ts";
+import { NAMED_COLORS } from "../src/lib/colors.ts";
+import { BRAND_PALETTES } from "../src/lib/brand-palettes.ts";
+import { brandSlug } from "../src/lib/brand-pages.ts";
 import { siteUrl } from "../src/lib/site-url.ts";
 
 const BASE = process.env.BASE ?? "http://127.0.0.1:3300";
@@ -33,6 +36,10 @@ const REGISTRY_ROUTES = new Set([
   "/palettes",
   ...PALETTE_THEMES.map((t) => `/palettes/${t.slug}`),
   ...GALLERY_PALETTES.map((p) => `/palettes/${p.theme}/${p.slug}`),
+  "/colors",
+  ...NAMED_COLORS.map((c) => `/colors/${c.slug}`),
+  "/brands",
+  ...BRAND_PALETTES.map((b) => `/brands/${brandSlug(b.name)}`),
 ]);
 
 const hard = [];
@@ -117,6 +124,10 @@ const TARGETS = [
   ...livePosts().map((p) => `/blog/${p.slug}`),
   ...PALETTE_THEMES.map((t) => `/palettes/${t.slug}`),
   ...GALLERY_PALETTES.map((p) => `/palettes/${p.theme}/${p.slug}`),
+  "/colors",
+  ...NAMED_COLORS.map((c) => `/colors/${c.slug}`),
+  "/brands",
+  ...BRAND_PALETTES.map((b) => `/brands/${brandSlug(b.name)}`),
 ];
 
 console.log(`\n${"─".repeat(72)}\nSERVED HTML  (BASE ${BASE})\n${"─".repeat(72)}`);

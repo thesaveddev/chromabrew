@@ -3,6 +3,9 @@ import sitemap from "./sitemap";
 import { TOOLS } from "@/lib/tools";
 import { livePosts } from "@/lib/posts";
 import { PALETTE_THEMES, GALLERY_PALETTES } from "@/lib/palettes";
+import { NAMED_COLORS } from "@/lib/colors";
+import { BRAND_PALETTES } from "@/lib/brand-palettes";
+import { brandSlug } from "@/lib/brand-pages";
 import { siteUrl } from "@/lib/site-url";
 
 /** The hand-listed hub routes, which carry no honest modification date. */
@@ -19,7 +22,11 @@ describe("sitemap", () => {
       livePosts().length +
       1 +
       PALETTE_THEMES.length +
-      GALLERY_PALETTES.length;
+      GALLERY_PALETTES.length +
+      1 +
+      NAMED_COLORS.length +
+      1 +
+      BRAND_PALETTES.length;
     expect(entries).toHaveLength(expected);
 
     const urls = entries.map((entry) => entry.url);
@@ -61,6 +68,18 @@ describe("sitemap", () => {
     for (const palette of GALLERY_PALETTES) {
       const entry = byUrl.get(`${siteUrl}/palettes/${palette.theme}/${palette.slug}`);
       expect(entry, `missing sitemap entry for palette ${palette.slug}`).toBeDefined();
+      expect("lastModified" in entry!).toBe(false);
+    }
+
+    for (const color of NAMED_COLORS) {
+      const entry = byUrl.get(`${siteUrl}/colors/${color.slug}`);
+      expect(entry, `missing sitemap entry for color ${color.slug}`).toBeDefined();
+      expect("lastModified" in entry!).toBe(false);
+    }
+
+    for (const brand of BRAND_PALETTES) {
+      const entry = byUrl.get(`${siteUrl}/brands/${brandSlug(brand.name)}`);
+      expect(entry, `missing sitemap entry for brand ${brand.name}`).toBeDefined();
       expect("lastModified" in entry!).toBe(false);
     }
 

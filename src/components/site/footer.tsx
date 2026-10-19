@@ -42,6 +42,8 @@ export function SiteFooter() {
               // indexable page that no crawler could reach.
               ["/audit", "Website audit"],
               ["/palettes", "Palette gallery"],
+              ["/colors", "Color reference"],
+              ["/brands", "Brand colors"],
               ["/pricing", "Pricing"],
               ["/about", "About"],
               ["/contact", "Contact"],

@@ -2,6 +2,9 @@ import type { MetadataRoute } from "next";
 import { TOOLS } from "@/lib/tools";
 import { livePosts } from "@/lib/posts";
 import { PALETTE_THEMES, GALLERY_PALETTES } from "@/lib/palettes";
+import { NAMED_COLORS } from "@/lib/colors";
+import { BRAND_PALETTES } from "@/lib/brand-palettes";
+import { brandSlug } from "@/lib/brand-pages";
 import { siteUrl } from "@/lib/site-url";
 
 /**
@@ -31,6 +34,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...GALLERY_PALETTES.map((palette) => ({
       path: `/palettes/${palette.theme}/${palette.slug}`,
       priority: 0.6,
+    })),
+    { path: "/colors", priority: 0.8 },
+    ...NAMED_COLORS.map((color) => ({ path: `/colors/${color.slug}`, priority: 0.6 })),
+    { path: "/brands", priority: 0.8 },
+    ...BRAND_PALETTES.map((brand) => ({
+      path: `/brands/${brandSlug(brand.name)}`,
+      priority: 0.5,
     })),
     ...TOOLS.map((tool) => ({ path: tool.href, priority: 0.7 })),
     ...livePosts().map((post) => ({
