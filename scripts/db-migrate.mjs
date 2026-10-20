@@ -435,32 +435,54 @@ async function main() {
     );
   }
 
-  // TEMPORARY DIAGNOSTIC (P3009 triage) — every migration row in every
-  // history schema, with the tail of the logs Prisma recorded for it.
-  {
-    const diag = await connect(withSchema(connectionString, schema));
-    try {
-      for (const histSchema of [schema, ...stray]) {
-        try {
-          const { rows } = await diag.query(
-            `select migration_name, started_at, finished_at, rolled_back_at, applied_steps_count, ` +
-              `left(coalesce(logs, ''), 400) as logs from "${histSchema}"."_prisma_migrations" ` +
-              `order by started_at nulls first`,
+  // Every row of every history schema, so a blocked build names its blocker
+  // in the log rather than only in a Prisma error code.
+  const diag = await connect(withSchema(connectionString, schema));
+  try {
+    for (const histSchema of [schema, ...stray]) {
+      try {
+        const { rows } = await diag.query(
+          `select migration_name, started_at, finished_at, rolled_back_at from ` +
+            `"${histSchema}"."_prisma_migrations" order by started_at nulls first`,
+        );
+        for (const r of rows) {
+          log(
+            `hist ${histSchema} · ${r.migration_name} started=${r.started_at} ` +
+              `finished=${r.finished_at ? "yes" : "NULL"} ` +
+              `rolled_back=${r.rolled_back_at ? "yes" : "NULL"}`,
           );
-          for (const r of rows) {
-            log(
-              `hist ${histSchema} · ${r.migration_name} started=${r.started_at} ` +
-                `finished=${r.finished_at ?? "NULL"} rolled_back=${r.rolled_back_at ?? "NULL"} ` +
-                `steps=${r.applied_steps_count} logs=${JSON.stringify(r.logs)}`,
-            );
-          }
-        } catch (error) {
-          log(`hist ${histSchema} · read failed: ${error instanceof Error ? error.message : String(error)}`);
         }
+      } catch (error) {
+        log(`hist ${histSchema} · read failed: ${error instanceof Error ? error.message : String(error)}`);
       }
-    } finally {
-      await diag.end();
     }
+
+    // A failed row in a *stray* history is still a loaded gun: through the
+    // pooled connection Prisma can resolve `_prisma_migrations` in the
+    // default schema instead of the target one — the search_path pin rides a
+    // session the pooler may not reuse — and the precheck then reports the
+    // stray row. That is how a failed `audit_scanning` row from 13 Oct in
+    // "public" stopped the 20 Oct deploy with P3009 while every row of the
+    // app's own history was clean. The stray history is not the app's, so
+    // its dead rows are marked rolled back here, with a schema-qualified
+    // UPDATE — the same single-row effect as `migrate resolve --rolled-back`,
+    // but aimed at the right table no matter which pooled session answers.
+    for (const straySchema of stray) {
+      const fixed = await diag.query(
+        `update "${straySchema}"."_prisma_migrations"
+            set rolled_back_at = now()
+          where finished_at is null and rolled_back_at is null
+          returning migration_name`,
+      );
+      for (const row of fixed.rows) {
+        log(
+          `stray ${straySchema} · ${row.migration_name} failed there long ago and the app's ` +
+            `tables live in "${schema}"; marking it rolled back so it cannot block the deploy`,
+        );
+      }
+    }
+  } finally {
+    await diag.end();
   }
 
   if (objects.tables.size === 0) {
