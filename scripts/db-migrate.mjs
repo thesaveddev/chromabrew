@@ -435,6 +435,34 @@ async function main() {
     );
   }
 
+  // TEMPORARY DIAGNOSTIC (P3009 triage) — every migration row in every
+  // history schema, with the tail of the logs Prisma recorded for it.
+  {
+    const diag = await connect(withSchema(connectionString, schema));
+    try {
+      for (const histSchema of [schema, ...stray]) {
+        try {
+          const { rows } = await diag.query(
+            `select migration_name, started_at, finished_at, rolled_back_at, applied_steps_count, ` +
+              `left(coalesce(logs, ''), 400) as logs from "${histSchema}"."_prisma_migrations" ` +
+              `order by started_at nulls first`,
+          );
+          for (const r of rows) {
+            log(
+              `hist ${histSchema} · ${r.migration_name} started=${r.started_at} ` +
+                `finished=${r.finished_at ?? "NULL"} rolled_back=${r.rolled_back_at ?? "NULL"} ` +
+                `steps=${r.applied_steps_count} logs=${JSON.stringify(r.logs)}`,
+            );
+          }
+        } catch (error) {
+          log(`hist ${histSchema} · read failed: ${error instanceof Error ? error.message : String(error)}`);
+        }
+      }
+    } finally {
+      await diag.end();
+    }
+  }
+
   if (objects.tables.size === 0) {
     log(`fresh database · applying all ${MIGRATIONS.length} migrations to schema "${schema}"`);
   } else {
