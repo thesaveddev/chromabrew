@@ -19,13 +19,15 @@ remains the original stage-by-stage planning note.
 | 3     | AI visual design analysis              | NOT STARTED — no provider configured (see *Existing AI integrations*) |
 | 4     | Actionable fixes and design-system generation | PARTIAL — deterministic contrast and metadata fixes implemented; token generation not started |
 | 5     | Before-and-after previews              | NOT STARTED |
-| 6     | Multi-page crawling                    | NOT STARTED |
+| 6     | Multi-page crawling                    | PARTIAL — same-origin crawl bounded by page and time budgets implemented; no depth cap (shallowest-first ordering only) and `robots.txt` still ignored |
 | 7     | Reports, accounts and premium billing  | PARTIAL — shareable report links implemented; metering, history and billing not started |
 | 8     | Historical comparisons and monitoring  | NOT STARTED |
 
-Stages 5-8 do not exist in the repository: no preview rendering, no crawling, no
+Stages 5, 7 and 8 do not exist in the repository: no preview rendering, no
 billing and no history view have been written. Links *are* discovered and stored
-(Stage 2), but nothing crawls them until Stage 6. Stage 3 does not exist either
+(Stage 2), and Stage 6 now follows them: the `homepage_plus_pages` scope crawls
+same-origin links from each scanned page up to the scope's page budget. Stage 3
+does not exist either
 because no model provider is configured anywhere in the project, and Stage 4 is
 half done: the deterministic half — contrast and metadata fixes, each one
 re-measured before it is offered — is implemented and described below, while
@@ -501,10 +503,11 @@ Two pages are public on purpose, and neither takes a scan id:
 | `/r/[token]` | A shared report: the same DTO the owner sees, screenshot and coverage panel included, `noindex, nofollow` |
 | `/r/[token]/screenshot?page=<id>` | The screenshot for a page of that shared report, scoped to the token |
 
-The request body is `{ url, scope?, viewport? }`. `scope` accepts only
-`single_page`; `homepage_plus_pages` and `selected_pages` exist in the enum and
-in the UI, but `enqueueScan` rejects them with a clear message rather than
-silently auditing one page and pretending otherwise.
+The request body is `{ url, scope?, viewport? }`. `scope` accepts
+`single_page` and `homepage_plus_pages` (the seed page plus same-origin links,
+up to five pages); `selected_pages` exists in the enum and in the UI marked
+"coming soon", but `validateScanRequest` rejects it with a clear message rather
+than silently auditing a different set of pages than the reader chose.
 
 `viewport` names an entry in `VIEWPORTS` — `desktop` (1280×720, the default) or
 `mobile` (390×844). It is written to the row the worker renders with, and an
@@ -729,7 +732,7 @@ Definition of done for the stages that remain, taken from the product brief.
 ## Testing
 
 Unit tests live beside the code as `src/**/*.test.ts` and run with
-`npx vitest run` (395 passing, 6 skipped by default, 30 files — a snapshot, not a
+`npx vitest run` (592 passing, 6 skipped by default, 50 files — a snapshot, not a
 contract: the number moves as work lands).
 
 | Suite | Covers |
@@ -742,7 +745,8 @@ contract: the number moves as work lands).
 | `screenshot-store.test.ts` | Path safety: ids from a request never become filesystem paths |
 | `pipeline.test.ts` | The degradation decision, offline: fallback labelling, absent facts, `null` renderer, renderer errors, and that a non-renderer error fails the scan |
 | `share.test.ts` | The sharing rules that need no database: token shape and uniqueness, URL-safe tokens, links built on the token rather than a scan id, and that a malformed token is refused before any query |
-| `scan-report.test.ts` | The report view both the owner and a share link render: the screenshot from the URL the DTO carries, the coverage panel, findings, a missing screenshot staying missing, and a fetch-only scan not claiming measurements it never took |
+| `scan-report.test.ts` | The report view both the owner and a share link render: the screenshot from the URL the DTO carries, the coverage panel, findings, a missing screenshot staying missing, a fetch-only scan not claiming measurements it never took, and the per-page section of a multi-page crawl |
+| `crawl.test.ts`, `runner.crawl.test.ts` | The crawl policy — same origin, page extensions, no revisits, shallowest first — and the multi-page loop: the page and time budgets, live page counters, and one dead link costing that page rather than the scan |
 
 `browser.test.ts` reports as **skipped** when Playwright's browsers are absent —
 never as passing.
@@ -764,12 +768,14 @@ end-to-end test drives the audit UI through a browser yet.
 
 ## Deliberate limitations
 
-- Only `single_page` scope is executable; the other scopes are rejected by the
-  API with an explicit message. Nothing crawls yet: links are discovered and
-  stored, but following them is Stage 6.
-- `robots.txt` is not consulted before fetching. The user submits the URL they
-  want audited, and crawl restrictions genuinely matter only once the crawler
-  exists (Stage 6).
+- The crawl is deliberately narrow: same origin as the submitted URL, HTML-looking
+  links only, at most five pages and a time budget, planned from the pages
+  actually scanned — never from a sitemap. `selected_pages` is still rejected by
+  the API with an explicit message.
+- `robots.txt` is not consulted before fetching, by the seed or by the crawl. The
+  reader submits the URL they want audited and the crawl never leaves that
+  origin, but a `Disallow` entry is currently ignored, so honouring crawl
+  restrictions is still owed.
 - One viewport per scan, and one page state: the page is loaded and measured as
   it settles, so interactive states (menus, hover, focus, dialogs) and content
   behind a login are outside this stage.

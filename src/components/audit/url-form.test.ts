@@ -25,6 +25,10 @@ function render(overrides: Partial<UrlFormViewProps> = {}): string {
   const props: UrlFormViewProps = {
     url: "",
     onUrlChange: () => {},
+    scope: "single_page",
+    onScopeChange: () => {},
+    viewport: "desktop",
+    onViewportChange: () => {},
     onSubmit: () => {},
     loading: false,
     error: "",
@@ -53,6 +57,33 @@ describe("UrlFormView with a scanner", () => {
 
     expect(html).toContain("Free audits are limited to");
     expect(html).toContain("hashed IP address");
+  });
+
+  it("offers the whole-site scope and disables the one that is not ready", () => {
+    const html = render();
+
+    // The two executable scopes are selectable; the third stays visible but
+    // disabled, so the roadmap is legible without the API ever receiving it.
+    expect(html).toContain("Whole site (up to 5 pages)");
+    expect(html).toContain("Selected pages");
+    expect(html).toContain("coming soon");
+  });
+
+  it("explains whichever scope is selected, in the scanner's own words", () => {
+    // The description under the picker is the selected scope's, so choosing
+    // the crawl says exactly what will be crawled before the reader commits.
+    const html = render({ scope: "homepage_plus_pages" });
+
+    expect(html).toContain("Crawls same-origin links from your URL");
+    expect(html).not.toContain("Analyse just the URL you submit");
+  });
+
+  it("offers both viewports and describes why the choice matters", () => {
+    const html = render();
+
+    expect(html).toContain("Desktop 1280 x 720");
+    expect(html).toContain("Mobile 390 x 844");
+    expect(html).toContain("Contrast is measured at this size");
   });
 });
 

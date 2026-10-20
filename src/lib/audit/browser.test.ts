@@ -7,7 +7,13 @@ import {
   renderPage,
   RendererError,
   runAxeInPage,
+  scannerContextOptions,
 } from "./browser";
+import {
+  SCANNER_BROWSER_UA,
+  SCANNER_INIT_SCRIPT,
+  SCANNER_LAUNCH_ARGS,
+} from "./scanner-identity";
 import { buildContrastFindings } from "./contrast-rules";
 import type { TextSample } from "./types";
 
@@ -427,5 +433,37 @@ describe.skipIf(!browserAvailable)("renderPage guard rails", () => {
 
   it("reports its own availability as a boolean", async () => {
     await expect(isBrowserRendererAvailable()).resolves.toBeTypeOf("boolean");
+  }, 60_000);
+});
+
+describe.skipIf(!browserAvailable)("scanner identity in a real browser", () => {
+  it("presents as a regular browser to page scripts", async () => {
+    // The exact configuration renderPage uses: same launch args, same context
+    // options, same init script. If bot protections can tell this apart from a
+    // desktop browser here, false challenges come back.
+    const scannerBrowser = await chromium.launch({
+      headless: true,
+      args: SCANNER_LAUNCH_ARGS,
+    });
+    try {
+      const context = await scannerBrowser.newContext(scannerContextOptions(1280, 720));
+      await context.addInitScript({ content: SCANNER_INIT_SCRIPT });
+      const page = await context.newPage();
+      await page.setContent("<p>identity probe</p>");
+
+      const probe = await page.evaluate(() => ({
+        ua: navigator.userAgent,
+        webdriver: (navigator as unknown as { webdriver?: boolean }).webdriver,
+        language: (navigator as unknown as { languages?: string[] }).languages?.[0],
+      }));
+
+      expect(probe.ua).toBe(SCANNER_BROWSER_UA);
+      expect(probe.ua).not.toContain("Headless");
+      expect(probe.webdriver).toBeUndefined();
+      expect(probe.language).toBe("en-US");
+      await context.close();
+    } finally {
+      await scannerBrowser.close();
+    }
   }, 60_000);
 });

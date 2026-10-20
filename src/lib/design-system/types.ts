@@ -21,6 +21,8 @@ export type PaletteStrategyId =
 export interface Refinement {
   /** -50…50 (%) */
   brightness: number;
+  /** -50…50 (%) — spreads or compresses lightness around perceptual mid-grey */
+  contrast: number;
   /** -50…50 (%) */
   saturation: number;
   /** -180…180 (degrees) */

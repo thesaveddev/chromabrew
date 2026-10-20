@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { contrastRatio } from "@/lib/design-system/colour/contrast";
 import {
+  MIN_CRAWLER_VERSION,
   NO_SCANNER,
   PROPOSED_FIX_KEY,
   SAMPLE_TEXT_MAX_LENGTH,
@@ -13,6 +14,7 @@ import {
   parseProposedFix,
   scanQueueState,
   scannerAvailability,
+  scannerCanCrawl,
   type ProposedFixData,
 } from "./types";
 
@@ -373,5 +375,32 @@ describe("scannerAvailability", () => {
     // audit that will fail in ten minutes", so the message has to say.
     expect(SCANNER_OFFLINE_MESSAGE).toMatch(/offline/);
     expect(SCANNER_OFFLINE_MESSAGE).toMatch(/[Nn]othing was queued/);
+  });
+
+  it("carries the worker's own version, so capability is a fact not a guess", () => {
+    // The crawl gate reads this: a worker is crawl-capable because it said so
+    // in its beat, not because enough time has passed since the deploy.
+    expect(scannerAvailability(beat, "vps-1", at(0), "3.0.0").version).toBe("3.0.0");
+    expect(scannerAvailability(beat, "vps-1", at(0)).version).toBeNull();
+    expect(NO_SCANNER.version).toBeNull();
+  });
+});
+
+describe("scannerCanCrawl", () => {
+  it("accepts the version that introduced crawling and anything newer", () => {
+    expect(scannerCanCrawl(MIN_CRAWLER_VERSION)).toBe(true);
+    expect(scannerCanCrawl("3.1.0")).toBe(true);
+    expect(scannerCanCrawl("4.0.0")).toBe(true);
+  });
+
+  it("refuses workers that predate it or never said what they are", () => {
+    // A worker running old code would accept a five-page scope and silently
+    // scan one page; an unversioned worker's capabilities cannot be confirmed
+    // at all. Both are refusals, and the form offers single-page instead.
+    expect(scannerCanCrawl("2.1.0")).toBe(false);
+    expect(scannerCanCrawl("2.99.0")).toBe(false);
+    expect(scannerCanCrawl(null)).toBe(false);
+    expect(scannerCanCrawl("")).toBe(false);
+    expect(scannerCanCrawl("not-a-version")).toBe(false);
   });
 });

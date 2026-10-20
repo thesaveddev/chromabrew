@@ -132,6 +132,7 @@ export function configFromParams(
 
   const refinement: Refinement = {
     brightness: parseRange(get("bright"), -50, 50),
+    contrast: parseRange(get("contrast"), -50, 50),
     saturation: parseRange(get("sat"), -50, 50),
     hueShift: parseRange(get("hue"), -180, 180),
     temperature: parseRange(get("temp"), -50, 50),
@@ -206,6 +207,7 @@ export function paramsFromConfig(config: GeneratorConfig): Record<string, string
   }
   const { refinement } = config;
   if (refinement.brightness) params.bright = String(refinement.brightness);
+  if (refinement.contrast) params.contrast = String(refinement.contrast);
   if (refinement.saturation) params.sat = String(refinement.saturation);
   if (refinement.hueShift) params.hue = String(refinement.hueShift);
   if (refinement.temperature) params.temp = String(refinement.temperature);

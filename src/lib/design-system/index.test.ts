@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildDesignSystem, DEFAULT_PRIMARY, normaliseConfig } from "./index";
+import { buildDesignSystem, DEFAULT_PRIMARY, normaliseConfig, ZERO_REFINEMENT } from "./index";
 import { configFromParams, configToQueryString } from "./share";
 import { cssAdapter } from "./exports/css";
 import { jsonAdapter } from "./exports/json";
@@ -75,6 +75,19 @@ describe("shareable URL codec", () => {
   it("parses the documented share format ?primary=47003A", () => {
     const decoded = configFromParams(new URLSearchParams("primary=47003A"));
     expect(decoded.primary).toBe("#47003a");
+  });
+
+  it("round-trips the contrast dial and clamps hand-edited values", () => {
+    const config = normaliseConfig({
+      primary: "#47003a",
+      refinement: { ...ZERO_REFINEMENT, contrast: 25 },
+    });
+    const search = new URLSearchParams(configToQueryString(config).split("?")[1]);
+    expect(configFromParams(search).refinement.contrast).toBe(25);
+
+    // A hand-edited link cannot smuggle a value the slider never produces.
+    expect(configFromParams(new URLSearchParams("contrast=999")).refinement.contrast).toBe(50);
+    expect(configFromParams(new URLSearchParams("contrast=-999")).refinement.contrast).toBe(-50);
   });
 
   it("falls back safely on garbage input", () => {

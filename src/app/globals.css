@@ -56,6 +56,64 @@ html {
   }
 }
 
+/* Audit scanner bay: a fetch line sweeping the skeleton page while a stage is
+   live, and a dot marking the stage in progress. Purely declarative — the
+   state it reflects (stage, page counts) is the worker's real report, and it
+   is hidden entirely when there is no active stage. Paused for visitors who
+   asked for less motion; the checklist and counters still update. */
+@keyframes scanner-sweep {
+  0% {
+    top: 0;
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  88% {
+    opacity: 1;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+.scanner-sweep {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 2px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, #10b981 18%, #10b981 82%, transparent);
+  animation: scanner-sweep 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes scanner-stage-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
+.scanner-stage-dot {
+  animation: scanner-stage-pulse 1.2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scanner-sweep {
+    animation: none;
+    opacity: 0.5;
+  }
+
+  .scanner-stage-dot {
+    animation: none;
+  }
+}
+
 body {
   text-rendering: optimizeLegibility;
 }

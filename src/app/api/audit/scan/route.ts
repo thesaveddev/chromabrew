@@ -4,7 +4,11 @@ import { ScannerOfflineError, requireScanner } from "@/lib/audit/heartbeat";
 import { getScanStatusDto } from "@/lib/audit/queries";
 import { checkScanQuota, clientIpFromHeaders, hashIp } from "@/lib/audit/rate-limit";
 import { ScanRequestError, enqueueScan, validateScanRequest } from "@/lib/audit/runner";
-import { DEFAULT_VIEWPORT_ID, type ScanScopeId } from "@/lib/audit/types";
+import {
+  DEFAULT_VIEWPORT_ID,
+  scannerCanCrawl,
+  type ScanScopeId,
+} from "@/lib/audit/types";
 import { UrlValidationError } from "@/lib/audit/url-validator";
 
 export const runtime = "nodejs";
@@ -60,7 +64,22 @@ export async function POST(request: Request) {
     // reading "try again in a few moments" would send the reader straight back
     // into the same wall for as long as the worker is down, and the queue being
     // full of unattended rows is a symptom of this, not a separate condition.
-    await requireScanner();
+    const scanner = await requireScanner();
+
+    // A crawl the running worker cannot do must be refused here, not accepted
+    // and quietly scanned as one page. The worker announces its version in the
+    // same beat that proved it is online, so this is a fact, not a guess — and
+    // it clears on its own the moment a current worker beats.
+    if (scopeId === "homepage_plus_pages" && !scannerCanCrawl(scanner.version)) {
+      return NextResponse.json(
+        {
+          error:
+            "The scanner is still updating and cannot run whole-site audits yet. Single-page audits work now — try the whole site again in a minute.",
+          code: "scope_unavailable",
+        },
+        { status: 409 },
+      );
+    }
 
     const session = await auth();
     const userId = session?.user?.id ?? null;

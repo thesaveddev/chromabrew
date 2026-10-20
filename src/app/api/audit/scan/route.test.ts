@@ -127,6 +127,42 @@ describe("POST /api/audit/scan", () => {
     expect(db.scan.create).toHaveBeenCalledTimes(1);
   });
 
+  it("refuses a whole-site scope from a worker that predates crawling", async () => {
+    // The worker is a separate deploy: this web tier can offer the crawl while
+    // the beating worker still runs code that scans one page. Accepting then
+    // would quietly deliver a single page for a five-page request.
+    db.workerHeartbeat.findFirst.mockResolvedValue({
+      workerId: "vps-1",
+      lastSeenAt: new Date(),
+      stoppedAt: null,
+      version: "2.1.0",
+    });
+
+    const response = await POST(post({ url: "example.com", scope: "homepage_plus_pages" }));
+
+    expect(response.status).toBe(409);
+    expect((await response.json()).code).toBe("scope_unavailable");
+    expect(db.scan.create).not.toHaveBeenCalled();
+  });
+
+  it("accepts a whole-site scope from a current worker", async () => {
+    db.workerHeartbeat.findFirst.mockResolvedValue({
+      workerId: "vps-1",
+      lastSeenAt: new Date(),
+      stoppedAt: null,
+      version: "3.0.0",
+    });
+    db.scan.create.mockResolvedValue({ id: "cmv4crawl" });
+    // The route answers with the status DTO it re-reads after enqueueing, so
+    // the row it re-reads has to be the crawl that was just written.
+    db.scan.findUnique.mockResolvedValue({ ...queuedRow(), id: "cmv4crawl", scope: "homepage_plus_pages", pagesTotal: 5 });
+
+    const response = await POST(post({ url: "example.com", scope: "homepage_plus_pages" }));
+
+    expect(response.status).toBe(202);
+    expect((await response.json()).id).toBe("cmv4crawl");
+  });
+
   it("still answers a typo with a typo, not with the scanner's state", async () => {
     db.workerHeartbeat.findFirst.mockResolvedValue(null);
 

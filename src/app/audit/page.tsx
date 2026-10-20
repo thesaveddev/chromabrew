@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   // the rendered title inside the ~60-character SERP truncation point.
   title: "Website Audit — WCAG & Contrast Scanner",
   description:
-    "Free audit of any public page: WCAG contrast failures, accessibility violations, metadata and heading problems — with a screenshot and re-measured fixes.",
+    "Free website audit: WCAG contrast failures, accessibility violations, metadata and heading problems — one page or up to five, with screenshots and re-measured fixes.",
   // Without this the page inherits the layout's canonical ("/") and tells search
   // engines it is a duplicate of the home page, which no sitemap entry can undo.
   alternates: { canonical: "/audit" },
@@ -113,7 +113,8 @@ export default function AuditPage() {
                 language, image alt text, heading structure, the HTTP status.
               </li>
               <li>
-                A viewport screenshot and the links found on the page — collected, not crawled.
+                A viewport screenshot per page, and — on the whole-site scope — the site&apos;s own
+                links followed from your URL, shallowest pages first.
               </li>
               <li>
                 A coverage panel stating which engines ran, and which text could not be measured.
@@ -126,7 +127,10 @@ export default function AuditPage() {
               Before you start
             </h2>
             <ul className="mt-3 space-y-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-              <li>One page at one viewport per audit — multi-page crawling is not available yet.</li>
+              <li>
+                Up to five pages per audit on the whole-site scope, same origin only — it follows
+                your site&apos;s links, not someone else&apos;s, and stops at the budget.
+              </li>
               <li>
                 Public pages only, and only pages you are allowed to scan. The scanner fetches the
                 page server-side and says so in its user agent.

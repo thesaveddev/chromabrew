@@ -199,6 +199,53 @@ describe("analyzePage — degradation", () => {
     expect(outcome.links).toBeNull();
   });
 
+  it("reports a bot-protection interstitial as a block, not as a page", async () => {
+    const interstitial = `<!doctype html><html><head><title>Just a moment…</title>
+      <script src="/cdn-cgi/challenge-platform/h/b/orchestrate/chl_page/v1"></script>
+      </head><body></body></html>`;
+    const outcome = await run(
+      rendererFor(async () =>
+        renderedPage({
+          statusCode: 403,
+          server: "cloudflare",
+          cfMitigated: "challenge",
+          title: "Just a moment…",
+          html: interstitial,
+        }),
+      ),
+    );
+
+    // One finding, and it is about the block — never a verdict on the site
+    // drawn from the provider's challenge screen.
+    expect(outcome.findings.map((f) => f.ruleId)).toEqual(["bot-challenge"]);
+    expect(outcome.renderMeta).toEqual({ botChallenge: "Cloudflare" });
+    // The interstitial's links belong to the provider, so no inventory is
+    // claimed; the screenshot is kept as the evidence of what happened.
+    expect(outcome.links).toBeNull();
+    expect(outcome.screenshot?.byteLength).toBe(3);
+  });
+
+  it("carries a challenge through the fetch fallback with the same finding", async () => {
+    const cfFetch = async () =>
+      new Response('<html><head><title>Just a moment…</title></head><body></body></html>', {
+        status: 403,
+        headers: {
+          "content-type": "text/html; charset=utf-8",
+          server: "cloudflare",
+          "cf-mitigated": "challenge",
+        },
+      });
+    const outcome = await analyzePage(
+      new URL("https://example.com/"),
+      { resolve, fetchImpl: cfFetch, renderer: null },
+      1280,
+      720,
+    );
+
+    expect(outcome.renderMode).toBe("fetch");
+    expect(outcome.findings.map((f) => f.ruleId)).toEqual(["bot-challenge"]);
+  });
+
   it("fails the scan instead of degrading when the error is not a renderer problem", async () => {
     const boom = new Error("the analysis itself broke");
     await expect(

@@ -152,6 +152,7 @@ async function loadModules() {
     return {
       claimNextScan: runner.claimNextScan,
       runClaimedScan: runner.runClaimedScan,
+      backfillScreenshotBytes: runner.backfillScreenshotBytes,
       isBrowserRendererAvailable: browser.isBrowserRendererAvailable,
       getScanStatusDto: queries.getScanStatusDto,
       screenshotDir: screenshots.screenshotDir,
@@ -315,6 +316,18 @@ async function main() {
   // Only now, and deliberately not earlier: everything above this line is what
   // makes a beat true. From here on the web tier will offer the form.
   const stopHeartbeat = installHeartbeat(modules);
+
+  // Repair screenshots from older runs whose bytes never reached the database
+  // (the web tier serves DB bytes, not this disk — see backfillScreenshotBytes).
+  // Once per start, before the queue: bounded, and one missing file is skipped.
+  try {
+    const repaired = await modules.backfillScreenshotBytes();
+    if (repaired > 0) {
+      log(`backfilled screenshot bytes for ${repaired} earlier scan page(s)`);
+    }
+  } catch (error) {
+    fail(`screenshot backfill failed (continuing): ${short(error)}`);
+  }
 
   let idleMs = IDLE_MIN_MS;
   let lastIdleNotice = Date.now();

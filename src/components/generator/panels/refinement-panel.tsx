@@ -11,6 +11,7 @@ const SLIDERS: Array<{
   unit: string;
 }> = [
   { key: "brightness", label: "Brightness", min: -50, max: 50, unit: "%" },
+  { key: "contrast", label: "Contrast", min: -50, max: 50, unit: "%" },
   { key: "saturation", label: "Saturation", min: -50, max: 50, unit: "%" },
   { key: "hueShift", label: "Hue Shift", min: -180, max: 180, unit: "°" },
   { key: "temperature", label: "Temperature", min: -50, max: 50, unit: "%" },
@@ -44,7 +45,13 @@ export function RefinementPanel({
             variant="secondary"
             className="px-2 py-0.5 text-[11px]"
             onClick={() =>
-              onChange({ brightness: 0, saturation: 0, hueShift: 0, temperature: 0 })
+              onChange({
+                brightness: 0,
+                contrast: 0,
+                saturation: 0,
+                hueShift: 0,
+                temperature: 0,
+              })
             }
           >
             Reset

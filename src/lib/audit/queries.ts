@@ -193,7 +193,15 @@ export async function getScanResultsDto(
           loadTimeMs: true,
           errorMessage: true,
           rendered: true,
-          screenshotPath: true,
+          // Loaded only to answer "was a screenshot captured?" — the bytes
+          // never enter the DTO. Gating on the path alone advertised images
+          // the web tier could not serve: the path names a file on the
+          // *worker's* disk, which a Vercel function cannot read, so those
+          // reports showed a broken image instead of the honest "no
+          // screenshot" note. The DB bytes are the only copy the web tier
+          // has, so their presence is the only honest gate; the worker's
+          // backfill pass writes them for rows that predate this rule.
+          screenshotData: true,
         },
       },
       findings: {
@@ -233,10 +241,12 @@ export async function getScanResultsDto(
     errorMessage: page.errorMessage,
     rendered: page.rendered,
     // The screenshot route re-checks that the page belongs to the scan; the id
-    // is never used as a filesystem path.
-    screenshotUrl: page.screenshotPath
-      ? screenshotUrlFor({ id: page.id, scanId: scan.id })
-      : null,
+    // is never used as a filesystem path. Only the DB bytes earn the URL: the
+    // path names a worker-local file the web tier cannot read.
+    screenshotUrl:
+      page.screenshotData && page.screenshotData.length > 0
+        ? screenshotUrlFor({ id: page.id, scanId: scan.id })
+        : null,
   }));
 
   const urlByPageId = new Map(pages.map((page) => [page.id, page.url]));

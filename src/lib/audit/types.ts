@@ -12,7 +12,7 @@
 import { contrastRatio } from "@/lib/design-system/colour/contrast";
 
 export const AUDIT_RULES_VERSION = "2.1.0";
-export const AUDIT_SCANNER_VERSION = "2.1.0";
+export const AUDIT_SCANNER_VERSION = "3.0.0";
 
 /**
  * Metadata length guidance, in one place.
@@ -69,9 +69,10 @@ export interface ScanScopeOption {
 }
 
 /**
- * Only `single_page` is executable today. The other scopes are listed so the
- * UI can show where the product is going, and the API rejects them with a
- * clear message instead of silently scanning one page and pretending.
+ * `single_page` and `homepage_plus_pages` are executable. `selected_pages`
+ * stays listed so the UI can show where the product is going, and the API
+ * rejects it with a clear message instead of silently scanning one page and
+ * pretending.
  */
 export const SCAN_SCOPES: readonly ScanScopeOption[] = [
   {
@@ -82,8 +83,9 @@ export const SCAN_SCOPES: readonly ScanScopeOption[] = [
   },
   {
     id: "homepage_plus_pages",
-    label: "Homepage plus internal pages",
-    description: "Multi-page crawling. Not available in this release.",
+    label: "Whole site (up to 5 pages)",
+    description:
+      "Crawls same-origin links from your URL — shallowest pages first, files skipped.",
     maxPages: 5,
   },
   {
@@ -94,7 +96,7 @@ export const SCAN_SCOPES: readonly ScanScopeOption[] = [
   },
 ] as const;
 
-export const IMPLEMENTED_SCOPES: readonly ScanScopeId[] = ["single_page"];
+export const IMPLEMENTED_SCOPES: readonly ScanScopeId[] = ["single_page", "homepage_plus_pages"];
 
 export function scopeOption(id: ScanScopeId): ScanScopeOption {
   return SCAN_SCOPES.find((scope) => scope.id === id) ?? SCAN_SCOPES[0];
@@ -755,6 +757,14 @@ export interface ScannerAvailability {
   ageMs: number | null;
   /** Which worker wrote it, when there is one. */
   workerId: string | null;
+  /**
+   * The scanner version that beat announced, or null when it never said.
+   *
+   * Capability rides on this: a worker running older code cannot crawl, and
+   * the only way to know that is what it reported about itself. The web tier
+   * never guesses from the beat's age.
+   */
+  version: string | null;
 }
 
 /** No scanner has ever checked in. */
@@ -763,6 +773,7 @@ export const NO_SCANNER: ScannerAvailability = {
   lastSeenAt: null,
   ageMs: null,
   workerId: null,
+  version: null,
 };
 
 /**
@@ -780,6 +791,7 @@ export function scannerAvailability(
   lastSeenAt: string | Date | null | undefined,
   workerId: string | null = null,
   now: number = Date.now(),
+  version: string | null = null,
 ): ScannerAvailability {
   if (lastSeenAt === null || lastSeenAt === undefined) return NO_SCANNER;
 
@@ -792,11 +804,38 @@ export function scannerAvailability(
     lastSeenAt: new Date(seen).toISOString(),
     ageMs,
     workerId,
+    version,
   };
 }
 
 /** The machine-readable reason `POST /api/audit/scan` refuses while offline. */
 export const SCANNER_OFFLINE_CODE = "scanner_offline";
+
+/**
+ * The scanner version that introduced crawling (`homepage_plus_pages`).
+ *
+ * The worker is a separately deployed process, so a web tier that offers the
+ * whole-site scope can easily be talking to a worker that predates it. Without
+ * this gate such a scan is *accepted* and then quietly scanned as one page —
+ * the reader asked for their site and got a single URL with no explanation.
+ * Refusing at the form, naming the version, is the honest failure.
+ */
+export const MIN_CRAWLER_VERSION = "3.0.0";
+
+/**
+ * Whether a worker reporting this version can run the crawl scope.
+ *
+ * A numeric comparison of the first two semver segments; an absent or
+ * unparseable version counts as older than the minimum, because a worker that
+ * does not report its version is one whose capabilities cannot be confirmed.
+ */
+export function scannerCanCrawl(version: string | null | undefined): boolean {
+  if (!version) return false;
+  const [major = NaN, minor = NaN] = version.split(".").map(Number);
+  const [minMajor, minMinor] = MIN_CRAWLER_VERSION.split(".").map(Number);
+  if (!Number.isFinite(major) || !Number.isFinite(minor)) return false;
+  return major > minMajor || (major === minMajor && minor >= minMinor);
+}
 
 /**
  * What a reader is told when there is no scanner to run their audit.

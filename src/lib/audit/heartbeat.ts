@@ -110,12 +110,12 @@ export async function retireWorkerHeartbeat(workerId: string): Promise<void> {
 export async function readScannerAvailability(now = Date.now()): Promise<ScannerAvailability> {
   const newest = await prisma.workerHeartbeat.findFirst({
     orderBy: { lastSeenAt: "desc" },
-    select: { workerId: true, lastSeenAt: true, stoppedAt: true },
+    select: { workerId: true, lastSeenAt: true, stoppedAt: true, version: true },
   });
 
   if (!newest) return NO_SCANNER;
 
-  const graded = scannerAvailability(newest.lastSeenAt, newest.workerId, now);
+  const graded = scannerAvailability(newest.lastSeenAt, newest.workerId, now, newest.version);
 
   // A worker that stopped cleanly is offline from that moment regardless of what
   // its last beat said — but the beat is still what gets reported, so the form

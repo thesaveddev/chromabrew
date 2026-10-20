@@ -37,6 +37,15 @@ import {
 // Re-exported for callers that already import the finding shape from here.
 export type { FindingDraft } from "./types";
 
+import { detectBotChallenge, type BotChallengeDetection } from "./challenge";
+import { SCANNER_ACCEPT_LANGUAGE, SCANNER_BROWSER_UA } from "./scanner-identity";
+
+/**
+ * The honest scanner identity: written to the scan row as provenance and
+ * quoted to site owners who ask who was scanning them. Page requests
+ * themselves carry `SCANNER_BROWSER_UA` (scanner-identity.ts) so the real
+ * browser the scanner drives is not announced as a bot to bot protections.
+ */
 export const SCANNER_USER_AGENT =
   "ChromaBrew-Audit/1.0 (+https://chromabrew.app/audit; design and accessibility audit)";
 
@@ -240,6 +249,8 @@ export interface AnalyzeContext {
   url: string;
   statusCode: number;
   contentType: string | null;
+  /** Set by the pipeline when the response was a bot-protection interstitial. */
+  botChallenge?: BotChallengeDetection | null;
 }
 
 function isHtmlContentType(contentType: string | null): boolean {
@@ -250,6 +261,36 @@ function isHtmlContentType(contentType: string | null): boolean {
 /** Pure: facts in, findings out. No I/O, no clock, no randomness. */
 export function analyzePageFacts(facts: PageFacts, context: AnalyzeContext): FindingDraft[] {
   const findings: FindingDraft[] = [];
+
+  // A bot-protection interstitial outranks the generic status finding. The
+  // page was not refused — it was replaced by a verification step — so
+  // "confirm the URL returns 200" would be advice the reader cannot act on.
+  if (context.botChallenge) {
+    findings.push({
+      ruleId: "bot-challenge",
+      category: "technical",
+      severity: "high",
+      title: `Blocked by ${context.botChallenge.provider} bot verification`,
+      description: `${context.botChallenge.provider} answered the scan with a verification interstitial instead of the page, so the page itself was not audited. Every other check would have been drawn from the interstitial, not from your site.`,
+      whyMatters: "A blocked scan is not a failed page. Until the scanner is allowed through, no result about the real page exists — and an audit of the verification screen would read as a verdict on the site.",
+      recommendation: "If the site is yours, allowlist the audit scanner: the guide at /audit/scanner has the exact Cloudflare steps. Then run the scan again.",
+      implementation: "Cloudflare dashboard → Security → WAF → Custom rules: skip bot checks for the scanner's IP. The guide shows the rule and how to find the address the scan came from.",
+      elementSelector: null,
+      originalValues: {
+        statusCode: context.statusCode,
+        signals: context.botChallenge.evidence,
+      },
+      suggestedValues: null,
+      evidence: {
+        provider: context.botChallenge.provider,
+        signals: context.botChallenge.evidence,
+      },
+      wcagCriterion: null,
+      detectionMethod: "deterministic",
+      confidence: 1,
+    });
+    return findings;
+  }
 
   if (context.statusCode >= 400) {
     findings.push({
@@ -544,6 +585,10 @@ export interface FetchedPage {
   bytes: number;
   redirects: string[];
   truncated: boolean;
+  /** The `server` response header, when present — challenge evidence. */
+  server?: string | null;
+  /** The `cf-mitigated` header Cloudflare sets on challenged responses. */
+  cfMitigated?: string | null;
 }
 
 export class FetchError extends Error {
@@ -634,7 +679,10 @@ export async function fetchPageSafely(
         cache: "no-store",
         signal: controller.signal,
         headers: {
-          "user-agent": SCANNER_USER_AGENT,
+          // Browser-consistent identity for page loads (scanner-identity.ts);
+          // the honest audit UA is what gets *stored*, not what gets challenged.
+          "user-agent": SCANNER_BROWSER_UA,
+          "accept-language": SCANNER_ACCEPT_LANGUAGE,
           accept: "text/html,application/xhtml+xml;q=0.9,*/*;q=0.5",
         },
       });
@@ -666,6 +714,8 @@ export async function fetchPageSafely(
         bytes,
         redirects,
         truncated,
+        server: response.headers.get("server"),
+        cfMitigated: response.headers.get("cf-mitigated"),
       };
     }
 
@@ -716,6 +766,12 @@ export async function analyzeUrl(
     url: page.finalUrl,
     statusCode: page.statusCode,
     contentType: page.contentType,
+    botChallenge: detectBotChallenge({
+      statusCode: page.statusCode,
+      server: page.server,
+      cfMitigated: page.cfMitigated,
+      html: page.html,
+    }),
   });
   return {
     page,

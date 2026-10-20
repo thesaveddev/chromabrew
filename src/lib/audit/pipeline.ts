@@ -24,6 +24,7 @@
  */
 
 import { analyzePageFacts, analyzeUrl, extractPageFacts, type PageFacts } from "./analyzer";
+import { detectBotChallenge } from "./challenge";
 import { AXE_RUN_TAGS, mapAxeViolations } from "./axe";
 import {
   isBrowserRendererAvailable,
@@ -151,14 +152,53 @@ async function analyzeWithBrowser(
     },
   });
 
+  // A bot-protection interstitial is not a page: the engines must not be
+  // pointed at it, or the report would audit the provider's challenge screen
+  // and present it as the reader's site.
+  const botChallenge = detectBotChallenge({
+    statusCode: rendered.statusCode,
+    server: rendered.server,
+    cfMitigated: rendered.cfMitigated,
+    html: rendered.html,
+  });
+
   // The rendered DOM, not the served response: JavaScript-built markup and copy
   // are part of the page the user actually sees.
   const facts = extractPageFacts(rendered.html, rendered.finalUrl);
-  const native = analyzePageFacts(facts, {
+  const context = {
     url: rendered.finalUrl,
     statusCode: rendered.statusCode,
     contentType: rendered.contentType,
-  });
+    botChallenge,
+  };
+
+  if (botChallenge) {
+    return {
+      renderMode: "browser",
+      renderFallbackReason: null,
+      finalUrl: rendered.finalUrl,
+      statusCode: rendered.statusCode,
+      contentType: rendered.contentType,
+      title: rendered.title,
+      loadTimeMs: rendered.loadTimeMs,
+      bytes: rendered.html.length,
+      truncated: rendered.textSamplesTruncated,
+      redirects: [],
+      facts,
+      // The interstitial's links belong to the provider, not the site.
+      links: null,
+      findings: applyProposedFixes(analyzePageFacts(facts, context)),
+      duplicates: [],
+      duplicatesGrouped: 0,
+      // Kept: the interstitial is the evidence that the scan was blocked.
+      screenshot: rendered.screenshot,
+      // Render-only keys stay absent so coverage reads "not measured" —
+      // nothing of the site was measured, because none of it was rendered.
+      renderMeta: { botChallenge: botChallenge.provider },
+    };
+  }
+
+  const native = analyzePageFacts(facts, context);
 
   // Engine output is measured before deduplication: the coverage panel states
   // what each engine actually reported, and `duplicatesGrouped` states how much

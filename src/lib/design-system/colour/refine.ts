@@ -5,6 +5,7 @@ const NEUTRAL_CHROMA = 0.02;
 
 export const ZERO_REFINEMENT: Refinement = {
   brightness: 0,
+  contrast: 0,
   saturation: 0,
   hueShift: 0,
   temperature: 0,
@@ -23,9 +24,10 @@ export function normaliseHue(h: number): number {
  * Zeroed refinement fields leave the colour untouched.
  */
 export function applyRefinement(hex: string, refinement: Refinement): string {
-  const { brightness, saturation, hueShift, temperature } = refinement;
+  const { brightness, contrast, saturation, hueShift, temperature } = refinement;
   const inert =
     (brightness ?? 0) === 0 &&
+    (contrast ?? 0) === 0 &&
     (saturation ?? 0) === 0 &&
     (hueShift ?? 0) === 0 &&
     (temperature ?? 0) === 0;
@@ -36,6 +38,17 @@ export function applyRefinement(hex: string, refinement: Refinement): string {
 
   // Brightness: ±50% moves lightness by up to ±0.25.
   l = clamp(l + ((brightness ?? 0) / 100) * 0.5, 0.02, 0.99);
+
+  // Contrast: spread or compress lightness around perceptual mid-grey —
+  // positive makes a light colour lighter and a dark colour darker (punch),
+  // negative flattens everything toward mid (muted). Applied after
+  // brightness so it acts on the value the reader is already seeing; hue,
+  // chroma and the background are not involved, so "contrast" here means
+  // tone separation within the colour itself, never against a surface the
+  // slider does not know about.
+  if ((contrast ?? 0) !== 0) {
+    l = clamp(0.5 + (l - 0.5) * (1 + (contrast ?? 0) / 100), 0.02, 0.99);
+  }
 
   // Saturation: relative chroma scaling; floor keeps near-greys alive.
   if ((saturation ?? 0) !== 0) {

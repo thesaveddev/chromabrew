@@ -24,6 +24,12 @@
 
 import type { Page } from "playwright";
 import { AXE_RUN_TAGS, type AxeResults } from "./axe";
+import {
+  SCANNER_ACCEPT_LANGUAGE,
+  SCANNER_BROWSER_UA,
+  SCANNER_INIT_SCRIPT,
+  SCANNER_LAUNCH_ARGS,
+} from "./scanner-identity";
 import { assertAllowedUrlSyntax, classifyIp, resolveAndAssertPublic, type HostResolver } from "./url-validator";
 import type {
   BackgroundSource,
@@ -647,6 +653,30 @@ export interface RenderedPage {
   /** Why axe produced no results, or null when it ran cleanly. */
   axeError: string | null;
   loadTimeMs: number;
+  /** The `server` response header, when present — challenge evidence. */
+  server?: string | null;
+  /** The `cf-mitigated` header Cloudflare sets on challenged responses. */
+  cfMitigated?: string | null;
+}
+
+/**
+ * The browser context every page is rendered in — exported so tests assert
+ * the real configuration rather than a copy of it. The identity choices and
+ * their reasoning live in scanner-identity.ts; this is only where they meet
+ * Playwright.
+ */
+export function scannerContextOptions(width: number, height: number) {
+  return {
+    viewport: { width, height },
+    userAgent: SCANNER_BROWSER_UA,
+    locale: "en-US",
+    extraHTTPHeaders: { "accept-language": SCANNER_ACCEPT_LANGUAGE },
+    serviceWorkers: "block" as const,
+    acceptDownloads: false,
+    ignoreHTTPSErrors: false,
+    permissions: [],
+    deviceScaleFactor: 1,
+  };
 }
 
 /**
@@ -770,19 +800,16 @@ export async function renderPage(url: URL, options: RenderOptions): Promise<Rend
 
   const browser = await chromium.launch({
     headless: true,
-    args: ["--disable-dev-shm-usage", "--disable-gpu"],
+    args: SCANNER_LAUNCH_ARGS,
   });
   const started = Date.now();
 
   try {
-    const context = await browser.newContext({
-      viewport: { width: options.width, height: options.height },
-      serviceWorkers: "block",
-      acceptDownloads: false,
-      ignoreHTTPSErrors: false,
-      permissions: [],
-      deviceScaleFactor: 1,
-    });
+    const context = await browser.newContext(
+      scannerContextOptions(options.width, options.height),
+    );
+    // Before any site script runs: no navigator.webdriver tell.
+    await context.addInitScript({ content: SCANNER_INIT_SCRIPT });
 
     // Every subresource the page asks for is checked, not just the main URL.
     await context.route("**/*", async (route, request) => {
@@ -817,6 +844,8 @@ export async function renderPage(url: URL, options: RenderOptions): Promise<Rend
     let statusCode = 0;
     let finalUrl = url.toString();
     let contentType: string | null = null;
+    let serverHeader: string | null = null;
+    let cfMitigatedHeader: string | null = null;
     try {
       const response = await page.goto(url.toString(), {
         waitUntil: "domcontentloaded",
@@ -827,6 +856,10 @@ export async function renderPage(url: URL, options: RenderOptions): Promise<Rend
         finalUrl = response.url();
         contentType = response.headers()["content-type"] ?? null;
       }
+      // Bot-protection evidence, captured for the challenge detector: Cloudflare
+      // announces a challenge in `cf-mitigated`, and `server` corroborates it.
+      serverHeader = response?.headers()["server"] ?? null;
+      cfMitigatedHeader = response?.headers()["cf-mitigated"] ?? null;
     } catch (error) {
       const message = error instanceof Error ? error.message : "";
       if (/timeout/i.test(message)) {
@@ -901,6 +934,8 @@ export async function renderPage(url: URL, options: RenderOptions): Promise<Rend
       axeVersion,
       axeError,
       loadTimeMs: Date.now() - started,
+      server: serverHeader,
+      cfMitigated: cfMitigatedHeader,
     };
   } finally {
     // Never leave a browser behind: a leaked context keeps the page's timers

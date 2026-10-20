@@ -69,10 +69,67 @@ describe("ScanProgressView", () => {
   });
 
   it("shows a running scan as running rather than waiting", () => {
-    const html = render({ status: "running", stage: "analyzing" }, 60_000);
+    const html = render(
+      { status: "running", stage: "analyzing", normalizedUrl: "https://example.com/pricing" },
+      60_000,
+    );
 
-    expect(html).toContain("Scan Status: running");
+    // The heading names the real work and the real host — not a generic
+    // status word — and it is unmistakably not the queue state.
+    expect(html).toContain("Auditing example.com");
+    expect(html).toContain("example.com/pricing");
     expect(html).not.toContain("Waiting for a scanner");
+  });
+
+  it("lights the real stage in the checklist and counts the running time", () => {
+    const html = render(
+      {
+        status: "running",
+        stage: "analyzing",
+        normalizedUrl: "https://example.com/",
+        startedAt: CREATED_AT,
+      },
+      65_000,
+    );
+
+    // Every stage is listed, the reported one is marked in progress, and the
+    // ones before it are complete — all three states come from the worker's
+    // own stage field, never from a timer in the UI.
+    expect(html).toContain("Validating URL");
+    expect(html).toContain("Fetching website");
+    expect(html).toContain("Analysing page");
+    expect(html).toContain("Preparing findings");
+    expect(html).toContain("in progress");
+    expect(html).toContain("running for 1m 05s");
+  });
+
+  it("shows page-by-page progress for a multi-page crawl", () => {
+    const html = render(
+      { status: "running", stage: "rendering", pagesScanned: 1, pagesTotal: 5 },
+      30_000,
+    );
+
+    expect(html).toContain("Pages scanned: 1 / 5");
+    expect(html).toContain("Page 2 of 5");
+    expect(html).toContain("1 done");
+  });
+
+  it("keeps the scanner bay out of the queue state", () => {
+    // Nothing is being fetched while queued, so the bay must not animate or
+    // imply a stage: the sweep and the stage rail are for live work only.
+    const html = render({}, 30_000);
+
+    expect(html).not.toContain("scanner-sweep");
+    expect(html).not.toContain("in progress");
+  });
+
+  it("shows the real stage to the scan page once the status route reports it", () => {
+    // The stage lives in scan metadata and the status route now returns it;
+    // before, this view could only say "running" with nothing to show.
+    const html = render({ status: "running", stage: "preparing" }, 10_000);
+
+    expect(html).toContain("Preparing findings");
+    expect(html).toContain("Validating URL");
   });
 
   it("explains a failed scan and offers the way back to the form", () => {

@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { buildDesignSystem, DEFAULT_PRIMARY, ZERO_REFINEMENT } from "@/lib/design-system";
+import { hexToRgb, rgbToOklch } from "@/lib/design-system/colour/convert";
 import type { GeneratorConfig } from "@/lib/design-system/types";
 
 const base: GeneratorConfig = {
@@ -69,6 +70,27 @@ describe("refinement", () => {
     const a = buildDesignSystem(base);
     const b = buildDesignSystem({ ...base, refinement: { ...ZERO_REFINEMENT } });
     expect(a.themes.light.primary).toBe(b.themes.light.primary);
+  });
+
+  it("contrast pushes the dark default primary darker, and negative pulls it back up", () => {
+    const lightness = (hex: string) => rgbToOklch(hexToRgb(hex)).l;
+    const plain = buildDesignSystem(base);
+    const punched = buildDesignSystem({
+      ...base,
+      refinement: { ...ZERO_REFINEMENT, contrast: 40 },
+    });
+    const muted = buildDesignSystem({
+      ...base,
+      refinement: { ...ZERO_REFINEMENT, contrast: -40 },
+    });
+    // Wiring, not maths: the dial reaches the refined seed the whole system
+    // is built from, in the direction its label promises for a dark colour.
+    expect(lightness(punched.source.primary.hex)).toBeLessThan(
+      lightness(plain.source.primary.hex),
+    );
+    expect(lightness(muted.source.primary.hex)).toBeGreaterThan(
+      lightness(plain.source.primary.hex),
+    );
   });
 });
 

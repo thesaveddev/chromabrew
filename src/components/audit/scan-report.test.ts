@@ -172,4 +172,61 @@ describe("ScanReport", () => {
     });
     expect(html).toContain("The page answered 503.");
   });
+
+  it("lists every page of a multi-page crawl with its own facts", () => {
+    const html = render({
+      scan: {
+        ...report().scan,
+        scope: "homepage_plus_pages",
+        pagesScanned: 3,
+        pagesTotal: 3,
+      },
+      pages: [
+        report().pages[0],
+        {
+          id: "page-2",
+          url: "https://example.com/pricing",
+          title: "Pricing",
+          statusCode: 200,
+          loadTimeMs: 412,
+          errorMessage: null,
+          rendered: true,
+          screenshotUrl: `/r/${TOKEN}/screenshot?page=page-2`,
+        },
+        {
+          id: "page-3",
+          url: "https://example.com/blog/legacy",
+          title: null,
+          statusCode: null,
+          loadTimeMs: null,
+          errorMessage: "The page could not be analysed.",
+          rendered: false,
+          screenshotUrl: null,
+        },
+      ],
+      findings: [
+        finding,
+        { ...finding, id: "f2", pageUrl: "https://example.com/pricing" },
+      ],
+    });
+
+    // The map of the whole run: each page by URL, what it answered, what it
+    // cost, and how many findings it contributed — including the one that
+    // failed, which is stated rather than dropped.
+    expect(html).toContain("Pages scanned");
+    expect(html).toContain("3 of 3");
+    expect(html).toContain("https://example.com/pricing");
+    expect(html).toContain("HTTP 200 · 0.41s");
+    expect(html).toContain("1 finding");
+    expect(html).toContain("The page could not be analysed.");
+    expect(html).toContain(`href="/r/${TOKEN}/screenshot?page=page-2"`);
+  });
+
+  it("keeps the single-page report free of the crawl section", () => {
+    const html = render();
+
+    // One page is not a map, and a section listing it would only repeat the
+    // summary above.
+    expect(html).not.toContain("Pages scanned");
+  });
 });

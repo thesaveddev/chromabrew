@@ -7,10 +7,14 @@ import { track } from "@/lib/analytics";
 import {
   ANONYMOUS_SCANS_PER_IP_PER_DAY,
   ANONYMOUS_SCANS_PER_IP_PER_HOUR,
+  SCAN_SCOPES,
   SCANNER_OFFLINE_CODE,
   SCANNER_OFFLINE_MESSAGE,
+  VIEWPORTS,
   WORKER_HEARTBEAT_MS,
   formatQueueWait,
+  isScopeImplemented,
+  type ScanScopeId,
   type ScannerAvailability,
 } from "@/lib/audit/types";
 import { useQueueClock } from "./use-queue-clock";
@@ -32,6 +36,10 @@ import { useQueueClock } from "./use-queue-clock";
 export interface UrlFormViewProps {
   url: string;
   onUrlChange: (value: string) => void;
+  scope: ScanScopeId;
+  onScopeChange: (scope: ScanScopeId) => void;
+  viewport: string;
+  onViewportChange: (viewport: string) => void;
   onSubmit: (event: React.FormEvent) => void;
   loading: boolean;
   error: string;
@@ -43,9 +51,16 @@ export interface UrlFormViewProps {
   now: number;
 }
 
+const fieldStyles =
+  "w-full rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:placeholder:text-zinc-600 dark:focus-visible:outline-zinc-100";
+
 export function UrlFormView({
   url,
   onUrlChange,
+  scope,
+  onScopeChange,
+  viewport,
+  onViewportChange,
   onSubmit,
   loading,
   error,
@@ -88,6 +103,60 @@ export function UrlFormView({
         />
       </div>
 
+      {/* Scope and viewport sit with the URL because they change what the
+          scanner visits: one page, or the site's own links from it, at the
+          viewport the report will be measured at. */}
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div>
+          <label
+            htmlFor="audit-scope"
+            className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400"
+          >
+            Scope
+          </label>
+          <select
+            id="audit-scope"
+            value={scope}
+            onChange={(e) => onScopeChange(e.target.value as ScanScopeId)}
+            className={`mt-1.5 ${fieldStyles}`}
+          >
+            {SCAN_SCOPES.map((option) => (
+              <option key={option.id} value={option.id} disabled={!isScopeImplemented(option.id)}>
+                {option.label}
+                {isScopeImplemented(option.id) ? "" : " — coming soon"}
+              </option>
+            ))}
+          </select>
+          <p className="mt-1.5 text-xs leading-5 text-zinc-500 dark:text-zinc-500">
+            {SCAN_SCOPES.find((option) => option.id === scope)?.description}
+          </p>
+        </div>
+
+        <div>
+          <label
+            htmlFor="audit-viewport"
+            className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400"
+          >
+            Viewport
+          </label>
+          <select
+            id="audit-viewport"
+            value={viewport}
+            onChange={(e) => onViewportChange(e.target.value)}
+            className={`mt-1.5 ${fieldStyles}`}
+          >
+            {VIEWPORTS.map((option) => (
+              <option key={option.id} value={option.id}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          <p className="mt-1.5 text-xs leading-5 text-zinc-500 dark:text-zinc-500">
+            Contrast is measured at this size, so pick the one your readers use.
+          </p>
+        </div>
+      </div>
+
       {/* Above the button, not below it: a disabled control is not in the tab
           order, so the reason it is one has to be met on the way to it. `status`
           announces the change when the form flips to this state or back. */}
@@ -118,7 +187,7 @@ export function UrlFormView({
           refusal, so a queued scan reads as normal and a 429 arrives as an
           expectation the reader already had. */}
       <p className="text-xs leading-5 text-zinc-500 dark:text-zinc-500">
-        The scanner fetches the page server-side at a desktop viewport and identifies itself in the
+        The scanner fetches each page server-side and identifies itself in the
         request. Submitting a URL confirms you are allowed to analyse it. Free audits are limited to{" "}
         {ANONYMOUS_SCANS_PER_IP_PER_HOUR} per hour and {ANONYMOUS_SCANS_PER_IP_PER_DAY} per day; no
         account is needed and nothing is stored beyond a hashed IP address used for that limit.
@@ -142,6 +211,8 @@ export function UrlFormView({
  */
 export function UrlForm() {
   const [url, setUrl] = useState("");
+  const [scope, setScope] = useState<ScanScopeId>("single_page");
+  const [viewport, setViewport] = useState(VIEWPORTS[0].id);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [availability, setAvailability] = useState<ScannerAvailability | null>(null);
@@ -198,7 +269,7 @@ export function UrlForm() {
       const res = await fetch("/api/audit/scan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: inputUrl, scope: "single_page" }),
+        body: JSON.stringify({ url: inputUrl, scope, viewport }),
       });
 
       if (!res.ok) {
@@ -233,6 +304,10 @@ export function UrlForm() {
     <UrlFormView
       url={url}
       onUrlChange={setUrl}
+      scope={scope}
+      onScopeChange={setScope}
+      viewport={viewport}
+      onViewportChange={setViewport}
       onSubmit={handleSubmit}
       loading={loading}
       error={error}

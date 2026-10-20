@@ -18,8 +18,9 @@ import { FetchError, AUDIT_RULE_COUNT, SCANNER_USER_AGENT } from "./analyzer";
 // availability probe — `analyzePage` converts everything else into a labelled
 // fallback — and they still deserve their own terminal status.
 import { RendererError, RendererUnavailableError } from "./browser";
+import { planNextPages } from "./crawl";
 import { analyzePage, type AnalysisOutcome, type AnalysisOptions } from "./pipeline";
-import { saveScreenshot } from "./screenshot-store";
+import { readScreenshot, saveScreenshot } from "./screenshot-store";
 import { normalizeUrl, UrlValidationError, validateScanUrl } from "./url-validator";
 import {
   AUDIT_RULES_VERSION,
@@ -82,7 +83,7 @@ export function validateScanRequest(input: {
   if (!isScopeImplemented(input.scope)) {
     throw new ScanRequestError(
       "scope_not_implemented",
-      "That scope is not available yet — this release audits a single page. Multi-page crawling is next.",
+      "That scope is not available yet — audits cover a single page or a whole site up to five pages.",
     );
   }
 
@@ -234,7 +235,88 @@ async function claim(scanId: string): Promise<boolean> {
 }
 
 /**
+ * A soft ceiling on how long one scan may keep crawling, comfortably inside
+ * the stale window that would have another process write it off as
+ * interrupted. A site with the budget's worth of pages is reported with the
+ * pages it has; the budget only stops the crawl from running unbounded.
+ */
+const CRAWL_TIME_BUDGET_MS = 8 * 60 * 1000;
+
+/** Persist one analyzed page: row, screenshot, findings. Never throws for a screenshot. */
+async function persistScannedPage(
+  scanId: string,
+  outcome: AnalysisOutcome,
+): Promise<{ pageId: string; failed: boolean }> {
+  const isError = outcome.statusCode >= 400;
+
+  const page = await prisma.scannedPage.create({
+    data: {
+      scanId,
+      url: outcome.finalUrl,
+      title: outcome.title,
+      statusCode: outcome.statusCode,
+      loadTimeMs: outcome.loadTimeMs,
+      rendered: outcome.renderMode === "browser",
+      errorMessage: isError ? `HTTP ${outcome.statusCode}` : null,
+      metadata: {
+        bytes: outcome.bytes,
+        truncated: outcome.truncated,
+        contentType: outcome.contentType,
+        redirects: outcome.redirects,
+        facts: outcome.facts as unknown as Prisma.InputJsonValue,
+        renderMode: outcome.renderMode,
+        render: outcome.renderMeta,
+        // The deduplicated link inventory the crawler plans the next pages
+        // from; capped by the renderer, and the render meta records whether
+        // the cap was hit.
+        links: outcome.links as unknown as Prisma.InputJsonValue,
+      } as Prisma.InputJsonValue,
+    },
+    select: { id: true },
+  });
+
+  if (outcome.screenshot) {
+    // The bytes go to the database first, in their own transaction: that is
+    // the copy the web tier serves (it cannot see this worker's disk), and it
+    // must not be lost because writing the worker-local file failed. The file
+    // is a convenience for retention and local debugging — when *it* fails,
+    // only the convenience is gone.
+    try {
+      await prisma.scannedPage.update({
+        where: { id: page.id },
+        data: { screenshotData: Buffer.from(outcome.screenshot) },
+      });
+    } catch {
+      // A screenshot that cannot be stored is missing evidence, not a failed
+      // scan — the findings stand on their own measurements.
+    }
+    try {
+      const storedPath = await saveScreenshot(scanId, page.id, outcome.screenshot);
+      await prisma.scannedPage.update({
+        where: { id: page.id },
+        data: { screenshotPath: storedPath },
+      });
+    } catch {
+      // Same principle: the report degrades to "no screenshot", not to a
+      // failed audit.
+    }
+  }
+
+  const rows = findingRows(scanId, page.id, outcome);
+  if (rows.length > 0) {
+    await prisma.finding.createMany({ data: rows });
+  }
+
+  return { pageId: page.id, failed: isError };
+}
+
+/**
  * Process a scan that is already claimed (status "running").
+ *
+ * Runs the seed URL, then — for scopes that carry a page budget — follows
+ * same-origin links from each page's inventory until the budget or the time
+ * budget runs out. Every follow-up page is validated and analysed exactly as
+ * the seed was: one dead link costs that page, never the scan.
  *
  * `resolve` and `fetchImpl` are injectable so the pipeline can be exercised
  * without network access.
@@ -245,86 +327,161 @@ export async function runClaimedScan(scanId: string, options: RunOptions = {}): 
 
   const startedAt = scan.startedAt?.getTime() ?? Date.now();
   const onStage = (stage: ScanStageId) => setStage(scanId, stage);
+  const scope = scopeOption(scan.scope as ScanScopeId);
 
   try {
     await onStage("validating");
-    const { url } = await validateScanUrl(scan.normalizedUrl, options.resolve);
+    const seed = await validateScanUrl(scan.normalizedUrl, options.resolve);
 
-    const outcome = await analyzePage(url, options, scan.viewportWidth, scan.viewportHeight);
+    let pagesScanned = 0;
+    let pagesFailed = 0;
+    let firstOutcome: AnalysisOutcome | null = null;
+    let crawlStoppedByBudget = false;
 
-    await onStage("preparing");
-    const isError = outcome.statusCode >= 400;
+    // Normalized URLs this scan owns: the seed plus everything planned or
+    // scanned, so the crawl can never visit one page twice.
+    const known = new Set<string>([seed.url.toString()]);
+    const queue: string[] = [];
 
-    const page = await prisma.scannedPage.create({
-      data: {
-        scanId,
-        url: outcome.finalUrl,
-        title: outcome.title,
-        statusCode: outcome.statusCode,
-        loadTimeMs: outcome.loadTimeMs,
-        rendered: outcome.renderMode === "browser",
-        errorMessage: isError ? `HTTP ${outcome.statusCode}` : null,
-        metadata: {
-          bytes: outcome.bytes,
-          truncated: outcome.truncated,
-          contentType: outcome.contentType,
-          redirects: outcome.redirects,
-          facts: outcome.facts as unknown as Prisma.InputJsonValue,
-          renderMode: outcome.renderMode,
-          render: outcome.renderMeta,
-          // The deduplicated link inventory is persisted for the crawler in
-          // Stage 6; already capped by the renderer, and the render meta records
-          // whether the cap was hit.
-          links: outcome.links as unknown as Prisma.InputJsonValue,
-        } as Prisma.InputJsonValue,
-      },
-      select: { id: true },
-    });
+    const scanOnePage = async (rawUrl: string): Promise<AnalysisOutcome> => {
+      await onStage("validating");
+      // Every followed URL clears the same SSRF gates as the seed: DNS is
+      // re-resolved per page, so a link that went private since the seed was
+      // rendered is still refused.
+      const { url } = await validateScanUrl(rawUrl, options.resolve);
+      await onStage("rendering");
+      const outcome = await analyzePage(url, options, scan.viewportWidth, scan.viewportHeight);
+      await onStage("preparing");
+      return outcome;
+    };
 
-    if (outcome.screenshot) {
-      try {
-        const storedPath = await saveScreenshot(scanId, page.id, outcome.screenshot);
-        await prisma.scannedPage.update({
-          where: { id: page.id },
-          data: {
-            screenshotPath: storedPath,
-            // The bytes travel with the row so the web tier can serve them
-            // without ever seeing the worker's disk. The file stays as the
-            // worker-local copy retention cleans up.
-            screenshotData: Buffer.from(outcome.screenshot),
-          },
-        });
-      } catch {
-        // A screenshot that cannot be stored is missing evidence, not a failed
-        // scan — the findings stand on their own measurements.
+    // Seed page first. Its failures are the scan's failures, as before.
+    const seedOutcome = await scanOnePage(seed.url.toString());
+    firstOutcome = seedOutcome;
+    const seedResult = await persistScannedPage(scanId, seedOutcome);
+    pagesScanned += 1;
+    if (seedResult.failed) pagesFailed += 1;
+
+    // Plan follow-up pages from the seed's inventory while the render context
+    // and the reader's patience both last. Fetch-mode outcomes carry no links,
+    // so a degraded scan is a one-page scan — stated by renderMode, never
+    // pretended away. An error document's links are not the site's links, so
+    // a failed seed page ends the crawl where it began.
+    if (scope.maxPages > 1 && seedOutcome.links && !seedResult.failed) {
+      for (const next of planNextPages({
+        scannedUrl: seed.url.toString(),
+        seedUrl: scan.normalizedUrl,
+        links: seedOutcome.links.links,
+        known,
+        remaining: scope.maxPages - pagesScanned,
+      })) {
+        known.add(next);
+        queue.push(next);
+      }
+
+      // The progress view reads pagesTotal: after the first page it means the
+      // real count for this site, not the scope's ceiling.
+      await prisma.scan.update({
+        where: { id: scanId },
+        data: { pagesTotal: pagesScanned + queue.length },
+      });
+
+      while (queue.length > 0) {
+        if (Date.now() - startedAt > CRAWL_TIME_BUDGET_MS) {
+          crawlStoppedByBudget = true;
+          break;
+        }
+        const nextUrl = queue.shift() as string;
+        try {
+          const outcome = await scanOnePage(nextUrl);
+          await persistScannedPage(scanId, outcome);
+          pagesScanned += 1;
+          if (outcome.statusCode >= 400) pagesFailed += 1;
+
+          // Breadth across the site, not depth down one branch: links from
+          // every page join the same queue, so /pricing and /about both make
+          // the cut before either section's children do.
+          if (outcome.links) {
+            for (const next of planNextPages({
+              scannedUrl: outcome.finalUrl,
+              seedUrl: scan.normalizedUrl,
+              links: outcome.links.links,
+              known,
+              remaining: scope.maxPages - pagesScanned - queue.length,
+            })) {
+              known.add(next);
+              queue.push(next);
+            }
+          }
+
+          // Live counters: the reader watches 2 of 3 become 3 of 3.
+          await prisma.scan.update({
+            where: { id: scanId },
+            data: {
+              pagesScanned,
+              pagesFailed,
+              pagesTotal: pagesScanned + queue.length,
+            },
+          });
+        } catch (error) {
+          // A follow-up page that cannot be validated, fetched or rendered is
+          // one unvisited page, not a failed audit: record it and carry on.
+          pagesScanned += 1;
+          pagesFailed += 1;
+          const reason =
+            error instanceof UrlValidationError || error instanceof FetchError
+              ? error.message
+              : "The page could not be analysed.";
+          await prisma.scannedPage.create({
+            data: {
+              scanId,
+              url: nextUrl,
+              title: null,
+              statusCode: null,
+              loadTimeMs: null,
+              rendered: false,
+              errorMessage: reason,
+              metadata: {} as Prisma.InputJsonValue,
+            },
+          });
+          await prisma.scan.update({
+            where: { id: scanId },
+            data: { pagesScanned, pagesFailed, pagesTotal: pagesScanned + queue.length },
+          });
+        }
       }
     }
 
-    const rows = findingRows(scanId, page.id, outcome);
-    if (rows.length > 0) {
-      await prisma.finding.createMany({ data: rows });
-    }
-
+    await onStage("preparing");
+    const outcome = firstOutcome as AnalysisOutcome;
+    const isError = outcome.statusCode >= 400;
     const durationMs = Date.now() - startedAt;
     const metadata = await readMetadata(scanId);
 
     await prisma.scan.update({
       where: { id: scanId },
       data: {
-        status: isError ? "partially_completed" : "completed",
-        pagesScanned: 1,
-        pagesFailed: isError ? 1 : 0,
+        status: pagesFailed === 0 ? "completed" : "partially_completed",
+        pagesScanned,
+        pagesFailed,
         completedAt: new Date(),
         durationMs,
         errorMessage: isError
           ? `The page responded with HTTP ${outcome.statusCode}; findings describe the error document.`
-          : null,
+          : pagesFailed > 0
+            ? `${pagesFailed} of ${pagesScanned} pages could not be analysed; findings describe the rest.`
+            : crawlStoppedByBudget
+              ? `The crawl reached its time budget after ${pagesScanned} page${pagesScanned === 1 ? "" : "s"}; the findings cover those.`
+              : null,
         metadata: {
           ...metadata,
           stage: "preparing",
           renderMode: outcome.renderMode,
           ...(outcome.renderFallbackReason
             ? { renderFallbackReason: outcome.renderFallbackReason }
+            : {}),
+          ...(crawlStoppedByBudget
+            ? { crawlStoppedByBudget: true, crawlBudgetMinutes: CRAWL_TIME_BUDGET_MS / 60_000 }
             : {}),
           axeVersion: outcome.renderMeta.axeVersion ?? null,
           axeRan: outcome.renderMeta.axeRan ?? false,
@@ -439,6 +596,50 @@ export async function expireAbandonedScan(scanId: string, now = Date.now()): Pro
     },
   });
   return result.count > 0;
+}
+
+/**
+ * Repair screenshots captured before the web tier learned to serve DB bytes.
+ *
+ * Rows written by an older worker carry only `screenshotPath` — a file on
+ * *this* host's disk, which the web tier on its separate host has never been
+ * able to read. That is why old reports showed a broken image: the report
+ * advertised the path, and the server on the other machine found nothing
+ * there. The bytes are the copy the web tier serves, so this reads each
+ * worker-local file back and stores it on the row, once.
+ *
+ * Bounded and side-effect-light by design: newest first, a fixed batch per
+ * call, and a file that is already gone is skipped rather than treated as an
+ * error — retention deletes files, and a lost file is a lost screenshot, not a
+ * broken scan. Returns how many rows were repaired so the worker can log it.
+ */
+export async function backfillScreenshotBytes(limit = 500): Promise<number> {
+  const rows = await prisma.scannedPage.findMany({
+    where: { screenshotPath: { not: null }, screenshotData: null },
+    orderBy: { createdAt: "desc" },
+    take: limit,
+    select: { id: true, screenshotPath: true },
+  });
+
+  let repaired = 0;
+  for (const row of rows) {
+    if (!row.screenshotPath) continue;
+    const bytes = await readScreenshot(row.screenshotPath);
+    if (!bytes) continue;
+    try {
+      await prisma.scannedPage.update({
+        where: { id: row.id },
+        // A copy rather than the Buffer itself: Prisma's Bytes field wants a
+        // Uint8Array over a plain ArrayBuffer, and a pooled Buffer may carry
+        // ArrayBufferLike.
+        data: { screenshotData: new Uint8Array(bytes) },
+      });
+      repaired += 1;
+    } catch {
+      // One unrepairable row must not stop the rest of the batch.
+    }
+  }
+  return repaired;
 }
 
 /**

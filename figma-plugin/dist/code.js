@@ -213,6 +213,7 @@
   var NEUTRAL_CHROMA = 0.02;
   var ZERO_REFINEMENT = {
     brightness: 0,
+    contrast: 0,
     saturation: 0,
     hueShift: 0,
     temperature: 0
@@ -224,12 +225,15 @@
     return (h % 360 + 360) % 360;
   }
   function applyRefinement(hex, refinement) {
-    const { brightness, saturation, hueShift, temperature } = refinement;
-    const inert = (brightness != null ? brightness : 0) === 0 && (saturation != null ? saturation : 0) === 0 && (hueShift != null ? hueShift : 0) === 0 && (temperature != null ? temperature : 0) === 0;
+    const { brightness, contrast, saturation, hueShift, temperature } = refinement;
+    const inert = (brightness != null ? brightness : 0) === 0 && (contrast != null ? contrast : 0) === 0 && (saturation != null ? saturation : 0) === 0 && (hueShift != null ? hueShift : 0) === 0 && (temperature != null ? temperature : 0) === 0;
     if (inert) return hex;
     const source = rgbToOklch(hexToRgb(hex));
     let { l, c, h } = source;
     l = clamp2(l + (brightness != null ? brightness : 0) / 100 * 0.5, 0.02, 0.99);
+    if ((contrast != null ? contrast : 0) !== 0) {
+      l = clamp2(0.5 + (l - 0.5) * (1 + (contrast != null ? contrast : 0) / 100), 0.02, 0.99);
+    }
     if ((saturation != null ? saturation : 0) !== 0) {
       c = clamp2(c * (1 + saturation / 100), source.c > NEUTRAL_CHROMA ? 8e-3 : 0, 0.37);
     }
