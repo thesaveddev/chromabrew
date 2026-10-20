@@ -10,6 +10,7 @@ import { PaletteCard } from "@/components/palettes/palette-card";
 import { JsonLd } from "@/components/site/json-ld";
 import { siteUrl } from "@/lib/site-url";
 import { defaultOgImage } from "@/lib/og";
+import { clampDescription } from "@/lib/meta";
 
 export const dynamicParams = false;
 export const dynamic = "force-static";
@@ -28,7 +29,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!theme) return {};
   return {
     title: `${theme.name} Color Palettes`,
-    description: `${theme.tagline} Browse ${palettesForTheme(slug).length} hand-picked ${theme.name.toLowerCase()} palettes — copy hex or open any palette in the generator.`,
+    // Composed from data, so clamp rather than trust the tagline's length.
+    description: clampDescription(
+      `${theme.tagline} ${palettesForTheme(slug).length} hand-picked palettes — copy hex or open in the generator.`,
+    ),
     alternates: { canonical: `/palettes/${slug}` },
     openGraph: {
       title: `${theme.name} Color Palettes · ChromaBrew`,

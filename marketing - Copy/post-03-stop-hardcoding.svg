@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1350" viewBox="0 0 1080 1350">
+  <defs>
+    <linearGradient id="accent" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#ff006e"/>
+      <stop offset="1" stop-color="#3a86ff"/>
+    </linearGradient>
+  </defs>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap');
+    .ser { font-family:'JetBrains Mono',monospace; font-weight:600; font-size:26px; letter-spacing:6px; }
+    .h1 { font-family:'Inter',sans-serif; font-weight:800; }
+    .mono { font-family:'JetBrains Mono',monospace; }
+  </style>
+
+  <rect width="1080" height="1350" fill="#0a0a0a"/>
+
+  <text x="80" y="120" class="ser" fill="#6b7280">CHROMABREW</text>
+  <circle cx="1000" cy="104" r="22" fill="#c87cb3"/>
+  <line x1="80" y1="150" x2="1000" y2="150" stroke="#1f2937" stroke-width="2"/>
+
+  <text x="80" y="360" class="mono" fill="#3a86ff" font-size="120">03</text>
+
+  <!-- the problem -->
+  <text x="80" y="540" class="h1" fill="#ffffff" font-size="92">Stop colour</text>
+  <text x="80" y="644" class="h1" fill="#ffffff" font-size="92">picking. Start</text>
+  <text x="80" y="748" class="h1" fill="#ffffff" font-size="92">systemising.</text>
+
+  <!-- the hardcoding example -->
+  <rect x="80" y="850" width="920" height="150" rx="24" fill="#141414" stroke="#262626" stroke-width="2"/>
+  <text x="120" y="920" class="mono" fill="#9ca3af" font-size="30">hex: #FF006E</text>
+  <text x="120" y="970" class="mono" fill="#6b7280" font-size="30">/ random / no system</text>
+  <circle cx="960" cy="925" r="42" fill="#ff006e"/>
+
+  <text x="80" y="1100" class="mono" fill="#9ca3af" font-size="28">Every app needs ONE rule for colour.</text>
+
+  <line x1="80" y1="1220" x2="1000" y2="1220" stroke="#1f2937" stroke-width="2"/>
+  <text x="80" y="1280" class="ser" fill="#6b7280">@CHROMABREW</text>
+</svg>

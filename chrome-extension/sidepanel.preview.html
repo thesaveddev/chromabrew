@@ -1,0 +1,836 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <title>ChromaBrew Color Picker</title>
+    <style>
+/* ChromaBrew side panel — follows the site's zinc neutrals + plum brand. */
+
+:root {
+  color-scheme: light dark;
+  --bg: #fafafa;
+  --panel: #ffffff;
+  --text: #18181b;
+  --muted: #71717a;
+  --line: #e4e4e7;
+  --brand: #47003a;
+  --brand-hover: #5f0a4c;
+  --dark-btn: #18181b;
+  --dark-btn-hover: #3f3f46;
+  --dark-btn-fg: #ffffff;
+  --ring: #0ea5e9;
+  --swatch: #47003a;
+  --radius: 10px;
+  font-size: 14px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #09090b;
+    --panel: #18181b;
+    --text: #f4f4f5;
+    --muted: #a1a1aa;
+    --line: #2e2e33;
+    --brand: #8a3a76;
+    --brand-hover: #a3518c;
+    --dark-btn: #f4f4f5;
+    --dark-btn-hover: #d4d4d8;
+    --dark-btn-fg: #18181b;
+    --ring: #38bdf8;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 14px;
+  background: var(--bg);
+  color: var(--text);
+  font-family:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
+  line-height: 1.45;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---- header ---- */
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.brand .mark {
+  width: 26px;
+  height: 26px;
+  fill: var(--brand);
+  flex-shrink: 0;
+}
+
+.brand h1 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.brand p {
+  margin: 0;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+/* ---- current color ---- */
+
+.current {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+  padding: 12px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.swatch {
+  width: 76px;
+  min-height: 76px;
+  border-radius: 8px;
+  background: var(--swatch);
+  /* Inner ring keeps light colors visible on the white panel. */
+  box-shadow:
+    inset 0 0 0 1px rgb(0 0 0 / 12%),
+    inset 0 0 0 1px rgb(255 255 255 / 8%);
+  flex-shrink: 0;
+}
+
+.values {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 0;
+  flex: 1;
+  gap: 8px;
+}
+
+.hex-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.hex-line code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: lowercase;
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.icon-btn:hover {
+  color: var(--text);
+  border-color: var(--muted);
+}
+
+.icon-btn svg {
+  width: 15px;
+  height: 15px;
+  stroke: currentColor;
+  stroke-width: 1.8;
+}
+
+.values dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 10px;
+  margin: 0;
+}
+
+.values dl > div {
+  display: contents;
+}
+
+.values dt {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  align-self: center;
+}
+
+.values dd {
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---- actions ---- */
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 13.5px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* --dark-btn-fg flips with the theme (defined in the :root blocks above);
+ * a plain color here would be overridden by source order either way. */
+.btn-dark {
+  background: var(--dark-btn);
+  color: var(--dark-btn-fg);
+}
+
+.btn-dark:hover:not(:disabled) {
+  background: var(--dark-btn-hover);
+}
+
+.btn-brand {
+  background: var(--brand);
+  color: #ffffff;
+}
+
+.btn-brand:hover:not(:disabled) {
+  background: var(--brand-hover);
+}
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--text);
+  padding: 8px 14px;
+  width: auto;
+}
+
+.btn-ghost:hover {
+  border-color: var(--muted);
+}
+
+.btn-icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* ---- hex input ---- */
+
+.hex-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.hex-form input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px;
+}
+
+.hex-form input::placeholder {
+  color: var(--muted);
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* ---- history ---- */
+
+.history {
+  margin-top: 16px;
+}
+
+.history-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.history h2 {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.link-btn {
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: 11.5px;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.link-btn:hover {
+  color: var(--text);
+  text-decoration: underline;
+}
+
+.history ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.history li {
+  margin: 0;
+}
+
+.chip {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border-radius: 6px;
+  border: 1px solid rgb(0 0 0 / 14%);
+  background: var(--chip);
+  cursor: pointer;
+}
+
+.chip:hover {
+  transform: scale(1.1);
+}
+
+.empty {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.hidden {
+  display: none;
+}
+
+/* ---- footer ---- */
+
+.footer {
+  margin-top: 18px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.footer label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 5px;
+}
+
+.footer input {
+  width: 100%;
+  padding: 7px 9px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+}
+
+.note {
+  margin: 9px 0 0;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+/* ---- toast ---- */
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%) translateY(8px);
+  padding: 7px 13px;
+  border-radius: 999px;
+  background: #18181b;
+  color: #fafafa;
+  font-size: 12.5px;
+  font-weight: 500;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease;
+  white-space: nowrap;
+  max-width: calc(100vw - 28px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (prefers-color-scheme: dark) {
+  .toast {
+    background: #f4f4f5;
+    color: #18181b;
+  }
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+</style>
+  </head>
+  <body>
+    <header class="brand">
+      <svg class="mark" viewBox="0 0 24 24" aria-hidden="true">
+        <path
+          d="M12 2c3.5 5 7 8.4 7 12a7 7 0 1 1-14 0C5 10.4 8.5 7 12 2z"
+        />
+      </svg>
+      <div>
+        <h1>ChromaBrew</h1>
+        <p>Pick a color, seed the generator</p>
+      </div>
+    </header>
+
+    <section class="current">
+      <div
+        class="swatch"
+        id="swatch"
+        role="img"
+        aria-label="Currently selected color"
+      ></div>
+      <div class="values">
+        <div class="hex-line">
+          <code id="hex">#47003a</code>
+          <button
+            id="copy-hex"
+            class="icon-btn"
+            type="button"
+            aria-label="Copy hex code"
+            title="Copy hex"
+          >
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <rect x="9" y="9" width="11" height="11" rx="2" />
+              <path d="M5 15V5a2 2 0 0 1 2-2h10" />
+            </svg>
+          </button>
+        </div>
+        <dl>
+          <div>
+            <dt>RGB</dt>
+            <dd id="rgb">—</dd>
+          </div>
+          <div>
+            <dt>HSL</dt>
+            <dd id="hsl">—</dd>
+          </div>
+        </dl>
+      </div>
+    </section>
+
+    <div class="actions">
+      <button id="pick" class="btn btn-dark" type="button">
+        <svg
+          class="btn-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <circle cx="12" cy="12" r="7" />
+          <path d="M12 2v4M12 18v4M2 12h4M18 12h4" />
+        </svg>
+        Pick color from screen
+      </button>
+      <button id="open-generator" class="btn btn-brand" type="button">
+        Open in ChromaBrew <span aria-hidden="true">→</span>
+      </button>
+    </div>
+
+    <form id="hex-form" class="hex-form" autocomplete="off">
+      <label class="sr-only" for="hex-input">Hex color</label>
+      <input
+        id="hex-input"
+        name="hex"
+        placeholder="Paste hex — 47003a"
+        spellcheck="false"
+        maxlength="7"
+      />
+      <button class="btn btn-ghost" type="submit">Use</button>
+    </form>
+
+    <section class="history" aria-label="Recent colors">
+      <div class="history-head">
+        <h2>Recent</h2>
+        <button id="clear-history" class="link-btn" type="button">Clear</button>
+      </div>
+      <ul id="history-list"></ul>
+      <p id="history-empty" class="empty">Picked colors land here.</p>
+    </section>
+
+    <footer class="footer">
+      <label for="generator-url">Generator URL</label>
+      <input id="generator-url" type="url" spellcheck="false" />
+      <p class="note" id="dropper-note">
+        Colors are sampled on your screen — nothing is uploaded.
+      </p>
+    </footer>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script>
+/* ChromaBrew Color Picker — side panel.
+ * Vanilla JS, no build step: chrome://extensions → Load unpacked → this folder.
+ * Sampling uses the standard EyeDropper API (no manifest permission);
+ * chrome.storage keeps history/settings, chrome.tabs opens the generator. */
+
+/* global chrome */
+
+const DEFAULT_BASE = "https://www.chromabrew.com";
+const DEFAULT_HEX = "#47003a";
+const HISTORY_LIMIT = 10;
+const HEX6 = /^#?[0-9a-f]{6}$/i;
+const HEX3 = /^#?[0-9a-f]{3}$/i;
+
+const $ = (id) => document.getElementById(id);
+
+const els = {
+  swatch: $("swatch"),
+  hex: $("hex"),
+  rgb: $("rgb"),
+  hsl: $("hsl"),
+  copyHex: $("copy-hex"),
+  pick: $("pick"),
+  open: $("open-generator"),
+  form: $("hex-form"),
+  input: $("hex-input"),
+  history: $("history-list"),
+  historyEmpty: $("history-empty"),
+  clear: $("clear-history"),
+  base: $("generator-url"),
+  note: $("dropper-note"),
+  toast: $("toast"),
+};
+
+let currentHex = DEFAULT_HEX;
+let history = [];
+let baseUrl = DEFAULT_BASE;
+let toastTimer = 0;
+
+/* ---------- storage: chrome.storage.sync, localStorage fallback ---------- */
+/* The fallback keeps the panel usable when opened outside the extension
+ * (plain browser preview), where chrome.storage does not exist. */
+
+const hasSync =
+  typeof chrome !== "undefined" && Boolean(chrome.storage && chrome.storage.sync);
+
+async function load(key, fallback) {
+  if (hasSync) {
+    const got = await chrome.storage.sync.get(key);
+    return Object.prototype.hasOwnProperty.call(got, key) ? got[key] : fallback;
+  }
+  try {
+    const raw = localStorage.getItem(`chromabrew.${key}`);
+    return raw === null ? fallback : JSON.parse(raw);
+  } catch {
+    return fallback;
+  }
+}
+
+function save(key, value) {
+  if (hasSync) {
+    void chrome.storage.sync.set({ [key]: value });
+    return;
+  }
+  try {
+    localStorage.setItem(`chromabrew.${key}`, JSON.stringify(value));
+  } catch {
+    /* storage unavailable (private mode) — state stays in-memory */
+  }
+}
+
+/* ---------- color math (mirrors the ChromaBrew engine's conversions) ---------- */
+
+function normalizeHex(value) {
+  const v = String(value).trim();
+  if (HEX6.test(v)) return `#${v.replace("#", "").toLowerCase()}`;
+  if (HEX3.test(v)) {
+    const digits = v.replace("#", "");
+    const [r, g, b] = digits;
+    return `#${r}${r}${g}${g}${b}${b}`.toLowerCase();
+  }
+  return null;
+}
+
+function hexToRgb(hex) {
+  const n = Number.parseInt(hex.slice(1), 16);
+  return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+}
+
+function hexToHsl(hex) {
+  const { r, g, b } = hexToRgb(hex);
+  const rn = r / 255;
+  const gn = g / 255;
+  const bn = b / 255;
+  const max = Math.max(rn, gn, bn);
+  const min = Math.min(rn, gn, bn);
+  const l = (max + min) / 2;
+  let h = 0;
+  let s = 0;
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    if (max === rn) h = (gn - bn) / d + (gn < bn ? 6 : 0);
+    else if (max === gn) h = (bn - rn) / d + 2;
+    else h = (rn - gn) / d + 4;
+    h *= 60;
+  }
+  return {
+    h: Math.round(h),
+    s: Math.round(s * 100),
+    l: Math.round(l * 100),
+  };
+}
+
+/* ---------- state → UI ---------- */
+
+function render() {
+  const { r, g, b } = hexToRgb(currentHex);
+  const { h, s, l } = hexToHsl(currentHex);
+  els.swatch.style.setProperty("--swatch", currentHex);
+  els.hex.textContent = currentHex;
+  els.rgb.textContent = `rgb(${r}, ${g}, ${b})`;
+  els.hsl.textContent = `hsl(${h}, ${s}%, ${l}%)`;
+}
+
+function renderHistory() {
+  els.history.textContent = "";
+  els.historyEmpty.classList.toggle("hidden", history.length > 0);
+  els.clear.classList.toggle("hidden", history.length === 0);
+  for (const hex of history) {
+    const li = document.createElement("li");
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "chip";
+    chip.style.setProperty("--chip", hex);
+    chip.title = `Use ${hex}`;
+    chip.setAttribute("aria-label", `Use ${hex}`);
+    chip.addEventListener("click", () => setCurrent(hex));
+    li.appendChild(chip);
+    els.history.appendChild(li);
+  }
+}
+
+function setCurrent(value, { remember = false } = {}) {
+  const hex = normalizeHex(value);
+  if (!hex) return false;
+  currentHex = hex;
+  if (remember) {
+    history = [hex, ...history.filter((entry) => entry !== hex)].slice(
+      0,
+      HISTORY_LIMIT,
+    );
+    save("history", history);
+    renderHistory();
+  }
+  save("last", hex);
+  render();
+  return true;
+}
+
+function toast(message) {
+  els.toast.textContent = message;
+  els.toast.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => els.toast.classList.remove("show"), 1800);
+}
+
+async function copyText(text, label) {
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      document.execCommand("copy");
+    } finally {
+      ta.remove();
+    }
+  }
+  toast(`${label} copied — ${text}`);
+}
+
+function generatorUrl() {
+  return `${baseUrl.replace(/\/+$/, "")}/design-system?primary=${currentHex.slice(1)}`;
+}
+
+function openGenerator() {
+  const url = generatorUrl();
+  if (typeof chrome !== "undefined" && chrome.tabs && chrome.tabs.create) {
+    chrome.tabs.create({ url });
+    return;
+  }
+  window.open(url, "_blank", "noopener");
+}
+
+/* ---------- events ---------- */
+
+els.copyHex.addEventListener("click", () => void copyText(currentHex, "Hex"));
+
+els.pick.addEventListener("click", async () => {
+  if (!("EyeDropper" in window)) {
+    toast("Screen picking needs Chrome 95+ — paste a hex instead.");
+    return;
+  }
+  try {
+    /* open() must start directly from this click: the API requires the
+     * picker to launch inside the user's gesture. */
+    const result = await new window.EyeDropper().open();
+    if (setCurrent(result.sRGBHex, { remember: true })) {
+      toast(`Picked ${currentHex}`);
+    }
+  } catch {
+    /* user pressed Escape to cancel */
+  }
+});
+
+els.open.addEventListener("click", openGenerator);
+
+els.form.addEventListener("submit", (event) => {
+  event.preventDefault();
+  if (setCurrent(els.input.value, { remember: true })) {
+    els.input.value = "";
+    toast(`Using ${currentHex}`);
+  } else {
+    toast("Enter a 6-digit hex like 47003a.");
+  }
+});
+
+/* Live preview while typing; Enter (submit) is what records history. */
+els.input.addEventListener("input", () => {
+  setCurrent(els.input.value);
+});
+
+els.clear.addEventListener("click", () => {
+  history = [];
+  save("history", history);
+  renderHistory();
+});
+
+els.base.addEventListener("change", () => {
+  const value = els.base.value.trim().replace(/\/+$/, "");
+  if (/^https?:\/\//.test(value)) {
+    baseUrl = value;
+    save("base", value);
+    toast("Generator URL saved.");
+  } else {
+    els.base.value = baseUrl;
+    toast("URL must start with http:// or https://");
+  }
+});
+
+/* ---------- init ---------- */
+
+void (async () => {
+  const [storedBase, storedHistory, storedLast] = await Promise.all([
+    load("base", DEFAULT_BASE),
+    load("history", []),
+    load("last", null),
+  ]);
+  if (typeof storedBase === "string" && /^https?:\/\//.test(storedBase)) {
+    baseUrl = storedBase.replace(/\/+$/, "");
+  }
+  history = (Array.isArray(storedHistory) ? storedHistory : [])
+    .map((entry) => normalizeHex(entry))
+    .filter((entry) => entry !== null)
+    .slice(0, HISTORY_LIMIT);
+  els.base.value = baseUrl;
+  setCurrent(typeof storedLast === "string" ? storedLast : DEFAULT_HEX);
+  renderHistory();
+
+  if (!("EyeDropper" in window)) {
+    els.pick.disabled = true;
+    els.note.textContent =
+      "Screen picking needs Chrome 95+ — paste a hex below instead.";
+  }
+})();
+
+</script>
+  </body>
+</html>

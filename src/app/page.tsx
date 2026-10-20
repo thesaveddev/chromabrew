@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { AuditSection } from "@/components/home/audit-section";
 import { HeroColourForm } from "@/components/home/hero-form";
+import { HeroPalettes } from "@/components/home/hero-palettes";
+import { PaletteRibbon } from "@/components/home/palette-ribbon";
+import { ThemeMosaic } from "@/components/home/theme-mosaic";
+import { GALLERY_PALETTES, PALETTE_THEMES } from "@/lib/palettes";
 import { buildDesignSystem } from "@/lib/design-system";
 import { DEFAULT_CONFIG } from "@/lib/design-system/share";
 import { PreviewFrame } from "@/components/generator/previews/preview-frame";
@@ -27,7 +31,7 @@ export const metadata: Metadata = {
   // The audit is named here and given its own landing page for search intent;
   // this description stays led by the toolkit, which is what the page is.
   description:
-    "Free browser-based color toolkit: palette generator, WCAG contrast checker, image color extraction, design tokens and Tailwind or shadcn exports — plus a free website audit for any live page.",
+    "Free color toolkit: palette generator, WCAG contrast checker, image extraction, design tokens, Tailwind and shadcn exports — plus a free website audit.",
   alternates: { canonical: "/" },
   openGraph: {
     title: "ChromaBrew — Free Color Tools & Design System Generator",
@@ -101,10 +105,11 @@ export default function HomePage() {
         }}
       />
 
-      {/* Hero */}
+      {/* Hero — the thesis is color itself: real curated palettes beside the
+          pitch, every strip a door into the catalog. */}
       <section className="border-b border-zinc-200 dark:border-zinc-800">
-        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24">
-          <div className="max-w-2xl">
+        <div className="mx-auto grid max-w-7xl gap-10 px-4 py-16 sm:px-6 sm:py-24 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+          <div>
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
               Free browser-based color toolkit
             </p>
@@ -115,9 +120,16 @@ export default function HomePage() {
               Generate accessible palettes, semantic tokens, light and dark
               themes, and production-ready code in seconds.
             </p>
-          </div>
-          <div className="mt-8">
-            <HeroColourForm />
+            <div className="mt-6 flex flex-wrap gap-2.5">
+              <LinkButton href="/generate" variant="primary">
+                Generate a palette
+              </LinkButton>
+              <LinkButton href="/palettes" variant="secondary">
+                Browse {GALLERY_PALETTES.length} palettes
+              </LinkButton>
+            </div>
+            <div className="mt-8">
+              <HeroColourForm />
           </div>
           <p className="mt-4 text-sm text-zinc-500 dark:text-zinc-400">
             No account. No upload. Everything runs in your browser —{" "}
@@ -133,6 +145,54 @@ export default function HomePage() {
           <div className="mt-6">
             <ProductHuntBadge />
           </div>
+          </div>
+          <HeroPalettes palettes={GALLERY_PALETTES} />
+        </div>
+      </section>
+
+      <PaletteRibbon />
+
+      {/* Theme mosaic — browsing starts by feeling, not by reading. */}
+      <section aria-labelledby="themes-heading" className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
+              Palette gallery
+            </p>
+            <h2 id="themes-heading" className="mt-2 text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-3xl">
+              {PALETTE_THEMES.length} moods, {GALLERY_PALETTES.length} palettes, zero sign-ups.
+            </h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+              Every palette is hand-picked — five stops that work together —
+              and every one opens directly in the design system generator.
+              Pick the feeling; the hex codes follow.
+            </p>
+          </div>
+          <LinkButton href="/palettes" variant="secondary">
+            Search all palettes
+          </LinkButton>
+        </div>
+        <ThemeMosaic />
+      </section>
+
+      {/* Instant generator band — the fastest door into making. */}
+      <section aria-labelledby="generate-heading" className="bg-zinc-950 py-14 dark:bg-black">
+        <div className="mx-auto flex max-w-7xl flex-col items-start gap-6 px-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-400">
+              Instant palettes
+            </p>
+            <h2 id="generate-heading" className="mt-2 text-2xl font-bold tracking-tight text-white sm:text-3xl">
+              Press space. Keep the good ones.
+            </h2>
+            <p className="mt-2 max-w-xl text-sm leading-6 text-zinc-400">
+              A lightning-fast palette generator: shuffle with the spacebar,
+              lock the keepers, copy any hex, share the palette as a link.
+            </p>
+          </div>
+          <LinkButton href="/generate" variant="primary">
+            Open the generator
+          </LinkButton>
         </div>
       </section>
 

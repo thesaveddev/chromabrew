@@ -84,6 +84,42 @@ export const PALETTE_THEMES: PaletteTheme[] = [
     ],
   },
   {
+    slug: "neon",
+    name: "Neon",
+    tagline: "Electric nights — laser color on abyssal darks.",
+    intro: [
+      "Neon palettes are built for the dark: hot magentas, acid greens and electric cyans that only read as neon against near-black grounds. They power gaming, nightlife, music and dev tools with an after-hours side.",
+      "Neon fails in daylight — these hues on white look cheap, not electric. Every palette here carries its own darkness, so lift the full five stops and keep the backgrounds deep.",
+    ],
+  },
+  {
+    slug: "autumn",
+    name: "Autumn",
+    tagline: "Harvest golds, orchard reds, and fog-softened greens.",
+    intro: [
+      "Autumn palettes run from harvest gold through orchard red into umber and fog: warmth with gravity. They suit food brands, outdoor goods, publishing and anything seasonal that wants to feel gathered rather than manufactured.",
+      "The trap is pumpkin-spice cliché — orange plus brown with nothing to say. Each palette here earns its warmth with a counterweight: a fog green, a deep plum shadow, a cream that lets the ambers breathe.",
+    ],
+  },
+  {
+    slug: "frost",
+    name: "Frost",
+    tagline: "Glacier blues, alpine dawns, and evergreen under ice.",
+    intro: [
+      "Frost palettes live at the cold end of the wheel: glacier blue, alpine rose-dawn, evergreen under ice. They read as crisp, premium and calm — winter collections, skincare, Nordic brands, snow sports.",
+      "Cold palettes go sterile without a warm whisper. Most palettes here hide one: a dawn pink, a pale gold ground, something that keeps the ice from feeling uninhabited.",
+    ],
+  },
+  {
+    slug: "jewel",
+    name: "Jewel",
+    tagline: "Emerald, sapphire, ruby — richness with restraint.",
+    intro: [
+      "Jewel palettes take saturated gemstone hues and set them like stones: deep grounds, one rich saturated middle, metallic or porcelain highlights. They suit wine, hospitality, premium consumer goods and anything that charges accordingly.",
+      "Richness curdles into gaudiness past one jewel per palette. Each entry here commits to a single stone — emerald or sapphire or ruby, never all three — and lets neutrals do the framing.",
+    ],
+  },
+  {
     slug: "monochrome",
     name: "Monochrome",
     tagline: "One hue, five stops — the disciplined power of a single color.",
@@ -316,6 +352,154 @@ export const GALLERY_PALETTES: GalleryPalette[] = [
     description:
       "Oxblood red in five steps: leather-bound and serious. Wine, academia, premium print — drama from a single hue.",
     tags: ["red", "wine", "premium", "print"],
+  },
+  // ——— Neon ———
+  {
+    slug: "cyber-arcade",
+    theme: "neon",
+    name: "Cyber Arcade",
+    colors: ["#0b0026", "#3a0ca3", "#7209b7", "#f72585", "#4cc9f0"],
+    description:
+      "Violet-night arcade glow: deep space violet grounds, magenta heat, a cyan coin-slot highlight. Gaming, streaming overlays, music visuals.",
+    tags: ["neon", "gaming", "violet", "night"],
+  },
+  {
+    slug: "laser-grid",
+    theme: "neon",
+    name: "Laser Grid",
+    colors: ["#001219", "#005f73", "#0a9396", "#ee9b00", "#ff5d8f"],
+    description:
+      "Teal grid lines with amber and hot-pink lasers over abyssal teal-black. Synthwave artwork, dev tools with attitude, event identities.",
+    tags: ["neon", "teal", "synthwave", "accent"],
+  },
+  {
+    slug: "midnight-drive",
+    theme: "neon",
+    name: "Midnight Drive",
+    colors: ["#10002b", "#5a189a", "#9d4edd", "#ff8500", "#ffda44"],
+    description:
+      "Synthwave sunset compressed to five stops: plum night, electric violet, ember orange, taxi-light gold. Nightlife, automotive, bold consumer brands.",
+    tags: ["neon", "synthwave", "nightlife", "bold"],
+  },
+  {
+    slug: "phosphor-terminal",
+    theme: "neon",
+    name: "Phosphor Terminal",
+    colors: ["#02110a", "#0a5c36", "#17b26a", "#a6f4c5", "#eafff3"],
+    description:
+      "CRT phosphor greens from near-black to mint-white: the hacker's palette, tuned for real interfaces. Dev tools, terminal themes, security brands.",
+    tags: ["neon", "green", "devtools", "terminal"],
+  },
+  // ——— Autumn ———
+  {
+    slug: "harvest-moon",
+    theme: "autumn",
+    name: "Harvest Moon",
+    colors: ["#2b1a12", "#8c4a2f", "#c98a3b", "#e8b04b", "#f7ead7"],
+    description:
+      "Harvest golds over umber dark: amber actions, golden highlights, cream grounds. Farm brands, bakeries, autumn collections with appetite.",
+    tags: ["warm", "autumn", "gold", "food"],
+  },
+  {
+    slug: "orchard-cider",
+    theme: "autumn",
+    name: "Orchard Cider",
+    colors: ["#3b2314", "#a44a3f", "#d97941", "#e9c46a", "#faf3e3"],
+    description:
+      "Orchard reds pressed into cider amber: apple-skin red, caramel mid, golden light. Beverage, hospitality, seasonal retail with warmth.",
+    tags: ["red", "autumn", "beverage", "warm"],
+  },
+  {
+    slug: "foggy-orchard",
+    theme: "autumn",
+    name: "Foggy Orchard",
+    colors: ["#28302a", "#5f6f5e", "#a3b18a", "#d4a373", "#faedcd"],
+    description:
+      "Fog-softened greens with a single tan traveler: misty mornings, not pumpkin spice. Outdoor brands, slow living, editorial autumn.",
+    tags: ["muted", "autumn", "green", "editorial"],
+  },
+  {
+    slug: "cranberry-woods",
+    theme: "autumn",
+    name: "Cranberry Woods",
+    colors: ["#33121c", "#6e2a3c", "#a44a5a", "#d9a05b", "#f4e3c2"],
+    description:
+      "Cranberry reds against golden tan: berry depth with harvest light. Wine, holiday collections, premium food that takes autumn seriously.",
+    tags: ["red", "autumn", "wine", "premium"],
+  },
+  // ——— Frost ———
+  {
+    slug: "glacier-milk",
+    theme: "frost",
+    name: "Glacier Milk",
+    colors: ["#1b2a4a", "#3e5c76", "#74a9cf", "#bcd9ea", "#f4fafd"],
+    description:
+      "Glacier blues from deep water to milk-ice: the crisp SaaS gradient gone sub-zero. Skincare, winter sports, Nordic brands with clarity.",
+    tags: ["blue", "winter", "minimal", "skincare"],
+  },
+  {
+    slug: "alpine-dawn",
+    theme: "frost",
+    name: "Alpine Dawn",
+    colors: ["#2c3e50", "#7f8c9b", "#c9d6df", "#f2b8c6", "#fdf0f3"],
+    description:
+      "Cold slate dawn blushing pink: alpine mornings in five stops. Wellness, hospitality, lifestyle brands that wake up cold and kind.",
+    tags: ["winter", "pink", "wellness", "soft"],
+  },
+  {
+    slug: "evergreen-frost",
+    theme: "frost",
+    name: "Evergreen Frost",
+    colors: ["#122620", "#2f5d50", "#6aa68b", "#b8d8d3", "#eef7f5"],
+    description:
+      "Evergreen under ice: deep spruce ink, frosted mids, near-white grounds. Environmental orgs, winter outdoor gear, crisp packaging.",
+    tags: ["green", "winter", "outdoor", "eco"],
+  },
+  {
+    slug: "polar-night",
+    theme: "frost",
+    name: "Polar Night",
+    colors: ["#060d1f", "#1c2f5e", "#3d5a99", "#8fb3e8", "#dce9fa"],
+    description:
+      "Arctic night blues built for dark mode: luminous steel blues on abyssal grounds. Space tech, security, night-owl products with nerve.",
+    tags: ["dark", "blue", "winter", "devtools"],
+  },
+  // ——— Jewel ———
+  {
+    slug: "emerald-vault",
+    theme: "jewel",
+    name: "Emerald Vault",
+    colors: ["#0b1f1a", "#14532d", "#1f8a4c", "#d4af37", "#f5ecd7"],
+    description:
+      "Emerald with a gold clasp: deep green vault, metallic highlight, porcelain grounds. Private banking, premium hospitality, fine goods.",
+    tags: ["green", "luxury", "gold", "premium"],
+  },
+  {
+    slug: "sapphire-club",
+    theme: "jewel",
+    name: "Sapphire Club",
+    colors: ["#0a1030", "#1e3a8a", "#3b82c4", "#c0c8d8", "#eef1f6"],
+    description:
+      "Single-stone sapphire from club-night navy to silver: depth, precision, quiet money. Law, aviation, members' clubs, premium SaaS.",
+    tags: ["blue", "luxury", "premium", "enterprise"],
+  },
+  {
+    slug: "ruby-reserve",
+    theme: "jewel",
+    name: "Ruby Reserve",
+    colors: ["#22060d", "#7f1d2d", "#c0263c", "#e8a0a8", "#f9e8e7"],
+    description:
+      "Reserve ruby: oxblood shadows, true-red heart, blush highlights. Wine labels, perfumery, fashion houses that never shout.",
+    tags: ["red", "luxury", "wine", "fashion"],
+  },
+  {
+    slug: "amethyst-hour",
+    theme: "jewel",
+    name: "Amethyst Hour",
+    colors: ["#1d1030", "#4c1d95", "#7c3aed", "#c4b5fd", "#f1eafe"],
+    description:
+      "Amethyst at dusk: violet depth with lavender light. Beauty-tech, evening events, spiritual brands with a premium finish.",
+    tags: ["violet", "luxury", "beauty", "evening"],
   },
 ];
 

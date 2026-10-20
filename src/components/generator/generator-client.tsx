@@ -161,11 +161,16 @@ export function GeneratorWorkspace() {
   }, []);
 
   const randomize = useCallback(() => {
-    const trio = randomTrio();
+    // Randomise the *primary* only — companions derive from it by role, so
+    // a fresh seed always yields a coherent new trio instead of reusing
+    // companions picked for the old one.
+    const { primary } = randomTrio();
     setConfig((prev) =>
       normaliseConfig({
         ...prev,
-        ...trio,
+        primary,
+        secondary: undefined,
+        accent: undefined,
         lockedIndices: [],
         paletteOverrides: {},
       }),
@@ -344,13 +349,21 @@ export function GeneratorWorkspace() {
           <div className="flex items-center gap-2.5">
             <div className="flex -space-x-1" aria-hidden>
               {[
-                ["Primary", config.primary],
-                ...(config.secondary ? [["Secondary", config.secondary] as const] : []),
-                ...(config.accent ? [["Accent", config.accent] as const] : []),
-              ].map(([name, hex]) => (
+                { name: "Primary", hex: config.primary, derived: false },
+                {
+                  name: "Secondary",
+                  hex: config.secondary ?? system.primitives.colors.secondarySeed.hex,
+                  derived: !config.secondary,
+                },
+                {
+                  name: "Accent",
+                  hex: config.accent ?? system.primitives.colors.accentSeed.hex,
+                  derived: !config.accent,
+                },
+              ].map(({ name, hex, derived }) => (
                 <span
                   key={name}
-                  title={`${name} ${hex.toUpperCase()}`}
+                  title={`${name} ${hex.toUpperCase()}${derived ? " (derived)" : ""}`}
                   className="h-[18px] w-[18px] rounded-full ring-2 ring-white transition-colors duration-150 dark:ring-zinc-950"
                   style={{ backgroundColor: hex }}
                 />
@@ -399,8 +412,8 @@ export function GeneratorWorkspace() {
             primary={config.primary}
             secondary={config.secondary}
             accent={config.accent}
-            derivedSecondary={system.primitives.colors.palette?.[1]?.hex}
-            derivedAccent={system.primitives.colors.palette?.[2]?.hex}
+            derivedSecondary={system.primitives.colors.secondarySeed.hex}
+            derivedAccent={system.primitives.colors.accentSeed.hex}
             onApply={applyColours}
             onRemoveSecondary={removeSecondary}
             onRemoveAccent={removeAccent}

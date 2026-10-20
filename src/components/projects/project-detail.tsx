@@ -10,6 +10,7 @@ type Project = {
   name: string;
   description: string | null;
   visibility: "private" | "public";
+  listedInGallery: boolean;
   createdAt: string;
   updatedAt: string;
 };

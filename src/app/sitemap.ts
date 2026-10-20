@@ -20,6 +20,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const routes: { path: string; priority: number; lastModified?: Date }[] = [
     { path: "/", priority: 1 },
     { path: "/design-system", priority: 0.9 },
+    { path: "/generate", priority: 0.9 },
     { path: "/tools", priority: 0.8 },
     { path: "/audit", priority: 0.8 },
     { path: "/color-tools", priority: 0.6 },

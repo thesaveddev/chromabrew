@@ -92,6 +92,10 @@ const MIGRATIONS = [
     name: "20261019000000_screenshot_bytes",
     columns: [{ table: "ScannedPage", column: "screenshotData" }],
   },
+  {
+    name: "20261019000001_gallery_opt_in",
+    columns: [{ table: "Project", column: "listedInGallery" }],
+  },
 ];
 
 /**
@@ -121,6 +125,7 @@ const REQUIRED = {
     { table: "Scan", column: "shareToken" },
     { table: "Scan", column: "sharedAt" },
     { table: "ScannedPage", column: "screenshotData" },
+    { table: "Project", column: "listedInGallery" },
     // The heartbeat's clean-shutdown mark. A table that exists without it
     // answers "is any worker still beating" by throwing, which is worse than
     // not having the table: the form reports an internal error for a feature

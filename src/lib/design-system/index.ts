@@ -1,6 +1,7 @@
 import { generateScale } from "./colour/scale";
 import { toColourValue } from "./colour/convert";
 import { applyRefinement, ZERO_REFINEMENT } from "./colour/refine";
+import { deriveCompanions } from "./colour/companions";
 import { generatePalette } from "./palette/generate";
 import {
   generateRadius,
@@ -15,7 +16,7 @@ import {
 import { normaliseConfig } from "./share";
 import type { DesignSystem, GeneratorConfig } from "./types";
 
-export const GENERATOR_VERSION = "1.2.0";
+export const GENERATOR_VERSION = "1.3.0";
 
 export const DEFAULT_PRIMARY = "#47003a";
 
@@ -82,11 +83,14 @@ export function buildDesignSystem(input: GeneratorConfig): DesignSystem {
     return refinedPalette[index];
   });
 
-  // Derive secondary and accent from the palette strategy when the user
-  // hasn't explicitly chosen them.  Use complementary hues from the palette
-  // so they are always visually distinct from the primary.
-  const secondaryHex = seeds.secondary ?? palette[1]?.hex ?? seeds.primary;
-  const accentHex = seeds.accent ?? palette[2]?.hex ?? palette[0]?.hex ?? seeds.primary;
+  // Secondary and accent are derived by role (companions.ts) when the user
+  // hasn't explicitly chosen them: split-complement hues for chromatic
+  // primaries, borrowed personality for achromatic ones, lightness that
+  // answers the primary's own value. The palette strategy shapes the swatch
+  // strip only — it no longer decides the companions.
+  const companions = deriveCompanions(primaryValue.hex);
+  const secondaryHex = seeds.secondary ?? companions.secondary;
+  const accentHex = seeds.accent ?? companions.accent;
 
   const themes = {
     light: generateTheme(
@@ -122,6 +126,7 @@ export function buildDesignSystem(input: GeneratorConfig): DesignSystem {
       colors: {
         scale,
         palette,
+        secondarySeed: toColourValue(secondaryHex),
         accentSeed: toColourValue(accentHex),
       },
       typography: generateTypography(config.typeRatio, config.fontPairing),

@@ -3,6 +3,7 @@
 import { useSession, signOut } from "next-auth/react";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { BillingSection } from "./billing-section";
 
 export function AccountClient() {
   const { data: session, status } = useSession();
@@ -46,6 +47,8 @@ export function AccountClient() {
             </div>
           </div>
         </div>
+
+        <BillingSection />
 
         <div className="flex gap-3">
           <Link

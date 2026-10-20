@@ -5,6 +5,7 @@ import {
   rgbToOklch,
 } from "../colour/convert";
 import {
+  AA_LARGE,
   AA_NORMAL,
   contrastRatio,
   fixContrast,
@@ -229,10 +230,12 @@ export function generateTheme(
   const primaryForeground = pickForeground(fgCandidates, primaryBase);
 
   /* --- secondary ------------------------------------------------------ */
-  // Respect the user's chosen hue AND chroma so picking a vibrant colour
-  // visibly changes the theme.  Lightness adapts to the seed and chroma
-  // is allowed high enough to produce clearly distinguishable buttons
-  // and badges.
+  // Hue and chroma follow the seed so a vibrant pick visibly changes the
+  // theme. Lightness is *anchored* to the seed rather than clamped into a
+  // band: an ink-black secondary stays ink in light mode, a lifted
+  // companion stays lifted in dark mode. The AA-guarded pool only moves
+  // the value when it must — the label must clear 4.5:1 on the surface and
+  // the surface itself 3:1 against the page (WCAG 1.4.11).
   const secondarySeed = rgbToOklch(hexToRgb(secondarySeedHex));
   const secondaryHue = secondarySeed.c < 0.008 ? h : secondarySeed.h;
   const secondaryChromaCap = mode === "light" ? 0.22 : 0.24;
@@ -240,18 +243,42 @@ export function generateTheme(
     secondaryChromaCap,
     Math.max(0.04, secondarySeed.c),
   );
-  const secondaryL =
+  const secondaryPool: string[] = [];
+  for (let i = 0; i <= 16; i++) {
+    const l = mode === "light" ? 0.18 + i * 0.045 : 0.26 + i * 0.04;
+    secondaryPool.push(oklch(clampL(l), secondaryChroma, secondaryHue));
+  }
+  const secondaryUsable = (hex: string): boolean =>
+    contrastRatio(hex, background) >= AA_LARGE &&
+    fgCandidates.some((fg) => contrastRatio(fg, hex) >= AA_NORMAL);
+  const secondaryReferenceL =
     mode === "light"
-      ? Math.min(0.88, Math.max(0.65, secondarySeed.l))
-      : Math.min(0.52, Math.max(0.32, secondarySeed.l));
-  const secondaryHoverL =
-    mode === "light" ? Math.max(0.58, secondaryL - 0.06) : Math.min(0.58, secondaryL + 0.06);
-  const secondary = oklch(secondaryL, secondaryChroma, secondaryHue);
-  const secondaryHover = oklch(secondaryHoverL, secondaryChroma, secondaryHue);
-  const secondaryForeground =
-    mode === "light"
-      ? pickForeground([whiteCandidate, darkCandidate], secondary)
-      : oklch(0.94, 0.02, secondaryHue);
+      ? Math.min(0.9, Math.max(0.2, secondarySeed.l))
+      : Math.min(0.86, Math.max(0.28, secondarySeed.l));
+  const secondaryReference = oklch(
+    secondaryReferenceL,
+    secondaryChroma,
+    secondaryHue,
+  );
+  const secondary = pickClosest(secondaryPool, secondaryReference, secondaryUsable);
+  const secondaryForeground = pickForeground(
+    [whiteCandidate, darkCandidate],
+    secondary,
+  );
+  // Hover shifts lightness but never burns the label: try the canonical
+  // direction first (darken in light, lighten in dark) and flip if the
+  // chosen foreground would drop below AA on the hovered surface.
+  const hoverHex = (baseHex: string): string => {
+    const base = rgbToOklch(hexToRgb(baseHex));
+    const step = mode === "light" ? -0.06 : 0.06;
+    const canonical = oklch(clampL(base.l + step), base.c, base.h);
+    if (contrastRatio(canonical, secondaryForeground) >= AA_NORMAL) return canonical;
+    const opposite = oklch(clampL(base.l - step), base.c, base.h);
+    return contrastRatio(opposite, secondaryForeground) >= AA_NORMAL
+      ? opposite
+      : baseHex;
+  };
+  const secondaryHover = hoverHex(secondary);
 
   /* --- accent --------------------------------------------------------- */
   // Anchor the accent near its own seed lightness so a bright pick stays
@@ -260,15 +287,17 @@ export function generateTheme(
   const accentChromaCap = mode === "light" ? 0.24 : 0.26;
   const accentChroma = Math.min(accentChromaCap, Math.max(0.04, accentSeed.c));
   const accentHue = accentSeed.c < 0.008 ? h : accentSeed.h;
+  // Same anchoring rule as secondary: the seed's own lightness wins when
+  // it can do the job, the pool only moves it for AA.
   const accentPool: string[] = [];
   for (let i = 0; i <= 14; i++) {
-    const l = mode === "light" ? 0.25 + i * 0.047 : 0.38 + i * 0.038;
+    const l = mode === "light" ? 0.22 + i * 0.049 : 0.3 + i * 0.043;
     accentPool.push(oklch(clampL(l), accentChroma, accentHue));
   }
   const accentReferenceL =
     mode === "light"
-      ? Math.min(0.74, Math.max(0.40, accentSeed.l))
-      : Math.min(0.80, Math.max(0.45, accentSeed.l));
+      ? Math.min(0.9, Math.max(0.24, accentSeed.l))
+      : Math.min(0.88, Math.max(0.32, accentSeed.l));
   const accentReference = oklch(accentReferenceL, accentChroma, accentHue);
   const accent = pickClosest(accentPool, accentReference, usableAsRole);
   const accentForeground = pickForeground(fgCandidates, accent);

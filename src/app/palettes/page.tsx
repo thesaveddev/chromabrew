@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PALETTE_THEMES, GALLERY_PALETTES, palettesForTheme } from "@/lib/palettes";
 import { PaletteCard } from "@/components/palettes/palette-card";
+import { PaletteExplorer } from "@/components/palettes/palette-explorer";
 import { JsonLd } from "@/components/site/json-ld";
 import { siteUrl } from "@/lib/site-url";
 import { defaultOgImage } from "@/lib/og";
@@ -9,7 +10,7 @@ import { defaultOgImage } from "@/lib/og";
 export const metadata: Metadata = {
   title: "Color Palette Gallery",
   description:
-    "Hand-picked color palettes by theme — retro, pastel, earthy, ocean, sunset, monochrome. Copy any hex or open a palette in the generator.",
+    "Hand-picked color palettes by theme — retro, pastel, earthy, ocean, neon, jewel and more. Search by color or mood, copy any hex, or open in the generator.",
   alternates: { canonical: "/palettes" },
   openGraph: {
     title: "Color Palette Gallery · ChromaBrew",
@@ -53,10 +54,13 @@ export default function PalettesIndexPage() {
         </h1>
         <p className="mt-4 text-base leading-7 text-zinc-600 dark:text-zinc-400">
           Every palette is curated — five stops that work together — and every
-          one opens directly in the design system generator. Browse by theme,
-          copy any hex, or turn a palette into tokens, themes, and CSS.
+          one opens directly in the design system generator. Search the whole
+          collection, browse by theme, copy any hex, or turn a palette into
+          tokens, themes, and CSS.
         </p>
       </header>
+
+      <PaletteExplorer palettes={GALLERY_PALETTES} themes={PALETTE_THEMES} />
 
       {PALETTE_THEMES.map((theme) => {
         const palettes = palettesForTheme(theme.slug);

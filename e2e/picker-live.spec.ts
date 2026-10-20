@@ -2,7 +2,11 @@ import { test, expect } from "@playwright/test";
 
 test("color slots update preview tokens live", async ({ page }) => {
   await page.goto("/design-system");
-  await expect(page.getByRole("heading", { name: /design system/i })).toBeVisible();
+  // Scope to the toolbar h1 — the page also has an about-section h2 that
+  // matches "design system", which trips strict mode.
+  await expect(
+    page.getByRole("heading", { name: /design system generator/i }),
+  ).toBeVisible();
 
   // Open the secondary slot
   const secondarySlot = page.getByRole("button", { name: /^secondary/i });

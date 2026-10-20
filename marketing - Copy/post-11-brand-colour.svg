@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1350" viewBox="0 0 1080 1350">
+  <defs>
+    <linearGradient id="accent" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#1db954"/>
+      <stop offset="1" stop-color="#3a86ff"/>
+    </linearGradient>
+  </defs>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap');
+    .ser { font-family:'JetBrains Mono',monospace; font-weight:600; font-size:26px; letter-spacing:6px; }
+    .h1 { font-family:'Inter',sans-serif; font-weight:800; }
+    .mono { font-family:'JetBrains Mono',monospace; }
+  </style>
+
+  <rect width="1080" height="1350" fill="#0a0a0a"/>
+
+  <text x="80" y="120" class="ser" fill="#6b7280">CHROMABREW</text>
+  <circle cx="1000" cy="104" r="22" fill="#1db954"/>
+  <line x1="80" y1="150" x2="1000" y2="150" stroke="#1f2937" stroke-width="2"/>
+
+  <text x="80" y="360" class="mono" fill="#3a86ff" font-size="28" letter-spacing="4">11 · BRAND PALETTES</text>
+
+  <text x="80" y="560" class="h1" fill="#ffffff" font-size="56">Start from a</text>
+  <text x="80" y="648" class="h1" fill="url(#accent)" font-size="56">brand colour.</text>
+
+  <rect x="80" y="800" width="920" height="150" rx="24" fill="#141414" stroke="#262626" stroke-width="2"/>
+  <text x="120" y="868" class="mono" fill="#9ca3af" font-size="26">110+ real brands · exact hex · one click</text>
+  <text x="120" y="914" class="mono" fill="#6b7280" font-size="26">copy the hex → seed a design system</text>
+
+  <text x="80" y="1070" class="h1" fill="#ffffff" font-size="44">Try it free</text>
+  <text x="80" y="1140" class="mono" fill="#ca8a04" font-size="34">chromabrew.com</text>
+
+  <circle cx="80" cy="1220" r="20" fill="#1db954"/>
+  <circle cx="130" cy="1220" r="20" fill="#c87cb3"/>
+  <circle cx="180" cy="1220" r="20" fill="#3a86ff"/>
+
+  <line x1="80" y1="1266" x2="1000" y2="1266" stroke="#1f2937" stroke-width="2"/>
+  <text x="80" y="1308" class="ser" fill="#6b7280">@CHROMABREW · NO ACCOUNT</text>
+</svg>

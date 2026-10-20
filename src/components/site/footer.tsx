@@ -1,8 +1,17 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { TOOLS } from "@/lib/tools";
 import { ProductHuntBadge } from "./product-hunt-badge";
 
 export function SiteFooter() {
+  // The fast generator is an app-like route that owns the full viewport
+  // below the header; a footer here would push it below the fold and
+  // reintroduce document scrolling, so the footer steps aside on that route.
+  const pathname = usePathname();
+  if (pathname === "/generate") return null;
+
   return (
     <footer className="border-t border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/60">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">

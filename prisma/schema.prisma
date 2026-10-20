@@ -16,12 +16,13 @@ model User {
   emailVerified DateTime?
   image         String?
   passwordHash  String?
-  stripeCustomerId String? @unique
   accounts      Account[]
   sessions      Session[]
   projects      Project[]
   scans         Scan[]
-  subscription  Subscription?
+  polarCustomer PolarCustomer?
+  polarSubscriptions PolarSubscription[]
+  entitlements  Entitlement[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   @@schema("chromabrew")
@@ -70,6 +71,7 @@ model Project {
   name        String
   description String?
   visibility  ProjectVisibility @default(private)
+  listedInGallery Boolean @default(false)
   config      Json
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
@@ -138,24 +140,67 @@ model PageView {
   @@schema("chromabrew")
 }
 
-// --- Stripe subscriptions ---
+// --- Polar subscriptions (Phase 3 billing) -------------------------------
+//
+// The provider is Polar (docs/BILLING_SETUP.md). Three tables keep the two
+// questions separate: `PolarCustomer` maps our user to Polar's customer,
+// `PolarSubscription` is the billing record shown in the account UI, and
+// `Entitlement` is the access snapshot every gate reads. Gates read the
+// snapshot, never Polar's API — a webhook delay can only postpone access,
+// and `expiresAt` bounds what a missed revocation could leak.
 
-model Subscription {
+model PolarCustomer {
+  id        String   @id @default(cuid())
+  // Polar's customer id (c_…). The mapping to us is `userId`: checkout and
+  // portal sessions are created with external_customer_id = user.id.
+  polarId   String   @unique
+  email     String?
+
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@schema("chromabrew")
+}
+
+model PolarSubscription {
   id                 String   @id @default(cuid())
-  stripeSubscriptionId String @unique
-  stripePriceId      String
+  polarId            String   @unique
   status             String
-  currentPeriodStart DateTime
-  currentPeriodEnd   DateTime
+  productId          String
+  interval           String
+  amount             Int
+  currency           String
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
   cancelAtPeriodEnd  Boolean  @default(false)
+  endsAt             DateTime?
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
-  userId String @unique
+  userId String
   user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
-  @@index([stripeSubscriptionId])
+  @@schema("chromabrew")
+}
+
+// One row per granted entitlement. NULL expiresAt is perpetual; a date
+// means access lasted only until then (source: "polar" rows are written by
+// webhook reconciliation and can never outlive their subscription clock).
+model Entitlement {
+  id        String    @id @default(cuid())
+  key       String
+  source    String    @default("polar")
+  expiresAt DateTime?
+  grantedAt DateTime  @default(now())
+
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, key])
+  @@index([key])
   @@schema("chromabrew")
 }
 

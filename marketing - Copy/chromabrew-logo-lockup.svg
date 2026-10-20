@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="200" viewBox="0 0 800 200">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@600;700&amp;display=swap');
+      .wordmark { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+    </style>
+  </defs>
+  <!-- ChromaBrew lockup: mark + wordmark (transparent background for bannering) -->
+  <rect x="12" y="12" width="176" height="176" rx="52" fill="#18181b"/>
+  <circle cx="100" cy="100" r="60" fill="#c87cb3"/>
+  <text x="224" y="128" fill="#18181b" font-size="86" font-weight="700" class="wordmark" letter-spacing="-3">ChromaBrew</text>
+</svg>

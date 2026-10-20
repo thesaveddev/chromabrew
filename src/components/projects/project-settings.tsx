@@ -8,6 +8,7 @@ type Project = {
   name: string;
   description: string | null;
   visibility: "private" | "public";
+  listedInGallery: boolean;
 };
 
 type Props = {
@@ -20,6 +21,7 @@ export function ProjectSettings({ project, onUpdate }: Props) {
   const [name, setName] = useState(project.name);
   const [description, setDescription] = useState(project.description ?? "");
   const [visibility, setVisibility] = useState(project.visibility);
+  const [listed, setListed] = useState(project.listedInGallery);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -34,6 +36,7 @@ export function ProjectSettings({ project, onUpdate }: Props) {
           name: name.trim() || project.name,
           description: description.trim() || null,
           visibility,
+          listedInGallery: visibility === "public" ? listed : false,
         }),
       });
       if (res.ok) {
@@ -43,6 +46,7 @@ export function ProjectSettings({ project, onUpdate }: Props) {
           name: updated.name,
           description: updated.description,
           visibility: updated.visibility,
+          listedInGallery: updated.listedInGallery,
         });
       }
     } finally {
@@ -138,11 +142,37 @@ export function ProjectSettings({ project, onUpdate }: Props) {
           )}
         </div>
 
+        <div>
+          <label
+            className={`flex cursor-pointer items-start gap-2.5 rounded-lg border px-3 py-2.5 text-sm transition-colors ${
+              visibility !== "public"
+                ? "cursor-not-allowed border-zinc-200 text-zinc-400 dark:border-zinc-800"
+                : "border-zinc-200 text-zinc-700 hover:border-zinc-400 dark:border-zinc-700 dark:text-zinc-300"
+            }`}
+          >
+            <input
+              type="checkbox"
+              checked={listed}
+              disabled={visibility !== "public"}
+              onChange={(e) => setListed(e.target.checked)}
+              className="mt-0.5"
+            />
+            <span>
+              <span className="block font-medium">List in the community gallery</span>
+              <span className="mt-0.5 block text-xs text-zinc-500 dark:text-zinc-400">
+                {visibility !== "public"
+                  ? "Make the project public first — private projects are never listed."
+                  : "Your palette appears on the community gallery with your name. Uncheck anytime to remove it."}
+              </span>
+            </span>
+          </label>
+        </div>
+
         <div className="flex items-center gap-3 pt-2">
           <button
             type="button"
             onClick={handleSave}
-            disabled={saving || (name === project.name && description === (project.description ?? "") && visibility === project.visibility)}
+            disabled={saving || (name === project.name && description === (project.description ?? "") && visibility === project.visibility && listed === project.listedInGallery)}
             className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
           >
             {saving ? "Saving…" : "Save changes"}

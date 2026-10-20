@@ -45,12 +45,27 @@ export async function PATCH(
   }
 
   const body = await request.json();
-  const { name, description, visibility, config } = body as {
+  const { name, description, visibility, config, listedInGallery } = body as {
     name?: string;
     description?: string;
     visibility?: "private" | "public";
     config?: Record<string, unknown>;
+    listedInGallery?: boolean;
   };
+
+  // Gallery listing is an explicit step above public visibility: a project
+  // shared by link must never appear in the gallery by accident, so listing
+  // a private project is refused rather than silently publishing it.
+  const nextVisibility = visibility ?? project.visibility;
+  if (listedInGallery === true && nextVisibility !== "public") {
+    return NextResponse.json(
+      { error: "Make the project public before listing it in the gallery." },
+      { status: 400 },
+    );
+  }
+  // Unpublishing removes the gallery listing with it — a private project is
+  // never listed, whatever the flag says.
+  const nextListed = nextVisibility === "public" ? listedInGallery : false;
 
   const updated = await prisma.project.update({
     where: { id },
@@ -59,6 +74,7 @@ export async function PATCH(
       ...(description !== undefined && { description }),
       ...(visibility !== undefined && { visibility }),
       ...(config !== undefined && { config: config as Prisma.InputJsonValue }),
+      ...(nextListed !== undefined && { listedInGallery: nextListed }),
     },
   });
 

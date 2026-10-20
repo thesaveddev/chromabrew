@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { generateTheme } from "./generate";
 import { contrastRatio } from "../colour/contrast";
+import { hexToRgb, rgbToOklch } from "../colour/convert";
 import { buildDesignSystem, normaliseConfig } from "..";
 import type { ScaleStep } from "../types";
 
@@ -93,6 +94,60 @@ describe("buildAccessibilityReport", () => {
     expect(report.summary.light.failing).toBe(failingLight);
     expect(report.summary.light.passed).toBe(failingLight === 0);
     expect(report.checks.length).toBe(20); // 10 pairs × 2 modes
+  });
+});
+
+describe("seed-truthful secondary and accent", () => {
+  const base = {
+    primaryHex: SOURCE,
+    scale,
+    accentSeedHex: "#a10038",
+    secondarySeedHex: SOURCE,
+  };
+  const lightness = (hex: string): number => rgbToOklch(hexToRgb(hex)).l;
+
+  it("keeps an ink secondary ink in light mode, with AA guaranteed", () => {
+    const tokens = generateTheme({ ...base, secondarySeedHex: "#141414" }, "light");
+    // Old behaviour lifted any dark seed to ≥0.65 — the ink must survive.
+    expect(lightness(tokens.secondary)).toBeLessThan(0.45);
+    expect(
+      contrastRatio(tokens["secondary-foreground"], tokens.secondary),
+    ).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(tokens.secondary, tokens.background)).toBeGreaterThanOrEqual(3);
+  });
+
+  it("keeps a lifted companion lifted in dark mode, with AA guaranteed", () => {
+    const tokens = generateTheme({ ...base, secondarySeedHex: "#7dd3fc" }, "dark");
+    // Old behaviour crushed any light seed to ≤0.52 in dark mode.
+    expect(lightness(tokens.secondary)).toBeGreaterThan(0.6);
+    expect(
+      contrastRatio(tokens["secondary-foreground"], tokens.secondary),
+    ).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(tokens.secondary, tokens.background)).toBeGreaterThanOrEqual(3);
+  });
+
+  it("keeps a deep accent deep in light mode, with AA on its label", () => {
+    // #450a0a sits at oklch L≈0.26 — below the old 0.40 reference floor.
+    const tokens = generateTheme({ ...base, accentSeedHex: "#450a0a" }, "light");
+    expect(lightness(tokens.accent)).toBeLessThan(0.35);
+    expect(
+      contrastRatio(tokens["accent-foreground"], tokens.accent),
+    ).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it("hover states never drop the secondary label below AA", () => {
+    for (const mode of ["light", "dark"] as const) {
+      const tokens = generateTheme({ ...base, secondarySeedHex: "#7dd3fc" }, mode);
+      expect(
+        contrastRatio(tokens["secondary-foreground"], tokens["secondary-hover"]),
+      ).toBeGreaterThanOrEqual(4.5);
+    }
+    for (const mode of ["light", "dark"] as const) {
+      const tokens = generateTheme({ ...base, secondarySeedHex: "#141414" }, mode);
+      expect(
+        contrastRatio(tokens["secondary-foreground"], tokens["secondary-hover"]),
+      ).toBeGreaterThanOrEqual(4.5);
+    }
   });
 });
 

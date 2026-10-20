@@ -11,6 +11,7 @@ import {
 import { PaletteCard, PaletteSwatches } from "@/components/palettes/palette-card";
 import { JsonLd } from "@/components/site/json-ld";
 import { siteUrl } from "@/lib/site-url";
+import { clampDescription } from "@/lib/meta";
 
 export const dynamicParams = false;
 export const dynamic = "force-static";
@@ -31,9 +32,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const palette = paletteBySlug(themeSlug, slug);
   const theme = themeBySlug(themeSlug);
   if (!palette || !theme) return {};
+  // The hex list is a bonus, not a right: when the pair overflows the SERP
+  // truncation point, fall back to the prose alone rather than clamp mid-list.
+  const withHex = `${palette.description} Hex values: ${palette.colors.join(", ")}.`;
   return {
     title: `${palette.name} Color Palette`,
-    description: `${palette.description} Hex values: ${palette.colors.join(", ")}.`,
+    description: withHex.length <= 160 ? withHex : clampDescription(palette.description),
     alternates: { canonical: `/palettes/${themeSlug}/${slug}` },
     openGraph: {
       title: `${palette.name} (${theme.name} Palette) · ChromaBrew`,

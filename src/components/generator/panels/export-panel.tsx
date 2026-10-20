@@ -1,7 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { EXPORT_ADAPTERS } from "@/lib/design-system/exports/registry";
+import { adapterRequiresPro } from "@/lib/entitlements";
 import type { ExportAdapter } from "@/lib/design-system/exports/adapter";
 import type { AnalyticsEvent } from "@/lib/analytics";
 import { track } from "@/lib/analytics";
@@ -54,8 +56,25 @@ const ADAPTER_EVENT: Record<string, AnalyticsEvent> = {
 
 export function ExportPanel({ system }: { system: DesignSystem }) {
   const [adapterId, setAdapterId] = useState(ALL_ADAPTERS[0].id);
+  // Signed-out visitors read as free; the plan only ever locks chrome —
+  // generation itself stays client-side and ungated until a server export
+  // API exists to enforce against.
+  const [isPro, setIsPro] = useState(false);
+  useEffect(() => {
+    let live = true;
+    fetch("/api/billing/plan")
+      .then((res) => (res.ok ? res.json() : { plan: "free" as const }))
+      .then((data) => {
+        if (live) setIsPro(data.plan === "pro");
+      })
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, []);
   const adapter = ALL_ADAPTERS.find((a) => a.id === adapterId) ?? ALL_ADAPTERS[0];
   const result = useMemo(() => adapter.generate(system), [adapter, system]);
+  const locked = !isPro && adapterRequiresPro(adapter.id);
 
   return (
     <section aria-labelledby="export-heading" className="space-y-3">
@@ -64,7 +83,7 @@ export function ExportPanel({ system }: { system: DesignSystem }) {
           Export
         </h2>
         <div className="flex items-center gap-2">
-          {!result.binary && (
+          {!locked && !result.binary && (
             <CopyButton
               value={result.code}
               label={`Copy ${adapter.name}`}
@@ -72,13 +91,15 @@ export function ExportPanel({ system }: { system: DesignSystem }) {
               className="px-2.5 py-1 text-xs"
             />
           )}
-          <DownloadButton
-            filename={result.suggestedFilename}
-            content={result.code}
-            binary={result.binary}
-            mimeType={result.mimeType ?? "text/plain;charset=utf-8"}
-            className="px-2.5 py-1 text-xs"
-          />
+          {!locked && (
+            <DownloadButton
+              filename={result.suggestedFilename}
+              content={result.code}
+              binary={result.binary}
+              mimeType={result.mimeType ?? "text/plain;charset=utf-8"}
+              className="px-2.5 py-1 text-xs"
+            />
+          )}
         </div>
       </div>
 
@@ -89,20 +110,24 @@ export function ExportPanel({ system }: { system: DesignSystem }) {
               {group.label}
             </p>
             <div className="flex flex-wrap gap-1">
-              {group.adapters.map((a) => (
-                <button
-                  key={a.id}
-                  type="button"
-                  onClick={() => setAdapterId(a.id)}
-                  className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
-                    adapterId === a.id
-                      ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                      : "border border-zinc-200 text-zinc-600 hover:border-zinc-400 hover:text-zinc-900 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-500 dark:hover:text-zinc-100"
-                  }`}
-                >
-                  {a.name}
-                </button>
-              ))}
+              {group.adapters.map((a) => {
+                const pro = adapterRequiresPro(a.id);
+                return (
+                  <button
+                    key={a.id}
+                    type="button"
+                    onClick={() => setAdapterId(a.id)}
+                    aria-label={pro && !isPro ? `${a.name} (Pro)` : a.name}
+                    className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                      adapterId === a.id
+                        ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+                        : "border border-zinc-200 text-zinc-600 hover:border-zinc-400 hover:text-zinc-900 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-500 dark:hover:text-zinc-100"
+                    }`}
+                  >
+                    {pro && !isPro ? `🔒 ${a.name}` : a.name}
+                  </button>
+                );
+              })}
             </div>
           </div>
         ))}
@@ -110,7 +135,23 @@ export function ExportPanel({ system }: { system: DesignSystem }) {
 
       <p className="text-xs text-zinc-500">{adapter.description}</p>
 
-      {result.binary ? (
+      {locked ? (
+        <div className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-5 text-center dark:border-zinc-700 dark:bg-zinc-800/40">
+          <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+            {adapter.name} export is a Pro feature
+          </p>
+          <p className="mx-auto mt-1 max-w-xs text-xs leading-5 text-zinc-500 dark:text-zinc-400">
+            Upgrade for {adapter.name} plus every other adapter, unlimited
+            projects, and unlimited history.
+          </p>
+          <Link
+            href="/pricing"
+            className="mt-3 inline-block rounded-lg bg-zinc-900 px-4 py-2 text-xs font-medium text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+          >
+            See Pro plans
+          </Link>
+        </div>
+      ) : result.binary ? (
         <div className="flex items-center justify-between gap-3 rounded-xl border border-dashed border-zinc-300 bg-zinc-50 px-4 py-4 dark:border-zinc-700 dark:bg-zinc-800/40">
           <p className="text-xs text-zinc-600 dark:text-zinc-300">
             <span className="font-medium">{adapter.name}</span> — one download

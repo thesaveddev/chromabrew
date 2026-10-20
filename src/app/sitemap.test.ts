@@ -9,7 +9,7 @@ import { brandSlug } from "@/lib/brand-pages";
 import { siteUrl } from "@/lib/site-url";
 
 /** The hand-listed hub routes, which carry no honest modification date. */
-const HUBS = ["/", "/design-system", "/tools", "/audit", "/color-tools", "/blog", "/pricing", "/about", "/contact", "/privacy", "/terms"];
+const HUBS = ["/", "/design-system", "/generate", "/tools", "/audit", "/color-tools", "/blog", "/pricing", "/about", "/contact", "/privacy", "/terms"];
 
 describe("sitemap", () => {
   const entries = sitemap();

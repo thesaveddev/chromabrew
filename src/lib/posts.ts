@@ -51,7 +51,7 @@ export const BLOG_POSTS: BlogPost[] = [
   {
 slug: "oklch-explained-for-frontend-developers",
     title: "OKLCH explained for frontend developers",
-    metaTitle: "OKLCH for Developers - Channels, Scales & When to Use It",
+    metaTitle: "OKLCH for Developers — Channels & Scales",
     description:
       "What the L, C and H channels actually mean, why OKLCH is perceptually uniform, and where to use oklch() in real CSS — scales, mixing and shade generation.",
     excerpt:
@@ -129,7 +129,7 @@ slug: "oklch-explained-for-frontend-developers",
   {
     slug: "wcag-contrast-ratio-math",
     title: "WCAG contrast ratios: the math behind the numbers",
-    metaTitle: "WCAG Contrast Ratios - The Math Behind the Numbers",
+    metaTitle: "WCAG Contrast Ratios — The Math Explained",
     description:
       "What a 4.5:1 ratio actually measures: relative luminance, the WCAG formula, and why large text gets 3:1. Understand the numbers instead of memorising them.",
     excerpt:
@@ -197,9 +197,9 @@ slug: "oklch-explained-for-frontend-developers",
   {
     slug: "tints-shades-and-tones-scale",
     title: "Tints, shades and tones: building a usable 9-step scale",
-    metaTitle: "Tints, Shades & Tones - Build a 9-Step Color Scale",
+    metaTitle: "Tints, Shades & Tones — Build a 9-Step Scale",
     description:
-      "Tint adds white, shade adds black, tone adds gray — in a naive space all three produce muddy or jumpy scales. How to build a usable 9-step scale with perceptually even steps.",
+      "Tint adds white, shade adds black, tone adds gray — in a naive space all three produce muddy or jumpy scales. Build a usable 9-step scale with even steps.",
     excerpt:
       "The classic definitions and why the naive mix-white/mix-black approach fails. Build a 9-step scale that is evenly spaced and actually matchable to UI roles.",
     publishedAt: "2026-10-16",
@@ -260,9 +260,9 @@ slug: "oklch-explained-for-frontend-developers",
   {
     slug: "hover-active-and-disabled-color-states",
     title: "Hover, active, disabled: deriving interactive states from a scale",
-    metaTitle: "Hover, Active & Disabled States From a Color Scale",
+    metaTitle: "Hover, Active & Disabled States in a Scale",
     description:
-      "Interactive states are lightness moves within a derived scale — not new hues. How to derive hover, active, focus and disabled from one primary scale, and keep them accessible.",
+      "Interactive states are lightness moves within a derived scale — not new hues. Derive hover, active, focus and disabled from one primary scale, accessibly.",
     excerpt:
       "Washed-out greys, arbitrary darkening, 50% opacity everywhere: interactive states are easy to get wrong. Derive hover, active and focus from the scale instead.",
     publishedAt: "2026-10-19",
@@ -567,7 +567,7 @@ slug: "oklch-explained-for-frontend-developers",
         heading: "Stage 2 — the harmony palette",
         body: [
           "With a five-swatch analogous strategy, the seed drives a small family: the primary at #6d28d9, a cool neighbour at #004be4, a warm neighbour at #9900ab, then lighter variants at #276cff and #864cf9. Analogous strategy keeps the palette calm and recognisably related — good for a brand system where complementary shock would fight the violet.",
-          "The palette hands the design system its seeds for secondary and accent when they are not chosen explicitly. Here the accent resolves to the warm neighbour #9900ab, keeping the derived accent tokens clearly distinct from the primary; the secondary seeds from the primary's own neighbourhood and is then lifted in lightness by the theme step, which is why the token lands on #976eff rather than repeating the seed verbatim.",
+          "When secondary and accent aren't chosen explicitly, the engine derives them by role rather than borrowing from that strip: both land on split-complement offsets from the primary, so this violet gets a deep bronze supporting colour at #463100 and a vivid green accent at #008e02 — clearly distinct from the primary and from each other. The theme step then adapts each per mode for contrast, which is why the light secondary token resolves to #422e00 rather than repeating the seed verbatim.",
         ],
         links: [
           { label: "Compare palette strategies on the same seed", href: "/tools/color-palette-generator" },
@@ -594,13 +594,13 @@ slug: "oklch-explained-for-frontend-developers",
         heading: "Stage 5 — the contrast matrix",
         body: [
           "The generator grades ten key pairings in each mode against WCAG: body text, muted text, card text, primary/secondary buttons, accent element and the four status badges. For this violet seed, all twenty checks pass AA. Body text scores 18.33:1 in light and 16.73:1 in dark; the primary button label lands 7.10:1 in light (better than AAA normal) and 4.50:1 in dark — comfortably AA, exactly at the cusp before AAA.",
-          "The interesting non-obvious result is the secondary button in light mode at 5.11:1 — it passes AA but not AAA, because the lavender fill #976eff sits close enough to its label. That's a deliberate, surfaced trade-off: secondary buttons are allowed to be visually softer, and the matrix records the consequence rather than hiding it.",
+          "The interesting non-obvious result is the accent element in light mode at 5.27:1 — it passes AA but not AAA, because the green fill #007e01 sits close enough to its label. That's a deliberate, surfaced trade-off: accents are allowed to be visually louder than body text, and the matrix records the consequence rather than hiding it. The deep secondary, meanwhile, clears AAA at 12.94:1.",
         ],
         bullets: [
           "Body text / background: 18.33:1 light · 16.73:1 dark",
           "Muted text / background: 8.16:1 light · 7.90:1 dark",
           "Primary button: 7.10:1 light · 4.50:1 dark",
-          "Secondary button: 5.11:1 light (AA, not AAA) — an accepted trade-off",
+          "Secondary button: 12.94:1 light (AAA) · Accent element: 5.27:1 light (AA, not AAA) — an accepted trade-off",
           "Result: 20/20 pairings pass AA",
         ],
         links: [
@@ -769,9 +769,9 @@ slug: "oklch-explained-for-frontend-developers",
   {
     slug: "saas-dashboard-color-palette",
     title: "How to build a color palette for a SaaS dashboard",
-    metaTitle: "SaaS Dashboard Color Palette — Roles, Contrast & Dark Mode",
+    metaTitle: "SaaS Dashboard Palette — Roles & Contrast",
     description:
-      "A practical walkthrough for building a SaaS dashboard color palette: surface stack, semantic roles, status colors, chart palettes and WCAG checks — from one brand color.",
+      "A walkthrough for building a SaaS dashboard color palette: surface stack, semantic roles, status colors, chart palettes and WCAG checks — from one color.",
     excerpt:
       "Dashboards stress-test color harder than any other UI. Here's how to build a SaaS palette that survives dense data, status colors and dark mode.",
     publishedAt: "2026-10-09",
@@ -895,9 +895,9 @@ slug: "oklch-explained-for-frontend-developers",
   {
     slug: "how-to-build-an-accessible-color-palette",
     title: "How to build an accessible color palette (2026 guide)",
-    metaTitle: "How to Build an Accessible Color Palette — WCAG AA/AAA Guide",
+    metaTitle: "Accessible Color Palette — WCAG AA/AAA Guide",
     description:
-      "Learn how to build an accessible color palette from a single brand color: shades, tints, semantic roles, and WCAG AA/AAA contrast checks — with a free generator.",
+      "Build an accessible color palette from a single brand color: shades, tints, semantic roles and WCAG AA/AAA contrast checks — with a free generator.",
     excerpt:
       "Stop guessing at color combos. Here's how to turn one brand color into a full accessible palette that passes WCAG AA and AAA.",
     publishedAt: "2026-08-25",
@@ -960,7 +960,7 @@ slug: "oklch-explained-for-frontend-developers",
   {
     slug: "hex-vs-hsl-vs-oklch",
     title: "HEX vs HSL vs OKLCH: which color space should you use?",
-    metaTitle: "HEX vs HSL vs OKLCH — Which CSS Color Space to Use",
+    metaTitle: "HEX vs HSL vs OKLCH — Which to Use",
     description:
       "HEX, HSL and OKLCH compared: how each color space works, when to reach for it, and why perceptually uniform OKLCH wins for design systems.",
     excerpt:
@@ -1013,7 +1013,7 @@ slug: "oklch-explained-for-frontend-developers",
   {
     slug: "tailwind-v4-color-scale-from-one-color",
     title: "Generate a Tailwind v4 color scale from one color",
-    metaTitle: "Tailwind v4 Color Scale — Generate @theme From One Color",
+    metaTitle: "Tailwind v4 Color Scale — Generate @theme",
     description:
       "Turn one brand color into a full Tailwind CSS v4 @theme color scale (50–950) ready to paste. Perceptual OKLCH steps, copy-paste utilities like bg-brand-600.",
     excerpt:
@@ -1067,7 +1067,7 @@ slug: "oklch-explained-for-frontend-developers",
   {
     slug: "dark-mode-the-right-way",
     title: "Dark mode the right way: don't just invert your colors",
-    metaTitle: "Dark Mode Design — Semantic Tokens, Not Color Inversion",
+    metaTitle: "Dark Mode — Semantic Tokens, Not Inversion",
     description:
       "Why inverting light mode colors makes a bad dark theme, and how to build an accessible dark mode from semantic tokens derived from your brand color.",
     excerpt:
@@ -1107,7 +1107,7 @@ slug: "oklch-explained-for-frontend-developers",
   {
     slug: "svg-vs-jpg-when-to-use-which",
     title: "SVG vs JPG: when to use which (and how to convert)",
-    metaTitle: "SVG vs JPG — When to Use Each and How to Convert",
+    metaTitle: "SVG vs JPG — When to Use Each Format",
     description:
       "Difference between SVG and JPG: vector vs raster, scaling, transparency, file size and use cases — plus how to convert between them in your browser.",
     excerpt:
@@ -1160,7 +1160,7 @@ slug: "oklch-explained-for-frontend-developers",
   {
     slug: "build-a-typography-scale-from-scratch",
     title: "Build a typography scale that actually keeps its rhythm",
-    metaTitle: "Build a Modular Typography Scale — Sizes, Ratios & Line Height",
+    metaTitle: "Type Scale — Sizes, Ratios & Line Height",
     description:
       "How to design a modular typography scale from a base size and ratio: sizes, line heights, letter spacing, and the pairing choices that make a UI feel composed.",
     excerpt:
@@ -1207,7 +1207,7 @@ slug: "oklch-explained-for-frontend-developers",
   {
     slug: "mixing-colors-and-alpha-channel",
     title: "Mix colors and use alpha without ruining your palette",
-    metaTitle: "Color Mixing & Alpha Channel — Transparency Without Muddying",
+    metaTitle: "Color Mixing & Alpha Channel — No Muddying",
     description:
       "How to blend two colors at a ratio and use alpha/opacity correctly without washing out your palette or breaking text contrast.",
     excerpt:
@@ -1402,9 +1402,9 @@ slug: "oklch-explained-for-frontend-developers",
   {
     slug: "free-ai-generated-images-with-svg",
     title: "Free AI images using an AI coding tool + SVG",
-    metaTitle: "Generate Free AI Images with SVG and a Coding Assistant",
+    metaTitle: "Generate Free AI Images With SVG Code",
     description:
-      "Generate AI images for free by having a coding assistant like opencode write SVG, then convert it to JPG with ChromaBrew's SVG-to-JPG tool. What works, what doesn't.",
+      "Generate AI images for free by having a coding assistant like opencode write SVG, then convert it to JPG with ChromaBrew's SVG-to-JPG tool.",
     excerpt:
       "You can get genuinely free AI images: ask a coding assistant to write SVG, then convert it to JPG. Here's the workflow and its honest limits.",
     publishedAt: "2026-08-28",
@@ -1445,9 +1445,9 @@ slug: "oklch-explained-for-frontend-developers",
   {
     slug: "one-color-to-a-working-design-system",
     title: "One color to a working design system",
-    metaTitle: "How to Turn One Color Into a Working Design System",
+    metaTitle: "One Color to a Working Design System",
     description:
-      "From a single brand color to a full design system in one pass: palette strategies, OKLCH scales, semantic tokens, typography, dark mode, WCAG checks, and exports to CSS, Tailwind, shadcn, MUI and Figma.",
+      "From one brand color to a full design system: palette strategies, OKLCH scales, semantic tokens, typography, dark mode, WCAG checks and exports.",
     excerpt:
       "Pick a color, and in one session have a design system that ships: scales, tokens, dark mode, a contrast pass, and exports your engineers can actually use.",
     publishedAt: "2026-09-01",
@@ -1467,8 +1467,8 @@ slug: "oklch-explained-for-frontend-developers",
       {
         heading: "Choose a strategy, get a color family",
         body: [
-          "Before the math runs, you tell the generator how the palette should behave. The default is complementary: the secondary hue sits opposite the primary on the color wheel, reads as energetic, and hands you an easy CTA/accent pairing. If the product is calmer, analogous keeps the palette to neighboring hues and reads quiet and cohesive. Triadic and split-complementary sit in between — balanced and vibrant. Monochromatic is the disciplined one: a single hue explored through lightness alone, which looks expensive and rarely offends.",
-          "There's also an auto-fill option that decides the secondary and accent for you using the same strategy. Most people start with the default and never move it, and that's honestly fine — a family derived from one hue tends to at least hang together, which is more than most hand-picked palettes manage.",
+          "Before the math runs, you tell the generator how the palette should behave. The default is complementary: a second hue sits opposite the primary on the color wheel, reads as energetic, and hands you an easy CTA/accent pairing. If the product is calmer, analogous keeps the palette to neighboring hues and reads quiet and cohesive. Triadic and split-complementary sit in between — balanced and vibrant. Monochromatic is the disciplined one: a single hue explored through lightness alone, which looks expensive and rarely offends.",
+          "Leave secondary and accent alone and the generator auto-fills those too — but from role logic, not the strategy: split-complement hues off the primary, with lightness that answers the primary's own value, then contrast-checked per mode. Most people start with the defaults and never move them, and that's honestly fine — a trio derived from one hue tends to at least hang together, which is more than most hand-picked palettes manage.",
         ],
         bullets: [
           "Complementary — secondary opposite the primary; energetic, good for CTAs",
@@ -1530,9 +1530,9 @@ slug: "oklch-explained-for-frontend-developers",
   {
     slug: "secondary-and-accent-colors-in-a-design-system",
     title: "Secondary and accent colors in a design system: what they're for",
-    metaTitle: "Secondary & Accent Colors in a Design System: How to Choose",
+    metaTitle: "Secondary & Accent Colors — How to Choose",
     description:
-      "Secondary and accent colors are what give a design system its hierarchy. Learn what each role is for, how to choose a good one from your primary color, and how the best design systems keep them under control.",
+      "Secondary and accent colors give a design system its hierarchy. What each role is for, how to choose one from your primary, and how top systems stay controlled.",
     excerpt:
       "Primary color gets the credit, but secondary and accent colors carry the hierarchy. Here's what each is for and how to choose them without breaking your palette.",
     publishedAt: "2026-09-01",
@@ -1591,7 +1591,7 @@ slug: "oklch-explained-for-frontend-developers",
         heading: "Audit like the best design systems do",
         body: [
           "The fastest way to test whether your roles are working is to look at a full screen, not the swatch row. Cover the primary, then ask what lost the most meaning — that's what the secondary should have carried. Then count how many times the accent appears. If the number is high or the rhythm is chaotic, tighten the policy, not the color.",
-          "In ChromaBrew the whole thing is a single flow: pick a primary, and the generator auto-fills a secondary and accent from a strategy you choose — complementary, analogous, triadic, split-complementary or monochromatic. You can lock and tune any swatch, watch the roles live across SaaS, marketing, mobile and storefront previews, run the WCAG report, and export tokens as CSS, JSON, Tailwind, shadcn, MUI, or a Figma-ready tokens file when the hierarchy finally behaves.",
+          "In ChromaBrew the whole thing is a single flow: pick a primary, and the generator auto-fills a secondary and accent from it — split-complement companions with contrast-locked lightness — while the strategy you choose (complementary, analogous, triadic, split-complementary or monochromatic) shapes the palette strip. You can lock and tune any swatch, watch the roles live across SaaS, marketing, mobile and storefront previews, run the WCAG report, and export tokens as CSS, JSON, Tailwind, shadcn, MUI, or a Figma-ready tokens file when the hierarchy finally behaves.",
           "None of it requires assembling a separate design system template by hand. One seed, three roles, a contrast pass, and the exports your team actually consumes.",
         ],
         code: `:root {
@@ -1608,11 +1608,11 @@ slug: "oklch-explained-for-frontend-developers",
   {
     slug: "design-system-styles-you-can-generate-with-one-link",
     title: "Fourteen design system styles you can generate with one link",
-    metaTitle: "14 Design System Styles You Can Generate With One Link",
+    metaTitle: "14 Design System Styles, One Link Each",
     image: "/blog/design-system-styles-you-can-generate-with-one-link.svg",
     imageAlt: "Fourteen design system styles generated from one link",
     description:
-      "Neomorphism, Material, bento grid, cyberpunk, art deco and more — pick a visual style and open a preset link that generates the whole system: colors, tokens, dark mode, four previews and exports.",
+      "Neomorphism, Material, bento grid, cyberpunk, art deco — one preset link generates the whole system: colors, tokens, dark mode and exports.",
     excerpt:
       "A visual style is just a set of structural settings. Here are fourteen of them, encoded as generator links that build the entire system — not just a screenshot.",
     publishedAt: "2026-09-01",
@@ -1688,7 +1688,7 @@ slug: "oklch-explained-for-frontend-developers",
 {
     slug: "neomorphism-design-system",
     title: "Neomorphism: a design system that feels carved out of one surface",
-    metaTitle: "Neomorphism Design System — Generate the Soft UI Style",
+    metaTitle: "Neomorphism Design System — Soft UI Style",
     description:
       "What neomorphism is, how to recognize it, and a ChromaBrew preset that generates a soft-UI design system — plus the accessibility rules that keep it usable.",
     excerpt:
@@ -1760,9 +1760,9 @@ slug: "oklch-explained-for-frontend-developers",
 {
     slug: "material-design-system-preset",
     title: "The Material design system: bold color roles on elevated surfaces",
-    metaTitle: "Material Design System Preset — Generate Material-Inspired Theme",
+    metaTitle: "Material Design System — Generate the Theme",
     description:
-      "What makes a Material-style design system tick: elevation, color roles, clear states. Plus a ChromaBrew preset that generates a Material-inspired theme from three hues.",
+      "What makes a Material-style design system tick: elevation, color roles, states. A ChromaBrew preset generates a Material-inspired theme from three hues.",
     excerpt:
       "Elevation, color roles, clear states — Material's ideas, applied through the generator. Here's the preset and how to bend it to a brand.",
     image: "/blog/material-design-system-preset.svg",
@@ -1831,7 +1831,7 @@ slug: "oklch-explained-for-frontend-developers",
 {
     slug: "paper-ui-design-system",
     title: "Paper UI: a design system built from warm stock and ink",
-    metaTitle: "Paper UI Design System — Warm, Editorial Interface Style",
+    metaTitle: "Paper UI Design System — Warm Editorial",
     description:
       "Paper UI explained: layered sheets, ink typography, ruled details. Generate the warm editorial style with a ChromaBrew preset and keep it legible.",
     excerpt:
@@ -1903,7 +1903,7 @@ slug: "oklch-explained-for-frontend-developers",
 {
     slug: "retro-ui-design-system",
     title: "Retro UI: the 90s desktop as a design system",
-    metaTitle: "Retro UI Design System — 1990s Desktop-Inspired Theme",
+    metaTitle: "Retro UI Design System — 1990s Desktop Theme",
     description:
       "Retro UI explained: beveled chrome, window metaphors, compact density, a limited teal-grey palette. Generate the nostalgic style with a ChromaBrew preset.",
     excerpt:
@@ -1974,7 +1974,7 @@ slug: "oklch-explained-for-frontend-developers",
 {
     slug: "bento-grid-design-system",
     title: "Bento grid: a design system built from modular tiles",
-    metaTitle: "Bento Grid Design System — Modular Tile UI Theme",
+    metaTitle: "Bento Grid Design System — Modular UI Theme",
     description:
       "The bento grid as a design language: mixed-span tiles, strong alignment, compact summaries. Generate a vibrant bento-ready theme with a ChromaBrew preset.",
     excerpt:
@@ -2045,7 +2045,7 @@ slug: "oklch-explained-for-frontend-developers",
 {
     slug: "terminal-ui-design-system",
     title: "Terminal UI: a design system for the keyboard crowd",
-    metaTitle: "Terminal UI Design System — Monospace, Command-First Theme",
+    metaTitle: "Terminal UI Design System — Monospace Theme",
     description:
       "Terminal UI explained: monospace hierarchy, command patterns, semantic status colors. Generate the dark command-line style with a ChromaBrew preset.",
     excerpt:
@@ -2117,7 +2117,7 @@ slug: "oklch-explained-for-frontend-developers",
 {
     slug: "skeuomorphism-design-system",
     title: "Skeuomorphism: a design system that feels like real materials",
-    metaTitle: "Skeuomorphism Design System — Material Metaphors, Explained",
+    metaTitle: "Skeuomorphism — Material Metaphors Explained",
     description:
       "Skeuomorphism explained: physical metaphors, believable materials, dimensional controls. Generate the warm material style with a ChromaBrew preset.",
     excerpt:
@@ -2188,7 +2188,7 @@ slug: "oklch-explained-for-frontend-developers",
 {
     slug: "claymorphism-design-system",
     title: "Claymorphism: soft, inflated, playful",
-    metaTitle: "Claymorphism Design System — Inflated Pastel UI Theme",
+    metaTitle: "Claymorphism Design System — Pastel UI Theme",
     description:
       "Claymorphism explained: inflated forms, saturated pastels, directional shadows. Generate the playful soft-volume style with a ChromaBrew preset.",
     excerpt:
@@ -2259,7 +2259,7 @@ slug: "oklch-explained-for-frontend-developers",
 {
     slug: "bauhaus-design-system",
     title: "Bauhaus: primary geometry, bold type, hard edges",
-    metaTitle: "Bauhaus Design System — Geometric, Avant-Garde UI Theme",
+    metaTitle: "Bauhaus Design System — Geometric UI Theme",
     description:
       "Bauhaus-inspired interface design: primary geometry, assertive type, asymmetric balance. Generate the avant-garde style with a ChromaBrew preset.",
     excerpt:
@@ -2330,7 +2330,7 @@ slug: "oklch-explained-for-frontend-developers",
 {
     slug: "art-deco-design-system",
     title: "Art Deco: midnight, gold, and symmetry",
-    metaTitle: "Art Deco Design System — Metallic, Ceremonial UI Theme",
+    metaTitle: "Art Deco Design System — Metallic UI Theme",
     description:
       "Art Deco interface design: stepped geometry, strong symmetry, metallic accents, refined display type. Generate the ceremonial style with a ChromaBrew preset.",
     excerpt:
@@ -2400,7 +2400,7 @@ slug: "oklch-explained-for-frontend-developers",
 {
     slug: "memphis-design-system",
     title: "Memphis: postmodern geometry and deliberate imbalance",
-    metaTitle: "Memphis Design System — Playful Pattern-Mixing UI Theme",
+    metaTitle: "Memphis Design System — Playful UI Theme",
     description:
       "Memphis-style interface design: playful geometry, pattern mixing, bright accents. Generate the postmodern style with a ChromaBrew preset.",
     excerpt:
@@ -2542,7 +2542,7 @@ slug: "oklch-explained-for-frontend-developers",
 {
     slug: "biomorphic-design-system",
     title: "Biomorphic: organic shapes and earth colors",
-    metaTitle: "Biomorphic Design System — Organic, Natural UI Theme",
+    metaTitle: "Biomorphic Design System — Organic UI Theme",
     description:
       "Biomorphic interface design: organic silhouettes, flowing boundaries, earth-derived colors. Generate the calming natural style with a ChromaBrew preset.",
     excerpt:
@@ -2613,7 +2613,7 @@ slug: "oklch-explained-for-frontend-developers",
 {
     slug: "maximalist-editorial-design-system",
     title: "Maximalist editorial: type as the loudest element",
-    metaTitle: "Maximalist Editorial Design System — Dramatic Type Theme",
+    metaTitle: "Maximalist Editorial — Dramatic Type Theme",
     description:
       "Maximalist editorial interface design: dramatic scale, layered typography, dense rhythm, vivid color blocks. Generate the bold style with a ChromaBrew preset.",
     excerpt:
@@ -2685,7 +2685,7 @@ slug: "oklch-explained-for-frontend-developers",
 {
     slug: "brand-color-palettes",
     title: "Famous brand colour palettes: exact hex values and how to use them",
-    metaTitle: "Famous Brand Color Palettes — Exact Hex Values & How to Use Them",
+    metaTitle: "Brand Color Palettes — Exact Hex Values",
     description:
       "Exact brand colour hex values for 100+ famous companies — Spotify, Stripe, Netflix and more — and how to turn any brand colour into an accessible design system.",
     excerpt:
@@ -2768,7 +2768,7 @@ slug: "oklch-explained-for-frontend-developers",
   {
     slug: "hex-rgb-hsl-cmyk-which-format",
     title: "HEX, RGB, HSL and CMYK: which colour format should you use?",
-    metaTitle: "HEX vs RGB vs HSL vs CMYK — Which Color Format Should You Use?",
+    metaTitle: "HEX vs RGB vs HSL vs CMYK — Which to Use",
     description:
       "HEX, RGB, HSL, CMYK and OKLCH compared: what each colour format is for, when it makes sense, and how to convert between them without losing colour.",
     excerpt:
@@ -2847,7 +2847,7 @@ OKLCH: oklch(0.162 0.111 324.1)`,
   {
     slug: "css-named-colors",
     title: "CSS named colors: the full list of 148 and when to use them",
-    metaTitle: "CSS Named Colors — The Full List of 148 & When to Use Them",
+    metaTitle: "CSS Named Colors — The Full List of 148",
     description:
       "All 148 CSS named colours, the ones worth remembering, when a color name beats a hex value, and how to find the closest named color to any hex.",
     excerpt:
@@ -2924,9 +2924,9 @@ Blues/grays/lights: aliceblue, azure, mintcream, honeydew, ghostwhite, lavenderb
   {
     slug: "types-of-color-blindness",
     title: "Types of color blindness: a practical guide for designers",
-    metaTitle: "Types of Color Blindness — Protan, Deutan, Tritan & Monochromacy",
+    metaTitle: "Color Blindness Types — Protan, Deutan, Tritan",
     description:
-      "The eight types of color vision deficiency, how common each one is, how they differ genetically and perceptually, and what that means for your color decisions as a designer.",
+      "The eight types of color vision deficiency, how common each one is, how they differ genetically and perceptually, and what that means for your color decisions.",
     excerpt:
       "Protans, deutans, tritans and monochromacy — the full cast of color vision deficiency, with honest prevalence numbers and what each means for your palette.",
     image: "/blog/types-of-color-blindness.svg",

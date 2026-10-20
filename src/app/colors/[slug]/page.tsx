@@ -6,6 +6,7 @@ import { buildColorReference } from "@/lib/color-reference";
 import { CopyHexButton } from "@/components/palettes/copy-hex-button";
 import { JsonLd } from "@/components/site/json-ld";
 import { siteUrl } from "@/lib/site-url";
+import { clampDescription } from "@/lib/meta";
 
 export const dynamicParams = false;
 export const dynamic = "force-static";
@@ -24,7 +25,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!color) return {};
   return {
     title: `${color.name} Color — HEX, RGB & Shades`,
-    description: `${color.name} (${color.hex}): ${color.description.split(".")[0]}. Values, scale, harmonies, and contrast.`,
+    // Composed from data — the per-color prose varies, so clamp the result.
+    description: clampDescription(
+      `${color.name} (${color.hex}): ${color.description.split(".")[0]}. Values, scale and contrast.`,
+    ),
     alternates: { canonical: `/colors/${slug}` },
     openGraph: {
       title: `${color.name} (${color.hex}) · ChromaBrew`,

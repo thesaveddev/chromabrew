@@ -16,7 +16,7 @@ test("shared URL adopts params without hydration errors", async ({ page }) => {
 
   // The toolbar identity strip reflects the shared color…
   await expect(
-    page.getByRole("heading", { name: /Design system #E684D4/i }),
+    page.getByRole("heading", { name: /Design system generator #E684D4/i }),
   ).toBeVisible({ timeout: 15_000 });
   // …and hydration completed cleanly.
   await page.waitForTimeout(1_500);

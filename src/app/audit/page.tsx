@@ -7,9 +7,11 @@ import { UrlForm } from "@/components/audit/url-form";
 export const metadata: Metadata = {
   // Bare title: the root layout's template appends " · ChromaBrew". Spelling the
   // brand here as well rendered it twice and in the wrong casing ("Chromabrew").
-  title: "Website Audit — free WCAG accessibility & contrast scanner",
+  // Bare title budget: ≤47 chars, so the layout's 13-char brand suffix keeps
+  // the rendered title inside the ~60-character SERP truncation point.
+  title: "Website Audit — WCAG & Contrast Scanner",
   description:
-    "Audit any public page for WCAG contrast failures, axe-core accessibility violations, missing metadata, heading and indexability problems — with a screenshot of what the scanner saw and fixes it re-measured before proposing them.",
+    "Free audit of any public page: WCAG contrast failures, accessibility violations, metadata and heading problems — with a screenshot and re-measured fixes.",
   // Without this the page inherits the layout's canonical ("/") and tells search
   // engines it is a duplicate of the home page, which no sitemap entry can undo.
   alternates: { canonical: "/audit" },

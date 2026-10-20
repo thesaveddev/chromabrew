@@ -154,11 +154,11 @@ Recorded so the list above is not mistaken for a general indictment:
 | --- | --- | --- | --- | --- | --- |
 | 1 | `/audit` canonical + internal links | High | XS | Low | **Done** |
 | 2 | `/audit` title (dedupe brand, fix casing) | High | XS | Low | **Done** |
-| 3 | Title strategy for the 51 over-length titles | High | S | **Decision needed** | Open |
+| 3 | Title strategy for the 51 over-length titles | High | S | Shrink page `metaTitle`s to ≤47 chars; keep the brand suffix | **Done** |
 | 4 | Home title/H1 breadth (brief alignment) | High | XS | Low | **Done** |
 | 5 | Real `lastmod`/`changefreq` in sitemap | Medium | S | Low | **Done** |
-| 6 | Trim 18 long descriptions | Medium | S | Low | Open |
-| 7 | `/tools` vs `/color-tools` intent split | Medium | M | **Decision needed** | Open |
+| 6 | Trim 18 long descriptions | Medium | S | Low | **Done** |
+| 7 | `/tools` vs `/color-tools` intent split | Medium | M | `/tools` = directory by category; `/color-tools` = chooser by task | **Done** |
 | 8 | `/color-tools` card hrefs + labels | Low | XS | Low | **Done** |
 | 9 | Derive "15+" counts from the registry | Low | XS | Low | **Done** |
 | 10 | Home canonical/sitemap slash parity | Low | XS | Low | **Done** |
@@ -193,3 +193,78 @@ Each change below was re-measured on the production build (`next start`), not ju
 ### Known limitation
 
 The critical-workflow e2e assertion was failing before these changes: an uncommitted edit had relabelled the design-system heading from "Design system" to "Design system generator" without updating the test. The copy is correct, so the stale assertion was repaired rather than the label reverted. Playwright was run on chromium only, at a single 1440×900 viewport — mobile is not yet evidenced.
+
+## Fixes implemented (second pass — 19 October 2026)
+
+Closes the three items that were still open above (3, 6, 7), plus scope the
+second measurement surfaced: five hub pages and the programmatic
+`/palettes/*` and `/colors/*` templates also served over-limit metadata.
+
+### 3. Title strategy — decision taken: shrink the page titles, keep the suffix
+
+The two options were (a) shorten every `metaTitle` so the layout's `·
+ChromaBrew` template still fits inside ~60 characters, or (b) drop/shorten the
+suffix. **(a) was chosen**: keyword-first titles rank for the task, the brand
+still appears in every SERP impression, and a shorter brand string is not
+available anyway. Concretely, every tool and post `metaTitle` is now ≤ 47
+characters, so `metaTitle + " · ChromaBrew"` (47 + 13) lands on the 60-character
+truncation point at most.
+
+- **19 tool titles** rewritten in `src/lib/tools.ts` (e.g. "Tailwind Color
+  Generator — v4 @theme palettes from one color" → "Tailwind Color Generator —
+  v4 @theme From One").
+- **33 post titles** rewritten in `src/lib/posts.ts`. Post `metaTitle`s are
+  SEO-only — the visible `title`/H1 is a separate field, so no page copy
+  changed.
+- `/audit`'s title cut from 58 to 39 ("Website Audit — WCAG & Contrast
+  Scanner").
+- Result: **0 of 57 rendered titles over 60** (was 52 of 57).
+
+### 6. Long descriptions — done, and extended past the original 18
+
+- The 18 registry descriptions in `src/lib/tools.ts` and `src/lib/posts.ts`
+  were trimmed to ≤ 160.
+- Hubs `/`, `/design-system`, `/blog`, `/audit` and `/palettes` were trimmed.
+- The data-composed pages (`/palettes/[theme]`, `/palettes/[theme]/[palette]`,
+  `/colors/[slug]`) previously served up to 257 characters. Their length is
+  only knowable at render time, so a shared helper now guarantees the
+  invariant: `clampDescription()` in `src/lib/meta.ts` cuts at a word boundary
+  and is unit-tested in `src/lib/meta.test.ts`. The palette page keeps its
+  `Hex values: …` suffix only when the pair fits inside 160, and falls back to
+  the prose alone otherwise — it never clamps mid-list.
+- Result: **0 descriptions over 160** sitewide (was 18 registry + 52 served).
+
+### 7. `/tools` vs `/color-tools` — split taken: directory vs chooser
+
+- `/tools` keeps its job: the complete directory grouped by *what a tool is*
+  (color, converter, CSS, image). Its cross-link now sells the finder
+  ("matches the task in your head to the tool that does it") instead of
+  calling `/color-tools` a competing "overview".
+- `/color-tools` was rewritten as the task-based chooser — H1 "Which color tool
+  do I need?", six task groups ("I'm picking colors", "I need to check my
+  colors are accessible", …) that together cover all 20 tools exactly once,
+  each card carrying a task-framed line written for this page only instead of
+  the registry blurb the two pages used to share. The redundant "Other tool
+  areas" section is gone; it now closes with a link back to the directory.
+- Metadata follows the same ≤47-char title budget: "Color Tools by Task —
+  Which Tool Do I Need?" (43), description 155 characters.
+
+### Verification (production build)
+
+- `npm run build` — exit 0, 279 pages generated.
+- `npm test` — 492 passed, 6 skipped (4 new `clampDescription` tests).
+- `npm run typecheck` — clean.
+- `npm run seo:audit` against `next start` — **0 hard failures, 0 served-HTML
+  warnings, 0/57 titles over, 0 descriptions over** (baseline: 11 hard-plan
+  items with 3 open, plus served warnings on every hub).
+- `npx playwright test e2e/critical-workflow.spec.ts --project=chromium` — 2/2.
+- Rendered spot-checks: `/tools` title 58 chars, `/color-tools` title 55 with
+  the new H1 and description, `/audit` title 53.
+
+### Still open (out of this pass's scope)
+
+- No Search Console baseline captured yet (unchanged from the first pass).
+- The `/colors` and `/palettes` families are now inside the limits, but their
+  indexing strategy — including whether `/p/[id]` public projects should
+  become indexable — is a Phase 12 question, answered in
+  [`PROGRAMMATIC_SEO_PLAN.md`](PROGRAMMATIC_SEO_PLAN.md).

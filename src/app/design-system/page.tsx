@@ -6,12 +6,12 @@ import { defaultOgImage } from "@/lib/og";
 export const metadata: Metadata = {
   title: "Design system generator",
   description:
-    "Turn one color into an accessible design system: color scale, palette, semantic tokens, light and dark themes, WCAG checks, live UI previews and production-ready exports. Free, no account needed.",
+    "Turn one color into an accessible design system: scale, palette, semantic tokens, light and dark themes, WCAG checks and production-ready exports. Free.",
   alternates: { canonical: "/design-system" },
   openGraph: {
     title: "Design System Generator — from one color to a full theme · ChromaBrew",
     description:
-      "Turn one color into an accessible design system: color scale, palette, semantic tokens, light and dark themes, WCAG checks, live UI previews and production-ready exports. Free, no account needed.",
+      "Turn one color into an accessible design system: scale, palette, semantic tokens, light and dark themes, WCAG checks and production-ready exports. Free.",
     url: "/design-system",
     type: "website",
     images: [defaultOgImage],

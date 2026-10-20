@@ -30,6 +30,32 @@ html {
   }
 }
 
+/* Landing-page palette ribbon: one slow drift, paused on hover or when the
+   visitor asked for less motion. The track holds the catalog twice, so a
+   -50% loop is seamless. */
+@keyframes ribbon-drift {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.ribbon-track {
+  animation: ribbon-drift 120s linear infinite;
+}
+
+.ribbon-track:hover {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ribbon-track {
+    animation: none;
+  }
+}
+
 body {
   text-rendering: optimizeLegibility;
 }

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>ChromaBrew</title>
+    <style>
+      :root { color-scheme: light dark; }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        padding: 12px;
+        background: var(--figma-color-bg, #ffffff);
+        color: var(--figma-color-text, #1f1f1f);
+        font: 11px/1.45 "Inter", system-ui, -apple-system, sans-serif;
+      }
+      label {
+        display: block;
+        margin-bottom: 6px;
+        color: var(--figma-color-text-secondary, #6f6f6f);
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        font-size: 10px;
+      }
+      .row { display: flex; gap: 8px; }
+      input {
+        flex: 1;
+        min-width: 0;
+        padding: 7px 9px;
+        border: 1px solid var(--figma-color-border, #e5e5e5);
+        border-radius: 6px;
+        background: var(--figma-color-bg-secondary, #fafafa);
+        color: inherit;
+        font: 12px/1.2 "JetBrains Mono", ui-monospace, monospace;
+      }
+      input:focus { outline: 2px solid var(--figma-color-brand, #18a0fb); outline-offset: -1px; }
+      button {
+        padding: 7px 12px;
+        border: 0;
+        border-radius: 6px;
+        background: var(--figma-color-brand, #18a0fb);
+        color: var(--figma-color-text-onbrand, #ffffff);
+        font: 600 11px/1.2 "Inter", system-ui, sans-serif;
+        cursor: pointer;
+      }
+      button:hover { filter: brightness(1.06); }
+      #status {
+        margin: 10px 0 0;
+        color: var(--figma-color-text-secondary, #6f6f6f);
+        font-size: 10.5px;
+      }
+      #status.error { color: var(--figma-color-text-danger, #e5484d); }
+    </style>
+  </head>
+  <body>
+    <label for="hex">Brand colour</label>
+    <div class="row">
+      <input id="hex" value="#47003a" spellcheck="false" autocomplete="off" />
+      <button id="generate" type="button">Generate</button>
+    </div>
+    <p id="status">Adds the 50–950 scale, harmony palette and semantic tokens as Light + Dark variables.</p>
+    <script>
+      const input = document.getElementById("hex");
+      const status = document.getElementById("status");
+
+      onmessage = (event) => {
+        const msg = event.data && event.data.pluginMessage;
+        if (!msg) return;
+        if (msg.type === "prefill") input.value = msg.hex;
+        if (msg.type === "error") {
+          status.textContent = msg.message;
+          status.classList.add("error");
+        }
+      };
+
+      const generate = () => {
+        status.classList.remove("error");
+        parent.postMessage(
+          { pluginMessage: { type: "generate", hex: input.value.trim() } },
+          "*",
+        );
+      };
+
+      document.getElementById("generate").addEventListener("click", generate);
+      input.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") generate();
+      });
+      input.focus();
+      input.select();
+    </script>
+  </body>
+</html>

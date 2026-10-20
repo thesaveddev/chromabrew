@@ -30,6 +30,7 @@ export default async function ProjectDetailPage({ params }: Props) {
       name: true,
       description: true,
       visibility: true,
+      listedInGallery: true,
       createdAt: true,
       updatedAt: true,
       userId: true,
@@ -46,6 +47,7 @@ export default async function ProjectDetailPage({ params }: Props) {
           name: project.name,
           description: project.description,
           visibility: project.visibility,
+          listedInGallery: project.listedInGallery,
           createdAt: project.createdAt.toISOString(),
           updatedAt: project.updatedAt.toISOString(),
         }}

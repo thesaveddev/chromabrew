@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <title>ChromaBrew Color Picker</title>
+    <link rel="stylesheet" href="sidepanel.css" />
+  </head>
+  <body>
+    <header class="brand">
+      <svg class="mark" viewBox="0 0 24 24" aria-hidden="true">
+        <path
+          d="M12 2c3.5 5 7 8.4 7 12a7 7 0 1 1-14 0C5 10.4 8.5 7 12 2z"
+        />
+      </svg>
+      <div>
+        <h1>ChromaBrew</h1>
+        <p>Pick a color, seed the generator</p>
+      </div>
+    </header>
+
+    <section class="current">
+      <div
+        class="swatch"
+        id="swatch"
+        role="img"
+        aria-label="Currently selected color"
+      ></div>
+      <div class="values">
+        <div class="hex-line">
+          <code id="hex">#47003a</code>
+          <button
+            id="copy-hex"
+            class="icon-btn"
+            type="button"
+            aria-label="Copy hex code"
+            title="Copy hex"
+          >
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <rect x="9" y="9" width="11" height="11" rx="2" />
+              <path d="M5 15V5a2 2 0 0 1 2-2h10" />
+            </svg>
+          </button>
+        </div>
+        <dl>
+          <div>
+            <dt>RGB</dt>
+            <dd id="rgb">—</dd>
+          </div>
+          <div>
+            <dt>HSL</dt>
+            <dd id="hsl">—</dd>
+          </div>
+        </dl>
+      </div>
+    </section>
+
+    <div class="actions">
+      <button id="pick" class="btn btn-dark" type="button">
+        <svg
+          class="btn-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <circle cx="12" cy="12" r="7" />
+          <path d="M12 2v4M12 18v4M2 12h4M18 12h4" />
+        </svg>
+        Pick color from screen
+      </button>
+      <button id="open-generator" class="btn btn-brand" type="button">
+        Open in ChromaBrew <span aria-hidden="true">→</span>
+      </button>
+    </div>
+
+    <form id="hex-form" class="hex-form" autocomplete="off">
+      <label class="sr-only" for="hex-input">Hex color</label>
+      <input
+        id="hex-input"
+        name="hex"
+        placeholder="Paste hex — 47003a"
+        spellcheck="false"
+        maxlength="7"
+      />
+      <button class="btn btn-ghost" type="submit">Use</button>
+    </form>
+
+    <section class="history" aria-label="Recent colors">
+      <div class="history-head">
+        <h2>Recent</h2>
+        <button id="clear-history" class="link-btn" type="button">Clear</button>
+      </div>
+      <ul id="history-list"></ul>
+      <p id="history-empty" class="empty">Picked colors land here.</p>
+    </section>
+
+    <footer class="footer">
+      <label for="generator-url">Generator URL</label>
+      <input id="generator-url" type="url" spellcheck="false" />
+      <p class="note" id="dropper-note">
+        Colors are sampled on your screen — nothing is uploaded.
+      </p>
+    </footer>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script src="sidepanel.js"></script>
+  </body>
+</html>

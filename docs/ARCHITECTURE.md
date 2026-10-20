@@ -98,7 +98,10 @@ values, clamping, ratio math, and the invariants every scale must hold.
   background and a foreground candidate, otherwise the nearest passing scale
   step per mode (light mode may pin the source; dark mode typically selects a
   lighter step);
-- secondary/accent roles are seeded from muted/hue-rotated variants;
+- secondary/accent roles are derived as *companions* of the primary
+  (split-complement hues, lightness answering the primary's value; achromatic
+  primaries borrow a personality pair), then anchored to that seed and only
+  moved by an AA-guarded pool when contrast demands it;
 - status colours (success/warning/danger/info) pick white or near-black
   foregrounds by measurement, nudging the value via `fixContrast` when needed;
 - every foreground/background pairing in the report is computed, never assumed.

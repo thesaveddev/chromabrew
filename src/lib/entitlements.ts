@@ -31,6 +31,9 @@ export const PLANS = {
     name: "Pro",
     price: "$9",
     period: "month",
+    annualPrice: "$90",
+    annualPeriod: "year",
+    annualNote: "2 months free",
     description: "For teams that ship design systems at scale.",
     features: [
       "Everything in Free",
@@ -39,6 +42,7 @@ export const PLANS = {
       "All 13 export adapters (Figma, Flutter, iOS, Android, MUI, Ant Design, Chakra)",
       "Project version history",
       "Team sharing and collaboration",
+      "AI features, included as they ship",
       "Priority support",
     ],
   },
@@ -66,4 +70,49 @@ export function adapterRequiresPro(adapterId: string): boolean {
 /** Check if history is at the free-tier cap. */
 export function isHistoryCapped(currentCount: number): boolean {
   return currentCount >= FREE_HISTORY_LIMIT;
+}
+
+/* ---- entitlement keys -------------------------------------------------- */
+
+/**
+ * The entitlements the app recognises. `pro` unlocks paid-only product
+ * surface (adapters, unlimited history/projects); `ai` gates AI features as
+ * they ship. Both arrive with the Pro subscription, monthly or annual, but
+ * stay separate keys so AI can later be metered or sold without touching
+ * the pro gate.
+ */
+export type EntitlementKey = "pro" | "ai";
+
+export const ENTITLEMENT_KEYS = ["pro", "ai"] as const;
+
+/** A stored grant. `expiresAt: null` is perpetual; a date bounds it. */
+export interface EntitlementRecord {
+  key: string;
+  expiresAt: Date | null;
+}
+
+/**
+ * Access follows the clock: a grant counts while it has not expired, and a
+ * cancelled subscription stays entitled until the paid period runs out
+ * (webhooks set `expiresAt` to that moment rather than revoking eagerly).
+ */
+export function entitlementIsActive(
+  entitlement: EntitlementRecord,
+  now: Date = new Date(),
+): boolean {
+  return (
+    entitlement.expiresAt === null || entitlement.expiresAt.getTime() > now.getTime()
+  );
+}
+
+/** Derive the plan from active entitlement rows (the local snapshot). */
+export function planForEntitlements(
+  entitlements: readonly EntitlementRecord[],
+  now: Date = new Date(),
+): PlanType {
+  return entitlements.some(
+    (e) => e.key === "pro" && entitlementIsActive(e, now),
+  )
+    ? "pro"
+    : "free";
 }

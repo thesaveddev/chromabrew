@@ -1,0 +1,2 @@
+Introducing ChromaBrew: turn one color into an entire design system — a full 50–950 scale, palettes, and ready-to-ship tokens, with AA/AAA contrast measured, never assumed.
+Built with Next.js and Tailwind CSS. chromabrew.app

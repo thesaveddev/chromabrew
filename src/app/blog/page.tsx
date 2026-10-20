@@ -7,7 +7,7 @@ import { defaultOgImage } from "@/lib/og";
 export const metadata: Metadata = {
   title: "Blog — Color & Design System Guides",
   description:
-    "Practical guides on building accessible color palettes, design tokens, Tailwind v4 themes, dark mode, and more — from the team behind ChromaBrew's free color tools.",
+    "Practical guides on accessible color palettes, design tokens, Tailwind v4 themes and dark mode — from the team behind ChromaBrew's free color tools.",
   alternates: { canonical: "/blog" },
   openGraph: {
     title: "Blog — Color & Design System Guides",

@@ -198,6 +198,9 @@ export interface DesignSystem {
     colors: {
       scale: ScaleStep[];
       palette: PaletteColour[];
+      /** Resolved secondary seed (explicit pick or derived companion). */
+      secondarySeed: ColourValue;
+      /** Resolved accent seed (explicit pick or derived companion). */
       accentSeed: ColourValue;
     };
     typography: TypographyTokens;

@@ -30,7 +30,7 @@ export const TOOLS: ToolDefinition[] = [
     href: "/tools/color-palette-generator",
     navLabel: "Color palette generator",
     title: "Color palette generator",
-    metaTitle: "Color Palette Generator — complementary, triadic & more",
+    metaTitle: "Color Palette Generator — Complementary & More",
     description:
       "Generate complementary, analogous, triadic, split-complementary, monochromatic and tetradic palettes from any color. Free and instant.",
     blurb: "Six palette strategies from one color.",
@@ -62,9 +62,9 @@ export const TOOLS: ToolDefinition[] = [
     href: "/tools/brand-palettes",
     navLabel: "Brand color palettes",
     title: "Brand color palettes",
-    metaTitle: "Brand Color Palettes — real brand colors as design seeds",
+    metaTitle: "Brand Color Palettes — Real Brand Hex Codes",
     description:
-      "Browse reference colors for top brands and turn any of them into a full accessible design system. Search by sector, copy hex values, or use a brand color as the generator's primary seed.",
+      "Browse reference colors for top brands and turn any of them into a full accessible design system. Search by sector, copy hex values, or seed the generator.",
     blurb: "Real brand colors you can use as a design seed.",
     intro: [
       "Browse the anchor colors behind well-known brands and turn any of them into a full, accessible design system in one click. Each entry lists the most widely cited color for a mark, with the hex value ready to copy.",
@@ -90,7 +90,7 @@ export const TOOLS: ToolDefinition[] = [
     href: "/tools/shade-generator",
     navLabel: "Shade generator",
     title: "Shade & tint scale generator",
-    metaTitle: "Shade Generator — perceptual 50–950 color scales",
+    metaTitle: "Shade Generator — Perceptual 50–950 Scales",
     description:
       "Create perceptually even 50–950 shade scales in OKLCH from a single brand color. Copy each step's HEX or OKLCH value.",
     blurb: "Perceptual 50–950 scales in OKLCH.",
@@ -118,7 +118,7 @@ export const TOOLS: ToolDefinition[] = [
     href: "/tools/contrast-checker",
     navLabel: "Contrast checker",
     title: "WCAG contrast checker",
-    metaTitle: "Contrast Checker — WCAG AA & AAA contrast ratios",
+    metaTitle: "Contrast Checker — WCAG AA & AAA Ratios",
     description:
       "Check the contrast ratio between two colors against WCAG 2.x AA and AAA thresholds for normal and large text, then fix failures instantly.",
     blurb: "WCAG 2.x ratios with one-click fixes.",
@@ -146,7 +146,7 @@ export const TOOLS: ToolDefinition[] = [
     href: "/tools/color-converter",
     navLabel: "Color converter",
     title: "Color converter",
-    metaTitle: "Color Converter — HEX, RGB, HSL, CMYK & OKLCH at once",
+    metaTitle: "Color Converter — HEX, RGB, HSL & OKLCH",
     description:
       "Convert between HEX, RGB, HSL, CMYK and OKLCH in one place. Paste any color in any format and copy all five equivalents instantly, with a live preview.",
     blurb: "HEX, RGB, HSL, CMYK & OKLCH in one converter.",
@@ -178,9 +178,9 @@ export const TOOLS: ToolDefinition[] = [
     href: "/tools/color-names",
     navLabel: "Color names",
     title: "CSS color names",
-    metaTitle: "CSS Color Names — find the closest named colour to any color",
+    metaTitle: "CSS Color Names — Closest Name for Any Hex",
     description:
-      "Find the closest of the 148 CSS named colors to any HEX, RGB or HSL color, measured in OKLab — with the dominant hue named for every color too. Browse, search and copy names or hex straight into your CSS.",
+      "Find the closest of the 148 CSS named colors to any HEX, RGB or HSL color, measured in OKLab. Browse, search and copy names or hex straight into CSS.",
     blurb: "The 148 CSS names + dominant hue, closest first.",
     intro: [
       "Find the closest of the 148 CSS named colors to any hex, RGB or HSL value, measured in OKLab. An exact match lands at distance zero; neighboring keywords are ranked by how close they appear to the eye.",
@@ -210,7 +210,7 @@ export const TOOLS: ToolDefinition[] = [
     href: "/tools/tailwind-color-generator",
     navLabel: "Tailwind color generator",
     title: "Tailwind color generator",
-    metaTitle: "Tailwind Color Generator — v4 @theme palettes from one color",
+    metaTitle: "Tailwind Color Generator — v4 @theme From One",
     description:
       "Generate Tailwind CSS v4 @theme color variables from a single brand color, with a full 50–950 perceptual scale ready to paste.",
     blurb: "Tailwind v4 @theme output from one color.",
@@ -238,7 +238,7 @@ export const TOOLS: ToolDefinition[] = [
     href: "/tools/shadcn-theme-generator",
     navLabel: "shadcn/ui theme generator",
     title: "shadcn/ui theme generator",
-    metaTitle: "shadcn/ui Theme Generator — oklch themes from your brand color",
+    metaTitle: "shadcn/ui Theme Generator — OKLCH Colors",
     description:
       "Build a complete shadcn/ui theme in current oklch format from one brand color — light and dark modes, charts and sidebar tokens included.",
     blurb: "Current-convention shadcn themes.",
@@ -271,7 +271,7 @@ export const TOOLS: ToolDefinition[] = [
     href: "/tools/dark-mode-generator",
     navLabel: "Dark mode generator",
     title: "Dark mode generator",
-    metaTitle: "Dark Mode Generator — accessible dark themes from any color",
+    metaTitle: "Dark Mode Generator — Accessible Dark Themes",
     description:
       "Turn any brand color into an accessible dark theme with semantic tokens — never a mechanical inversion of your light mode.",
     blurb: "Semantic dark themes, not inversions.",
@@ -299,7 +299,7 @@ export const TOOLS: ToolDefinition[] = [
     href: "/tools/design-token-generator",
     navLabel: "Design token generator",
     title: "Design token generator",
-    metaTitle: "Design Token Generator — semantic JSON & CSS tokens",
+    metaTitle: "Design Token Generator — Semantic JSON & CSS",
     description:
       "Generate structured design tokens — primitives and semantic roles for light and dark themes — as DTCG-style JSON or CSS variables.",
     blurb: "DTCG-style JSON + CSS tokens.",
@@ -327,9 +327,9 @@ export const TOOLS: ToolDefinition[] = [
     href: "/tools/image-color-extractor",
     navLabel: "Image color extractor",
     title: "Image color extractor",
-    metaTitle: "Image Color Extractor — extract palette from any photo",
+    metaTitle: "Image Color Extractor — Palette From a Photo",
     description:
-      "Upload an image and instantly extract its dominant colors as a clean palette. Get HEX values, RGB readouts and a ready-to-use color scheme. Free, runs in your browser.",
+      "Upload an image and instantly extract its dominant colors as a clean palette. Get HEX values, RGB readouts and a ready-to-use scheme. Free, browser-only.",
     blurb: "Extract dominant colors from any image.",
     intro: [
       "Extract the dominant colors from any image and get a clean palette with HEX values within seconds. The image is processed locally on a canvas — pixels are clustered with a median-cut algorithm and nothing is uploaded.",
@@ -355,9 +355,9 @@ export const TOOLS: ToolDefinition[] = [
     href: "/tools/color-blindness-simulator",
     navLabel: "Color blindness simulator",
     title: "Color blindness simulator",
-    metaTitle: "Color Blindness Simulator — see colors as others see them",
+    metaTitle: "Color Blindness Simulator — See Any Palette",
     description:
-      "Simulate any color and any image under all eight conditions — protanopia, deuteranopia, tritanopia, achromatopsia and the milder anomalous forms — and check whether a text/background pair stays distinguishable. Free, instant, browser-only, nothing uploaded.",
+      "Simulate any color and any image under all eight forms of color blindness — protanopia, deuteranopia, tritanopia — and check text stays distinguishable.",
     blurb: "Simulate colors & images under all eight CVD types.",
     intro: [
       "See how any color — or a whole image — appears under all eight types of color vision deficiency: protanopia, deuteranopia, tritanopia, achromatopsia and the milder anomalous forms. Roughly 8% of men and 0.5% of women have some form of color blindness, so checking matters.",
@@ -387,9 +387,9 @@ export const TOOLS: ToolDefinition[] = [
     href: "/tools/css-gradient-generator",
     navLabel: "CSS gradient generator",
     title: "CSS gradient generator",
-    metaTitle: "CSS Gradient Generator — linear, radial & conic from any colors",
+    metaTitle: "CSS Gradient Generator — Linear, Radial, Conic",
     description:
-      "Build linear, radial and conic CSS gradients visually. Pick colors, adjust angles and stops, then copy production-ready CSS. Free, no sign-up, runs in your browser.",
+      "Build linear, radial and conic CSS gradients visually. Pick colors, adjust angles and stops, then copy production-ready CSS. Free, no sign-up.",
     blurb: "Linear, radial & conic gradients visually.",
     intro: [
       "Build linear, radial and conic CSS gradients visually — pick colors, set angles and drag color stops — then copy production-ready CSS. The code updates live.",
@@ -448,9 +448,9 @@ export const TOOLS: ToolDefinition[] = [
     href: "/tools/css-shadow-generator",
     navLabel: "CSS shadow generator",
     title: "CSS shadow generator",
-    metaTitle: "CSS Shadow Generator — box-shadow & text-shadow visually",
+    metaTitle: "CSS Shadow Generator — Box & Text Shadows",
     description:
-      "Build box-shadow and text-shadow CSS visually. Adjust offset, blur, spread, color and opacity with sliders, then copy production-ready CSS. Free, no sign-up, runs in your browser.",
+      "Build box-shadow and text-shadow CSS visually. Adjust offset, blur, spread, color and opacity with sliders, then copy production-ready CSS. Free, no sign-up.",
     blurb: "Visual box-shadow & text-shadow builder.",
     intro: [
       "Design box-shadow and text-shadow values with sliders — offset, blur, spread, color and opacity — and copy clean rgba() CSS the moment it looks right. Standard-compliant output for any modern browser.",
@@ -481,9 +481,9 @@ export const TOOLS: ToolDefinition[] = [
     href: "/tools/alpha-channel",
     navLabel: "Alpha channel tool",
     title: "Alpha channel tool",
-    metaTitle: "Alpha Channel Tool — HEX8, RGBA & opacity values",
+    metaTitle: "Alpha Channel Tool — HEX8, RGBA & Opacity",
     description:
-      "Add transparency to any color. Get HEX8, RGBA and percentage opacity values with a live preview on white, gray and black backgrounds. Free, instant, browser-only.",
+      "Add transparency to any color. Get HEX8, RGBA and percentage opacity values with a live preview on white, gray and black backgrounds. Free, browser-only.",
     blurb: "HEX8, RGBA & opacity from any color.",
     intro: [
       "Add transparency to any color and get the HEX8, RGBA and percentage opacity values at once, previewed on white, gray and black backgrounds. HEX8 extends a hex code with two alpha digits.",
@@ -514,9 +514,9 @@ export const TOOLS: ToolDefinition[] = [
     href: "/tools/wcag-palette-checker",
     navLabel: "WCAG palette checker",
     title: "WCAG color palette checker",
-    metaTitle: "WCAG Palette Checker — check entire palettes for contrast",
+    metaTitle: "WCAG Palette Checker — Contrast for All Pairs",
     description:
-      "Check an entire color palette for WCAG contrast violations. See every foreground/background pair in a matrix, spot failures instantly, and fix them. Free, instant, browser-only.",
+      "Check a whole color palette for WCAG contrast violations: every foreground/background pair in a matrix, failures spotted, fixes shown. Free, browser-only.",
     blurb: "Check full palettes for contrast issues.",
     intro: [
       "Check an entire color palette for WCAG contrast failures in one matrix view. Every foreground/background pair is graded for AA normal and large text, with failures flagged at a glance.",
@@ -547,9 +547,9 @@ export const TOOLS: ToolDefinition[] = [
     href: "/tools/typography-scale-generator",
     navLabel: "Typography scale generator",
     title: "Typography scale generator",
-    metaTitle: "Typography Scale Generator — modular type scale for websites",
+    metaTitle: "Typography Scale Generator — Modular",
     description:
-      "Generate a modular type scale for your website from a base size and ratio (1.2 / 1.25 / 1.333). Get px & rem sizes, line heights, letter spacing, font pairings, CSS variables and a live preview. Free, no sign-up.",
+      "Generate a modular type scale from a base size and ratio (1.2 / 1.25 / 1.333). Get px & rem sizes, line heights, CSS variables and a live preview.",
     blurb: "Modular type scale with live preview & CSS.",
     intro: [
       "Generate a modular type scale for a website from a base size and ratio — 1.2, 1.25 or 1.333 — with px and rem output, line heights, letter spacing, font pairings and CSS variables. Watch it live before you export.",
@@ -583,7 +583,7 @@ export const TOOLS: ToolDefinition[] = [
     href: "/tools/svg-to-jpg",
     navLabel: "SVG to JPG",
     title: "SVG to JPG converter",
-    metaTitle: "SVG to JPG Converter — export SVGs as JPG at any scale",
+    metaTitle: "SVG to JPG Converter — Export at Any Scale",
     description:
       "Convert SVG images to JPG instantly. Upload or paste SVG code, preview live, then export at 1x, 2x, 3x or 4x resolution. Free, no sign-up, runs in your browser.",
     blurb: "SVG → JPG at any scale.",
@@ -611,7 +611,7 @@ export const TOOLS: ToolDefinition[] = [
     href: "/tools/jpg-to-svg",
     navLabel: "JPG to SVG",
     title: "JPG to SVG converter",
-    metaTitle: "JPG to SVG Converter — raster to vector in your browser",
+    metaTitle: "JPG to SVG Converter — Raster to Vector",
     description:
       "Convert JPG, PNG or any raster image to SVG using color quantization. Adjust the color count for quality vs file size. Free, no sign-up, runs in your browser.",
     blurb: "Raster → SVG via color quantization.",

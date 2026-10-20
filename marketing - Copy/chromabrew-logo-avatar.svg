@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- ChromaBrew avatar: dark rounded square + pink brand dot -->
+  <rect x="16" y="16" width="480" height="480" rx="132" fill="#18181b"/>
+  <circle cx="256" cy="256" r="168" fill="#c87cb3"/>
+</svg>

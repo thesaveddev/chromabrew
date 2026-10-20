@@ -86,11 +86,11 @@ export default function ToolsIndexPage() {
           simulate color blindness, create CSS gradients, and build Tailwind CSS themes — all free, no sign-up.
         </p>
         <p className="mt-3 text-sm text-zinc-500 dark:text-zinc-400">
-          Want a color-focused overview? See the{" "}
+          Not sure which tool you need? The{" "}
           <Link href="/color-tools" className="font-medium text-zinc-700 underline underline-offset-4 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-zinc-100">
-            color tools hub
-          </Link>
-          .
+            color tool finder
+          </Link>{" "}
+          matches the task in your head to the tool that does it.
         </p>
       </header>
 
