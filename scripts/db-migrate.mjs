@@ -89,12 +89,20 @@ const MIGRATIONS = [
     ],
   },
   {
+    name: "20261014000000_worker_heartbeat",
+    tables: ["WorkerHeartbeat"],
+  },
+  {
     name: "20261019000000_screenshot_bytes",
     columns: [{ table: "ScannedPage", column: "screenshotData" }],
   },
   {
     name: "20261019000001_gallery_opt_in",
     columns: [{ table: "Project", column: "listedInGallery" }],
+  },
+  {
+    name: "20261020000000_polar_billing",
+    tables: ["PolarCustomer", "PolarSubscription", "Entitlement"],
   },
 ];
 
@@ -120,6 +128,13 @@ const REQUIRED = {
     // every audit form with an error instead of a report, so it belongs in the
     // list of objects this step exists to prove are really there.
     "WorkerHeartbeat",
+    // Billing reads these locally: the entitlement snapshot every gate checks
+    // (src/lib/entitlements-server.ts) plus the records behind the account UI
+    // and webhook sync. A build that shipped without them would 500 the first
+    // time someone asked what plan they are on.
+    "PolarCustomer",
+    "PolarSubscription",
+    "Entitlement",
   ],
   columns: [
     { table: "Scan", column: "shareToken" },

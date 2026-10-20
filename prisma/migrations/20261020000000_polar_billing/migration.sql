@@ -9,17 +9,18 @@
 
 SET search_path TO chromabrew;
 
--- DropForeignKey
-ALTER TABLE "Subscription" DROP CONSTRAINT "Subscription_userId_fkey";
+-- DropTable — the FK constraint goes with the table. Every teardown statement
+-- is conditional because the production database was built by hand and
+-- recorded the baseline as applied *without ever creating* the Stripe
+-- tables: the teardown must succeed whether or not they are there. (The
+-- first deploy of this migration stopped at
+-- `relation "Subscription" does not exist` — P3018, exit 1.)
+DROP TABLE IF EXISTS "Subscription";
 
--- DropIndex
-DROP INDEX "User_stripeCustomerId_key";
-
--- AlterTable
-ALTER TABLE "User" DROP COLUMN "stripeCustomerId";
-
--- DropTable
-DROP TABLE "Subscription";
+-- DropIndex / AlterTable — same reasoning; dropping the column takes its
+-- unique index with it, so each statement is a no-op on either absence.
+DROP INDEX IF EXISTS "User_stripeCustomerId_key";
+ALTER TABLE "User" DROP COLUMN IF EXISTS "stripeCustomerId";
 
 -- CreateTable
 CREATE TABLE "PolarCustomer" (
