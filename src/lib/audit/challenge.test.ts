@@ -106,6 +106,9 @@ describe("analyzePageFacts — bot challenge", () => {
     expect(findings[0].title).toContain("Cloudflare");
     // The guidance is the point of the finding, so it must name the guide.
     expect(findings[0].recommendation).toContain("/audit/scanner");
+    // ...and the escape hatch for blocks the reader cannot allowlist through:
+    // the same checks running in the reader's own tab.
+    expect(findings[0].recommendation).toContain("/audit/this-page");
     // A block is not a verdict: no suggested value can fix it.
     expect(findings[0].suggestedValues).toBeNull();
   });

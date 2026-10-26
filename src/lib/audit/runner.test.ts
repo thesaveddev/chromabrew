@@ -6,7 +6,7 @@ const db = vi.hoisted(() => ({ updateMany: vi.fn() }));
 
 vi.mock("@/lib/db", () => ({ prisma: { scan: { updateMany: db.updateMany } } }));
 
-import { expireAbandonedScan, recoverStaleScans } from "./runner";
+import { expireAbandonedScan, recoverStaleScans, seedErrorMessage } from "./runner";
 
 /**
  * Closing rows nothing is coming for.
@@ -43,6 +43,41 @@ describe("recoverStaleScans", () => {
     );
     expect(queued.data.status).toBe("failed");
     expect(queued.data.errorMessage).toMatch(/No scanner started this audit in time/);
+  });
+});
+
+/**
+ * The seed page's failure is the scan's message. A bot-blocked seed ends a
+ * whole-site crawl before it starts, so that message must say the crawl never
+ * started and offer the two ways through — the allowlist and the in-browser
+ * audit — rather than just naming the HTTP code.
+ */
+describe("seedErrorMessage", () => {
+  it("keeps the plain status message for an ordinary error document", () => {
+    expect(
+      seedErrorMessage({ statusCode: 500, blockedProvider: null, maxPages: 5 }),
+    ).toBe("The page responded with HTTP 500; findings describe the error document.");
+  });
+
+  it("names the block and the in-browser way through for a single page", () => {
+    const message = seedErrorMessage({
+      statusCode: 403,
+      blockedProvider: "Cloudflare",
+      maxPages: 1,
+    });
+    expect(message).toContain("Cloudflare bot verification blocked the seed page");
+    expect(message).toContain("/audit/this-page");
+    expect(message).not.toContain("crawl never started");
+  });
+
+  it("says the crawl never started when a whole-site seed is blocked", () => {
+    const message = seedErrorMessage({
+      statusCode: 403,
+      blockedProvider: "Cloudflare",
+      maxPages: 5,
+    });
+    expect(message).toContain("so the crawl never started and no pages were audited");
+    expect(message).toContain("/audit/this-page");
   });
 });
 

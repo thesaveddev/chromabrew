@@ -146,6 +146,44 @@ async function setStage(scanId: string, stage: ScanStageId) {
   });
 }
 
+/**
+ * The scan-level message when the seed page itself failed.
+ *
+ * A bot-blocked seed ends a whole-site crawl before it starts — the error
+document's links are not the site's links — so the message must say the crawl
+ * never started and offer the two ways through, not just the HTTP code. The
+ * provider is read from the scan record rather than re-detected, so the fetch
+ * and browser pipelines report the same block in the same words. Pure: the
+ * terminal write in `runClaimedScan` is the only caller.
+ */
+export function seedErrorMessage(input: {
+  statusCode: number;
+  blockedProvider: string | null;
+  maxPages: number;
+}): string {
+  if (input.blockedProvider) {
+    const crawlNote =
+      input.maxPages > 1
+        ? ", so the crawl never started and no pages were audited"
+        : " before it could be audited";
+    return (
+      `${input.blockedProvider} bot verification blocked the seed page${crawlNote}. ` +
+      "The blocked-page finding has the allowlist steps — or audit the page from your own browser at /audit/this-page, which runs with your session."
+    );
+  }
+  return `The page responded with HTTP ${input.statusCode}; findings describe the error document.`;
+}
+
+/** Provider name when the seed outcome carries the bot-challenge finding. */
+function seedBlockedProvider(outcome: AnalysisOutcome): string | null {
+  if (!outcome.findings.some((finding) => finding.ruleId === "bot-challenge")) {
+    return null;
+  }
+  return typeof outcome.renderMeta.botChallenge === "string"
+    ? outcome.renderMeta.botChallenge
+    : "Bot protection";
+}
+
 async function failScan(scanId: string, code: string, message: string, startedAt: number) {
   const metadata = await readMetadata(scanId);
   await prisma.scan.update({
@@ -467,7 +505,11 @@ export async function runClaimedScan(scanId: string, options: RunOptions = {}): 
         completedAt: new Date(),
         durationMs,
         errorMessage: isError
-          ? `The page responded with HTTP ${outcome.statusCode}; findings describe the error document.`
+          ? seedErrorMessage({
+              statusCode: outcome.statusCode,
+              blockedProvider: seedBlockedProvider(outcome),
+              maxPages: scope.maxPages,
+            })
           : pagesFailed > 0
             ? `${pagesFailed} of ${pagesScanned} pages could not be analysed; findings describe the rest.`
             : crawlStoppedByBudget

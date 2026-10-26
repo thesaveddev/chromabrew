@@ -237,7 +237,7 @@ export function analyzePageFacts(facts: PageFacts, context: AnalyzeContext): Fin
       title: `Blocked by ${context.botChallenge.provider} bot verification`,
       description: `${context.botChallenge.provider} answered the scan with a verification interstitial instead of the page, so the page itself was not audited. Every other check would have been drawn from the interstitial, not from your site.`,
       whyMatters: "A blocked scan is not a failed page. Until the scanner is allowed through, no result about the real page exists — and an audit of the verification screen would read as a verdict on the site.",
-      recommendation: "If the site is yours, allowlist the audit scanner: the guide at /audit/scanner has the exact Cloudflare steps. Then run the scan again.",
+      recommendation: "If the site is yours, allowlist the audit scanner: the guide at /audit/scanner has the exact Cloudflare steps. Then run the scan again. If you cannot change the firewall — or the block persists — open the page in your own browser and run the same checks at /audit/this-page: they run in your tab with your session, so verification you have already passed stays passed.",
       implementation: "Cloudflare dashboard → Security → WAF → Custom rules: skip bot checks for the scanner's IP. The guide shows the rule and how to find the address the scan came from.",
       elementSelector: null,
       originalValues: {
