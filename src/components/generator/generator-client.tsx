@@ -32,10 +32,9 @@ import { RefinementPanel } from "./panels/refinement-panel";
 import { PrimitivesPanel } from "./panels/primitives-panel";
 import { TokensPanel } from "./panels/tokens-panel";
 import { AccessibilityPanel } from "./panels/accessibility-panel";
-import { ExportPanel } from "./panels/export-panel";
+import { ExportModalButton } from "./export-modal";
 import { HistoryPanel } from "./panels/history-panel";
 import { usePaletteHistory, type HistoryEntry } from "./use-palette-history";
-import { AiPaletteSuggestion } from "./ai-palette-suggestion";
 import { PreviewColorPicker } from "./preview-color-picker";
 import { PreviewFrame } from "./previews/preview-frame";
 import { SaasPreview } from "./previews/saas-preview";
@@ -179,19 +178,6 @@ export function GeneratorWorkspace() {
     );
     track("palette_randomized");
   }, []);
-
-  const applyAiPalette = (hex: string) => {
-    setConfig((prev) =>
-      normaliseConfig({
-        ...prev,
-        primary: hex,
-        paletteStrategy: "complementary",
-        lockedIndices: [],
-        paletteOverrides: {},
-      }),
-    );
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
 
   const setStrategy = (strategy: PaletteStrategyId) => {
     track("palette_strategy_changed", { strategy });
@@ -403,6 +389,7 @@ export function GeneratorWorkspace() {
             <Button type="button" variant="secondary" className="px-2.5 py-1 text-xs" onClick={copyShareLink}>
               {shareCopied ? "Link copied" : "Share link"}
             </Button>
+            <ExportModalButton system={system} />
           </div>
         </div>
       </div>
@@ -491,12 +478,6 @@ export function GeneratorWorkspace() {
           </section>
           <section aria-label="Generated tokens">
             <TokensPanel themes={system.themes} />
-          </section>
-          <section aria-label="AI palette suggestion">
-            <AiPaletteSuggestion onApply={applyAiPalette} />
-          </section>
-          <section aria-label="Export">
-            <ExportPanel system={system} />
           </section>
 
           {Object.keys(fixes.light).length + Object.keys(fixes.dark).length > 0 ? (

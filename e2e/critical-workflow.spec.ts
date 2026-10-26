@@ -58,6 +58,7 @@ test("one color becomes a full design system", async ({ page, context }) => {
   }
 
   // Export adapters produce code and the share button copies a URL.
+  await page.getByRole("button", { name: "Export", exact: true }).click();
   await page.getByRole("button", { name: "Tailwind CSS v4" }).click();
   await expect(page.getByText("@theme inline {")).toBeVisible();
   await page.getByRole("button", { name: "shadcn/ui" }).click();
