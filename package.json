@@ -11,6 +11,7 @@
     "test:e2e": "playwright test",
     "typecheck": "tsc --noEmit",
     "audit:worker": "node --import tsx scripts/audit-worker.mjs",
+    "audit:bundle": "node scripts/build-in-browser-bundle.mjs",
     "seo:audit": "node --import tsx scripts/seo-audit.mjs",
     "build:figma": "node figma-plugin/build.mjs",
     "typecheck:figma": "tsc -p figma-plugin/tsconfig.json --noEmit",

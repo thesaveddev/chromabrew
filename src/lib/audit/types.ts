@@ -647,6 +647,14 @@ export interface ScanCoverageDto {
 export const ANONYMOUS_SCANS_PER_IP_PER_HOUR = 3;
 export const ANONYMOUS_SCANS_PER_IP_PER_DAY = 10;
 export const MAX_CONCURRENT_SCANS = 2;
+/**
+ * Whole-site crawls cost a full browser render per page, so they carry their
+ * own daily allowance on top of the general scan limits. Everyone may run
+ * them rate-limited; Pro pays for the compute with a higher allowance.
+ */
+export const ANONYMOUS_CRAWL_SCANS_PER_DAY = 1;
+export const FREE_CRAWL_SCANS_PER_DAY = 2;
+export const PRO_CRAWL_SCANS_PER_DAY = 20;
 export const SCAN_FETCH_TIMEOUT_MS = 20_000;
 export const SCAN_MAX_RESPONSE_BYTES = 5 * 1024 * 1024;
 export const SCAN_MAX_REDIRECTS = 5;

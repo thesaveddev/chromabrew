@@ -13,10 +13,14 @@ import { createHash } from "node:crypto";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import {
+  ANONYMOUS_CRAWL_SCANS_PER_DAY,
   ANONYMOUS_SCANS_PER_IP_PER_DAY,
   ANONYMOUS_SCANS_PER_IP_PER_HOUR,
+  FREE_CRAWL_SCANS_PER_DAY,
   MAX_CONCURRENT_SCANS,
+  PRO_CRAWL_SCANS_PER_DAY,
   SCAN_QUEUE_ABANDON_MS,
+  type ScanScopeId,
 } from "./types";
 
 /** Authenticated users get more headroom; still bounded so one account cannot flood the queue. */
@@ -90,6 +94,10 @@ function outstandingScanWhere(now: number): Prisma.ScanWhereInput {
 export async function checkScanQuota(input: {
   userId: string | null;
   ipHash: string | null;
+  /** Whole-site crawls draw from a separate, tighter daily allowance. */
+  scope?: ScanScopeId;
+  /** Pro buys a higher crawl allowance; everyone else shares the free one. */
+  isPro?: boolean;
 }): Promise<QuotaDecision> {
   const now = Date.now();
 
@@ -158,6 +166,37 @@ export async function checkScanQuota(input: {
         : `Free audits are limited to ${dayLimit} per day. Sign in for a higher limit.`,
       retryAfterSeconds: 3600,
     };
+  }
+
+  // Crawls render every page in a real browser, so each one counts extra.
+  // The general hourly/daily limits above still apply; this is the crawl's
+  // own daily budget on top of them, and the reason names it so a refused
+  // whole-site scan does not read as a refused scan of any kind.
+  if (input.scope === "homepage_plus_pages") {
+    const crawlLimit = !input.userId
+      ? ANONYMOUS_CRAWL_SCANS_PER_DAY
+      : input.isPro
+        ? PRO_CRAWL_SCANS_PER_DAY
+        : FREE_CRAWL_SCANS_PER_DAY;
+    const crawlsToday = await prisma.scan.count({
+      where: {
+        ...identity,
+        scope: "homepage_plus_pages",
+        createdAt: { gte: new Date(now - DAY_MS) },
+      },
+    });
+    if (crawlsToday >= crawlLimit) {
+      return {
+        allowed: false,
+        code: "quota",
+        reason: !input.userId
+          ? `Free whole-site audits are limited to ${crawlLimit} per day. Sign in for a higher limit.`
+          : input.isPro
+            ? `You have reached ${crawlLimit} whole-site audits today.`
+            : `Free whole-site audits are limited to ${crawlLimit} per day. Upgrade to Pro for ${PRO_CRAWL_SCANS_PER_DAY} a day.`,
+        retryAfterSeconds: 3600,
+      };
+    }
   }
 
   return { allowed: true };

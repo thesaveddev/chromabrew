@@ -41,7 +41,7 @@ export const PLANS = {
       "Unlimited palette history",
       "All 13 export adapters (Figma, Flutter, iOS, Android, MUI, Ant Design, Chakra)",
       "Project version history",
-      "Team sharing and collaboration",
+      "Team sharing and collaboration (invite viewers and editors to your projects)",
       "AI features, included as they ship",
       "Priority support",
     ],

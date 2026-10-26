@@ -140,10 +140,9 @@ async function loadModules() {
 
   // Not named `module`: that shadows the CommonJS binding the rule set warns
   // about, and a bare `module(...)` call reads like the Node built-in.
-  const loadModule = (relative) => import(pathToFileURL(path.join(ROOT, relative)).href);
-
-  try {
-    const runner = await loadModule("src/lib/audit/runner.ts");
+  const loadModule = (relative) => import(pathToFileURL(path.join(ROOT, relative)).href);  try {
+      const runner = await loadModule("src/lib/audit/runner.ts");
+      const schedules = await loadModule("src/lib/audit/schedules.ts");
     const browser = await loadModule("src/lib/audit/browser.ts");
     const queries = await loadModule("src/lib/audit/queries.ts");
     const screenshots = await loadModule("src/lib/audit/screenshot-store.ts");
@@ -151,6 +150,7 @@ async function loadModules() {
     const types = await loadModule("src/lib/audit/types.ts");
     return {
       claimNextScan: runner.claimNextScan,
+      enqueueDueRescans: schedules.enqueueDueRescans,
       runClaimedScan: runner.runClaimedScan,
       backfillScreenshotBytes: runner.backfillScreenshotBytes,
       isBrowserRendererAvailable: browser.isBrowserRendererAvailable,
@@ -333,6 +333,20 @@ async function main() {
   let lastIdleNotice = Date.now();
 
   while (!stopping) {
+    // Scheduled re-scans are enqueued from the same loop that claims scans:
+    // this process is the only one guaranteed to be running, so no separate
+    // scheduler is needed, and a due watch simply becomes a queued row the
+    // claim below picks up. Failures here must not stop the queue — a stuck
+    // schedule is one missed re-scan, a stuck loop is every audit.
+    try {
+      const due = await modules.enqueueDueRescans();
+      if (due.enqueued > 0 || due.skipped > 0) {
+        log(`re-scans enqueued ${due.enqueued} · deferred ${due.skipped}`);
+      }
+    } catch (error) {
+      fail(`could not enqueue due re-scans: ${short(error)}`);
+    }
+
     let scanId = null;
     try {
       scanId = await modules.claimNextScan();

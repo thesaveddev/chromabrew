@@ -153,7 +153,11 @@ export default function PricingPage() {
             },
             {
               q: "What do I get with Pro?",
-              a: "Unlimited project saving and palette history, every export adapter (Figma, Flutter, iOS, Android, MUI, Ant Design, Chakra), version history, and AI features as they ship — on top of everything free.",
+              a: "Unlimited project saving and palette history, every export adapter (Figma, Flutter, iOS, Android, MUI, Ant Design, Chakra), version history, team sharing, and AI features as they ship — on top of everything free.",
+            },
+            {
+              q: "How does team sharing work?",
+              a: "On any project, open the Team tab and invite collaborators by email — viewers can open and inspect the project, editors can also save changes and manage versions. Invitees need a ChromaBrew account, and only the project owner can invite, change roles, or remove people.",
             },
             {
               q: "Monthly or annual?",

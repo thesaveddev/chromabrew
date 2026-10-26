@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth/config";
 import { ScannerOfflineError, requireScanner } from "@/lib/audit/heartbeat";
 import { getScanStatusDto } from "@/lib/audit/queries";
 import { checkScanQuota, clientIpFromHeaders, hashIp } from "@/lib/audit/rate-limit";
+import { hasEntitlement } from "@/lib/entitlements-server";
 import { ScanRequestError, enqueueScan, validateScanRequest } from "@/lib/audit/runner";
 import {
   DEFAULT_VIEWPORT_ID,
@@ -86,8 +87,11 @@ export async function POST(request: Request) {
     const ipHash = hashIp(clientIpFromHeaders(request.headers));
 
     // Then the quota, before any work: the cheapest way to refuse a flood is not
-    // to write a row for it.
-    const quota = await checkScanQuota({ userId, ipHash });
+    // to write a row for it. Whole-site crawls draw from their own daily
+    // allowance, priced by plan — one extra indexed read, and only for
+    // signed-in callers who could plausibly be Pro.
+    const isPro = userId ? await hasEntitlement(userId, "pro") : false;
+    const quota = await checkScanQuota({ userId, ipHash, scope: scopeId, isPro });
     if (!quota.allowed) {
       return NextResponse.json(
         {

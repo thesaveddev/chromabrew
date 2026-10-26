@@ -1,6 +1,11 @@
 import type { DesignSystem } from "../types";
 import type { ExportAdapter } from "./adapter";
 import { toOklchString } from "./css";
+import {
+  whiteLabelFilename,
+  whiteLabelLines,
+  type ExportContext,
+} from "./context";
 
 /** shadcn variable name → our semantic token id. */
 const SHADCN_MAP: Array<[string, string]> = [
@@ -40,7 +45,7 @@ export const shadcnAdapter: ExportAdapter = {
   id: "shadcn",
   name: "shadcn/ui",
   description: "CSS variables following current shadcn/ui theming conventions.",
-  generate(system: DesignSystem) {
+  generate(system: DesignSystem, ctx?: ExportContext) {
     const blockFor = (mode: "light" | "dark"): string => {
       const selector = mode === "light" ? ":root" : ".dark";
       const tokens = system.themes[mode];
@@ -66,12 +71,13 @@ export const shadcnAdapter: ExportAdapter = {
       return lines.join("\n");
     };
 
-    const header = `/*\n  ${system.metadata.name} — shadcn/ui theme\n  Source: ${system.source.primary.hex}\n  Paste into your global stylesheet (Tailwind v4 + shadcn/ui).\n*/\n`;
+    const { title, provenance } = whiteLabelLines(system, ctx, "shadcn/ui theme");
+    const header = `/*\n  ${title}\n  ${provenance}\n  Paste into your global stylesheet (Tailwind v4 + shadcn/ui).\n*/\n`;
 
     return {
       code: `${header}${blockFor("light")}\n\n${blockFor("dark")}\n`,
       language: "css",
-      suggestedFilename: "shadcn-theme.css",
+      suggestedFilename: whiteLabelFilename("shadcn-theme.css", ctx),
     };
   },
 };

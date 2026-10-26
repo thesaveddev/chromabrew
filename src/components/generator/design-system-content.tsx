@@ -390,13 +390,17 @@ export function DesignSystemContent() {
               </dl>
             </article>
 
-            {/* AI suggestions */}
-            <article className="rounded-2xl border border-zinc-200 bg-white p-6 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_16px_40px_-20px_rgba(0,0,0,0.4)] sm:col-span-3 dark:border-zinc-800 dark:bg-zinc-900">
+            {/* AI suggestions live on their own page — this card links out to them */}
+            <Link
+              href="/tools/ai-palette-suggestion"
+              className="group rounded-2xl border border-zinc-200 bg-white p-6 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_16px_40px_-20px_rgba(0,0,0,0.4)] sm:col-span-3 dark:border-zinc-800 dark:bg-zinc-900"
+            >
               <h4 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                AI palette suggestions
+                AI palette suggestions{" "}
+                <span aria-hidden className="inline-block transition-transform group-hover:translate-x-0.5">→</span>
               </h4>
               <p className="mt-1 text-[13px] leading-6 text-zinc-600 dark:text-zinc-400">
-                Optional starting points you can apply — or ignore entirely.
+                Describe your brand in words — five starting points on their own page.
               </p>
               <div aria-hidden className="mt-4 flex gap-1.5">
                 {["#0ea5e9", "#8b5cf6", "#ec4899", "#f59e0b", "#10b981"].map((hex) => (
@@ -407,7 +411,7 @@ export function DesignSystemContent() {
                   />
                 ))}
               </div>
-            </article>
+            </Link>
           </div>
 
           <p className="mt-4 rounded-2xl border border-dashed border-zinc-300 bg-zinc-100/60 px-5 py-4 text-center text-[13px] leading-6 text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-400">

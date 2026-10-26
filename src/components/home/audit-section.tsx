@@ -106,7 +106,7 @@ export function AuditSection() {
             What one audit does not cover
           </h3>
           <ul className="mt-3 grid gap-2 text-xs leading-5 text-zinc-600 dark:text-zinc-400 sm:grid-cols-2">
-            <li>One page at one viewport per run — multi-page crawling is not available yet.</li>
+            <li>One viewport per run — the whole-site scope crawls up to 5 same-origin pages, shallowest first.</li>
             <li>
               The automated rules are a subset of WCAG 2.2, so a clean report is not a conformance
               certificate.

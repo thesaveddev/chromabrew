@@ -1,6 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { MAX_CONCURRENT_SCANS, SCAN_QUEUE_ABANDON_MS } from "./types";
+import {
+  FREE_CRAWL_SCANS_PER_DAY,
+  MAX_CONCURRENT_SCANS,
+  PRO_CRAWL_SCANS_PER_DAY,
+  SCAN_QUEUE_ABANDON_MS,
+} from "./types";
 
 const db = vi.hoisted(() => ({ count: vi.fn(), findFirst: vi.fn() }));
 
@@ -78,6 +83,58 @@ describe("checkScanQuota", () => {
     // The retry is the moment the oldest scan in the window falls out of it.
     expect(decision.retryAfterSeconds).toBeGreaterThan(0);
     expect(decision.retryAfterSeconds).toBeLessThanOrEqual(30 * 60);
+  });
+
+  it("lets a crawl through inside its own daily allowance", async () => {
+    db.count.mockResolvedValue(0);
+    db.findFirst.mockResolvedValue(null);
+
+    const decision = await checkScanQuota({
+      userId: "user-1",
+      ipHash: null,
+      scope: "homepage_plus_pages",
+      isPro: false,
+    });
+
+    expect(decision.allowed).toBe(true);
+    // The crawl budget is counted separately from the general hourly/daily
+    // scans: the last count query is scoped to whole-site rows.
+    const crawlWhere = db.count.mock.calls.at(-1)![0].where;
+    expect(crawlWhere.scope).toBe("homepage_plus_pages");
+  });
+
+  it("refuses a crawl over the free allowance with the upgrade path", async () => {
+    db.count
+      .mockResolvedValueOnce(0) // scanner free
+      .mockResolvedValueOnce(0) // this hour
+      .mockResolvedValueOnce(0) // today
+      .mockResolvedValueOnce(FREE_CRAWL_SCANS_PER_DAY); // crawls today
+    db.findFirst.mockResolvedValue(null);
+
+    const decision = await checkScanQuota({
+      userId: "user-1",
+      ipHash: null,
+      scope: "homepage_plus_pages",
+      isPro: false,
+    });
+
+    expect(decision.allowed).toBe(false);
+    expect(decision.code).toBe("quota");
+    expect(decision.reason).toContain("whole-site");
+    expect(decision.reason).toContain(`Pro for ${PRO_CRAWL_SCANS_PER_DAY} a day`);
+  });
+
+  it("holds Pro crawls to the higher allowance, not the free one", async () => {
+    db.count.mockResolvedValue(0);
+    db.findFirst.mockResolvedValue(null);
+
+    const allowed = await checkScanQuota({
+      userId: "user-1",
+      ipHash: null,
+      scope: "homepage_plus_pages",
+      isPro: true,
+    });
+    expect(allowed.allowed).toBe(true);
   });
 
   it("counts against the caller's own identity, not everyone's", async () => {

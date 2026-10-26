@@ -104,6 +104,14 @@ const MIGRATIONS = [
     name: "20261020000000_polar_billing",
     tables: ["PolarCustomer", "PolarSubscription", "Entitlement"],
   },
+  {
+    name: "20261026000000_audit_schedules",
+    tables: ["AuditSchedule"],
+  },
+  {
+    name: "20261027000000_project_members",
+    tables: ["ProjectMember"],
+  },
 ];
 
 /**
@@ -135,6 +143,12 @@ const REQUIRED = {
     "PolarCustomer",
     "PolarSubscription",
     "Entitlement",
+    // Scheduled re-scans: the worker loop reads this table every poll, so a
+    // deploy missing it turns every poll into an error instead of an audit.
+    "AuditSchedule",
+    // Team sharing: every project read resolves the caller's membership, so a
+    // deploy missing it 404s projects for collaborators instead of sharing them.
+    "ProjectMember",
   ],
   columns: [
     { table: "Scan", column: "shareToken" },

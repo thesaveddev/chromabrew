@@ -133,7 +133,12 @@ export default function AuditPage() {
               </li>
               <li>
                 Public pages only, and only pages you are allowed to scan. The scanner fetches the
-                page server-side and says so in its user agent.
+                page server-side and says so in its user agent. Behind Cloudflare, a login or an
+                allowlist?{" "}
+                <Link href="/audit/this-page" className={INLINE_LINK}>
+                  Audit the page in your own browser
+                </Link>{" "}
+                instead.
               </li>
               <li>
                 A clean report is not a WCAG conformance certificate: the automated rules cover a

@@ -21,6 +21,7 @@ const els = {
   copyHex: $("copy-hex"),
   pick: $("pick"),
   open: $("open-generator"),
+  auditPage: $("audit-page"),
   form: $("hex-form"),
   input: $("hex-input"),
   history: $("history-list"),
@@ -219,6 +220,44 @@ els.pick.addEventListener("click", async () => {
 });
 
 els.open.addEventListener("click", openGenerator);
+
+/* ---------- audit this page ---------- */
+/* The bundled audit (content-audit.js, built from src/lib/audit by
+ * `npm run audit:bundle`) runs axe-core + the contrast/structure engines in
+ * the current tab's isolated world, so the page is measured with the
+ * visitor's own session — past Cloudflare, logins and IP allowlists — and
+ * nothing leaves the machine. */
+els.auditPage.addEventListener("click", async () => {
+  try {
+    if (
+      typeof chrome === "undefined" ||
+      !chrome.tabs ||
+      !chrome.scripting
+    ) {
+      toast("Open this panel from the extension to audit a tab.");
+      return;
+    }
+    const [tab] = await chrome.tabs.query({
+      active: true,
+      currentWindow: true,
+    });
+    if (!tab || tab.id === undefined) {
+      toast("No active tab to audit.");
+      return;
+    }
+    if (!/^https?:/i.test(tab.url ?? "")) {
+      toast("Open a web page first — this one can't be audited.");
+      return;
+    }
+    await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      files: ["content-audit.js"],
+    });
+    toast("Audit running — the report lands on the page.");
+  } catch {
+    toast("This page blocks extensions — try the bookmarklet instead.");
+  }
+});
 
 els.form.addEventListener("submit", (event) => {
   event.preventDefault();

@@ -43,7 +43,7 @@ describe("AuditSection", () => {
   it("does not claim capabilities the audit does not have", () => {
     // These are the promises the report explicitly refuses to make; see the
     // limitations note in scan-report.tsx. Each one here would be a false claim.
-    expect(html).toContain("multi-page crawling is not available yet");
+    expect(html).toContain("crawls up to 5 same-origin pages");
     expect(html).toContain("conformance certificate");
     expect(html).not.toMatch(/full[- ]site|entire site|all pages|certif(y|ied|ication)\b/i);
   });

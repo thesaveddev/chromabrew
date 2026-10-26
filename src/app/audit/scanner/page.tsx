@@ -46,6 +46,26 @@ export default function ScannerAllowlistPage() {
         </p>
       </header>
 
+      <section className="rounded-xl border border-zinc-200 bg-zinc-50 p-5 dark:border-zinc-800 dark:bg-zinc-900">
+        <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
+          Just checking your own site? Skip the allowlist
+        </h2>
+        <p className="mt-2 leading-7 text-zinc-600 dark:text-zinc-400">
+          If you can open the page yourself, you don&apos;t need to change any
+          firewall settings: open the page, pass its challenge once, and run the{" "}
+          <Link
+            className="font-medium text-zinc-900 underline underline-offset-4 dark:text-zinc-100"
+            href="/audit/this-page"
+          >
+            audit in your own browser
+          </Link>
+          . The same axe-core, contrast and structure checks run in your tab —
+          with your session, so the protection you already cleared stays cleared —
+          and nothing is uploaded. Allowlisting below is for letting the server
+          scanner (and its whole-site crawls) through.
+        </p>
+      </section>
+
       <section className="space-y-4">
         <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
           What happened

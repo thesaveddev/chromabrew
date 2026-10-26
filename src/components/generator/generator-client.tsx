@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState, useDeferredValue } from "react";
+import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { buildDesignSystem, normaliseConfig } from "@/lib/design-system";
 import {
@@ -386,10 +387,23 @@ export function GeneratorWorkspace() {
                 {saving ? "Saving…" : saveMessage || "Save"}
               </Button>
             )}
+            {/* Save-flow nudge: a saved project is one settings visit away
+                from the community gallery (?tab=settings lands on the
+                visibility + opt-in controls). Only shown once saving is
+                possible, i.e. a project id exists. */}
+            {session?.user && projectId && (
+              <Link
+                href={`/projects/${projectId}?tab=settings`}
+                className="hidden px-1 py-1 text-xs font-medium text-zinc-500 underline underline-offset-4 hover:text-zinc-900 sm:inline dark:text-zinc-400 dark:hover:text-zinc-100"
+                title="Make this project public and list it in the community gallery"
+              >
+                Feature in gallery →
+              </Link>
+            )}
             <Button type="button" variant="secondary" className="px-2.5 py-1 text-xs" onClick={copyShareLink}>
               {shareCopied ? "Link copied" : "Share link"}
             </Button>
-            <ExportModalButton system={system} />
+            <ExportModalButton system={system} projectName={projectName || undefined} />
           </div>
         </div>
       </div>

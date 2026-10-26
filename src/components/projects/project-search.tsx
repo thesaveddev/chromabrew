@@ -7,6 +7,8 @@ type Project = {
   name: string;
   description: string | null;
   visibility: "private" | "public";
+  listedInGallery: boolean;
+  colors: [string, string, string, string, string] | null;
   createdAt: string;
   updatedAt: string;
 };

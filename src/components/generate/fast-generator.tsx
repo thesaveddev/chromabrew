@@ -80,6 +80,9 @@ export function FastGenerator() {
   const [settings, setSettings] = useState<PaletteSettings>({ ...DEFAULT_PALETTE_SETTINGS });
   const [strategy, setStrategy] = useState<StrategyChoice>("random");
   const [copied, setCopied] = useState<string | null>(null);
+  /** Mobile-only: tuning sliders collapse behind a Tune toggle so the
+      palette owns the viewport. Desktop (sm+) always shows them. */
+  const [tuneOpen, setTuneOpen] = useState(false);
 
   // What the user sees: tuning applied deterministically, keepers untouched.
   const colors = useMemo(
@@ -263,8 +266,8 @@ export function FastGenerator() {
       </div>
 
       {/* Controls — harmony picks the family, sliders tune the current one. */}
-      <div className="flex flex-wrap items-end gap-x-6 gap-y-3 border-b border-zinc-200 px-4 py-3 sm:px-6 dark:border-zinc-800">
-        <div className="flex flex-col gap-1.5">
+      <div className="flex flex-wrap items-end gap-x-6 gap-y-2 border-b border-zinc-200 px-4 py-3 sm:px-6 lg:flex-nowrap dark:border-zinc-800">
+        <div className="flex min-w-0 flex-col gap-1.5 max-sm:-mx-4 max-sm:snap-x max-sm:overflow-x-auto max-sm:px-4 max-sm:[&_[role=tablist]]:flex-nowrap lg:overflow-x-auto lg:[&_[role=tablist]]:flex-nowrap">
           <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
             Harmony
           </span>
@@ -276,7 +279,19 @@ export function FastGenerator() {
             onChange={chooseStrategy}
           />
         </div>
-        <div className="grid w-full flex-1 grid-cols-2 gap-x-5 gap-y-2 sm:flex sm:w-auto sm:items-end">
+        <button
+          type="button"
+          onClick={() => setTuneOpen((open) => !open)}
+          aria-expanded={tuneOpen}
+          aria-controls="palette-tuning"
+          className="rounded-lg border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-700 sm:hidden dark:border-zinc-700 dark:text-zinc-300"
+        >
+          {tuneOpen ? "Done" : "Tune"}
+        </button>
+        <div
+          id="palette-tuning"
+          className={`${tuneOpen ? "grid" : "hidden"} w-full flex-1 grid-cols-2 gap-x-5 gap-y-2 sm:flex sm:w-auto sm:items-end sm:gap-x-4 lg:ml-auto lg:flex-none`}
+        >
           {SLIDERS.map(({ key, label, min, max, step, unit, neutral, signed }) => {
             const value = settings[key];
             const active = value !== neutral;
@@ -285,7 +300,7 @@ export function FastGenerator() {
                 ? `${value > 0 ? "+" : ""}${value}${unit}`
                 : `${value}${unit}`;
             return (
-              <div key={key} className="min-w-0 sm:w-40">
+              <div key={key} className="min-w-0 sm:w-32">
                 <div className="mb-0.5 flex items-baseline justify-between gap-2">
                   <label
                     htmlFor={`palette-ctl-${key}`}
@@ -341,14 +356,14 @@ export function FastGenerator() {
           <div
             key={`${i}-${colors.length}`}
             role="listitem"
-            className="group relative flex min-h-24 flex-1 items-end justify-center pb-5 transition-[flex] sm:min-h-0 sm:items-center sm:pb-0"
+            className="group relative flex min-h-28 flex-1 items-end justify-center pb-5 transition-[flex] sm:min-h-0 sm:items-center sm:pb-0"
             style={{ backgroundColor: hex }}
           >
             <div className="flex flex-col items-center gap-2">
               <button
                 type="button"
                 onClick={() => copyColor(hex)}
-                className="rounded-md px-2 py-1 font-mono text-sm font-semibold uppercase tracking-wider transition-colors hover:bg-black/10 sm:text-base dark:hover:bg-white/20"
+                className="rounded-md px-2 py-1 font-mono text-base font-semibold uppercase tracking-wider transition-colors hover:bg-black/10 dark:hover:bg-white/20"
                 style={{ color: ink.color, textShadow: ink.shadow }}
                 aria-label={`Copy ${hex}`}
               >

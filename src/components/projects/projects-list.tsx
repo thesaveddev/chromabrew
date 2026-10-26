@@ -9,6 +9,9 @@ type Project = {
   name: string;
   description: string | null;
   visibility: "private" | "public";
+  listedInGallery: boolean;
+  /** Five derived palette swatches, or null when the config can't render. */
+  colors: [string, string, string, string, string] | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -20,9 +23,38 @@ type Props = {
 export function ProjectsList({ initialProjects }: Props) {
   const [projects, setProjects] = useState(initialProjects);
   const [loading, setLoading] = useState(false);
+  const [toggling, setToggling] = useState<string | null>(null);
 
   const handleResults = useCallback((results: Project[]) => {
     setProjects(results);
+  }, []);
+
+  const toggleVisibility = useCallback(async (project: Project) => {
+    const next = project.visibility === "private" ? "public" : "private";
+    setToggling(project.id);
+    try {
+      const res = await fetch(`/api/projects/${project.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ visibility: next }),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setProjects((prev) =>
+          prev.map((p) =>
+            p.id === project.id
+              ? {
+                  ...p,
+                  visibility: updated.visibility,
+                  listedInGallery: updated.listedInGallery,
+                }
+              : p,
+          ),
+        );
+      }
+    } finally {
+      setToggling(null);
+    }
   }, []);
 
   return (
@@ -71,30 +103,71 @@ export function ProjectsList({ initialProjects }: Props) {
       ) : (
         <ul className="space-y-3">
           {projects.map((project) => (
-            <li key={project.id}>
-              <Link
-                href={`/projects/${project.id}`}
-                className="group block rounded-xl border border-zinc-200 bg-white p-5 transition-colors hover:border-zinc-400 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-600"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0 flex-1">
-                    <h2 className="text-sm font-semibold text-zinc-900 group-hover:underline group-hover:underline-offset-4 dark:text-zinc-100">
-                      {project.name}
-                    </h2>
-                    {project.description && (
-                      <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                        {project.description}
-                      </p>
-                    )}
-                  </div>
-                  <span className="shrink-0 rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
-                    {project.visibility}
-                  </span>
+            <li
+              key={project.id}
+              className="rounded-xl border border-zinc-200 bg-white p-5 transition-colors hover:border-zinc-400 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-600"
+            >
+              {project.colors ? (
+                <div className="flex h-12 gap-1" aria-hidden>
+                  {project.colors.map((hex) => (
+                    <span
+                      key={hex}
+                      className="h-full flex-1 rounded-md"
+                      style={{ backgroundColor: hex }}
+                    />
+                  ))}
                 </div>
-                <p className="mt-3 text-[11px] text-zinc-400 dark:text-zinc-500">
+              ) : (
+                <div className="flex h-12 items-center justify-center rounded-md bg-zinc-100 text-[11px] text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500">
+                  No palette preview
+                </div>
+              )}
+              <div className="mt-3 flex items-start justify-between gap-4">
+                <div className="min-w-0 flex-1">
+                  <Link
+                    href={`/projects/${project.id}`}
+                    className="text-sm font-semibold text-zinc-900 hover:underline hover:underline-offset-4 dark:text-zinc-100"
+                  >
+                    {project.name}
+                  </Link>
+                  {project.description && (
+                    <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                      {project.description}
+                    </p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => void toggleVisibility(project)}
+                  disabled={toggling === project.id}
+                  title={project.visibility === "private" ? "Make public" : "Make private"}
+                  className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium transition-colors disabled:opacity-50 ${
+                    project.visibility === "public"
+                      ? "bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900 dark:text-green-300 dark:hover:bg-green-800"
+                      : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
+                  }`}
+                >
+                  {toggling === project.id ? "…" : project.visibility}
+                </button>
+              </div>
+              <div className="mt-3 flex items-center justify-between gap-4">
+                <p className="text-[11px] text-zinc-400 dark:text-zinc-500">
                   Updated {new Date(project.updatedAt).toLocaleDateString()}
                 </p>
-              </Link>
+                {project.visibility === "public" &&
+                  (project.listedInGallery ? (
+                    <span className="text-[11px] font-medium text-green-700 dark:text-green-400">
+                      In the community gallery
+                    </span>
+                  ) : (
+                    <Link
+                      href={`/projects/${project.id}?tab=settings`}
+                      className="text-[11px] font-medium text-zinc-600 underline underline-offset-4 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+                    >
+                      List in gallery →
+                    </Link>
+                  ))}
+              </div>
             </li>
           ))}
         </ul>

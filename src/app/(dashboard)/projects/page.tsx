@@ -1,7 +1,9 @@
 import { auth } from "@/lib/auth/config";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
+import { parseGalleryConfig, projectPalette } from "@/lib/gallery";
 import { ProjectsList } from "@/components/projects/projects-list";
+import { SharedProjects } from "@/components/projects/shared-projects";
 
 export const metadata = {
   title: "My projects",
@@ -20,6 +22,8 @@ export default async function ProjectsPage() {
       name: true,
       description: true,
       visibility: true,
+      listedInGallery: true,
+      config: true,
       createdAt: true,
       updatedAt: true,
     },
@@ -29,12 +33,21 @@ export default async function ProjectsPage() {
     <div className="flex flex-1 flex-col px-4 py-12 sm:px-6">
       <div className="mx-auto w-full max-w-3xl">
         <ProjectsList
-          initialProjects={projects.map((p: { id: string; name: string; description: string | null; visibility: "private" | "public"; createdAt: Date; updatedAt: Date }) => ({
-            ...p,
-            createdAt: p.createdAt.toISOString(),
-            updatedAt: p.updatedAt.toISOString(),
-          }))}
+          initialProjects={projects.map((p) => {
+            const config = parseGalleryConfig(p.config);
+            return {
+              id: p.id,
+              name: p.name,
+              description: p.description,
+              visibility: p.visibility,
+              listedInGallery: p.listedInGallery,
+              colors: config ? projectPalette(config) : null,
+              createdAt: p.createdAt.toISOString(),
+              updatedAt: p.updatedAt.toISOString(),
+            };
+          })}
         />
+        <SharedProjects />
       </div>
     </div>
   );

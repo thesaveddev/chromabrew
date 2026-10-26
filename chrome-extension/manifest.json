@@ -4,7 +4,7 @@
   "description": "Pick any color from your screen and open it in the ChromaBrew design system generator in one click.",
   "version": "1.0.0",
   "minimum_chrome_version": "114",
-  "permissions": ["sidePanel"],
+  "permissions": ["sidePanel", "activeTab", "scripting"],
   "background": {
     "service_worker": "service-worker.js"
   },

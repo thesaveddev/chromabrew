@@ -635,6 +635,38 @@ export const TOOLS: ToolDefinition[] = [
       },
     ],
   },
+  {
+    href: "/tools/ai-palette-suggestion",
+    navLabel: "AI palette suggestion",
+    title: "AI palette suggestion",
+    metaTitle: "AI Palette Suggestion — Palettes From a Description",
+    description:
+      "Describe your brand in words and get 5 smart palette options. Preview any suggestion in the design system generator. Free, no sign-up.",
+    blurb: "Five palettes from a brand description.",
+    intro: [
+      "Describe your brand in plain words — industry, mood, audience — and get five palette suggestions, each pairing a starting color with the harmony strategy that suits it. Keyword matching maps your description to hue families, so a fintech brief and a bakery brief land in completely different places.",
+      "Every suggestion opens directly in the design system generator with its color and strategy pre-selected, turning the starting point into tonal scales, semantic tokens, light and dark themes, and contrast-checked exports.",
+    ],
+    category: "color",
+    faqs: [
+      {
+        q: "How does the AI palette suggestion work?",
+        a: "Type a brand description and keyword matching maps your words to hue families, then generates five palettes across different harmony strategies — complementary, analogous, triadic, split-complementary and monochromatic. No AI API key or account needed; the free tier allows 30 suggestions per minute.",
+      },
+      {
+        q: "What do I do with a suggestion I like?",
+        a: "Click 'Preview in generator' on any suggestion. It opens the design system generator with that color and strategy pre-selected, so you can judge it on real interfaces and export tokens, themes and CSS.",
+      },
+      {
+        q: "Is it really AI?",
+        a: "It is a heuristic engine, not a large language model: brand keywords map to curated hue ranges and each suggestion pairs one with a fitting harmony strategy. The result is instant, deterministic and free — the same suggestions power the rate-limited API behind it.",
+      },
+      {
+        q: "Is the AI palette suggestion free?",
+        a: "Yes — free with no account required. Anonymous visitors get 30 suggestions per minute; signed-in Pro users get a higher limit.",
+      },
+    ],
+  },
 ];
 
 export function findTool(href: string): ToolDefinition | undefined {

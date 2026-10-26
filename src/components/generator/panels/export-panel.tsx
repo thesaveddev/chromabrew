@@ -5,6 +5,7 @@ import Link from "next/link";
 import { EXPORT_ADAPTERS } from "@/lib/design-system/exports/registry";
 import { adapterRequiresPro } from "@/lib/entitlements";
 import type { ExportAdapter } from "@/lib/design-system/exports/adapter";
+import type { ExportContext } from "@/lib/design-system/exports/context";
 import type { AnalyticsEvent } from "@/lib/analytics";
 import { track } from "@/lib/analytics";
 import { CopyButton, DownloadButton } from "@/components/ui/primitives";
@@ -54,8 +55,18 @@ const ADAPTER_EVENT: Record<string, AnalyticsEvent> = {
   android: "android_exported",
 };
 
-export function ExportPanel({ system }: { system: DesignSystem }) {
+export function ExportPanel({
+  system,
+  projectName,
+}: {
+  system: DesignSystem;
+  /** Saved project name, when the generator has one loaded — prefilled, editable. */
+  projectName?: string;
+}) {
   const [adapterId, setAdapterId] = useState(ALL_ADAPTERS[0].id);
+  // Client-ready packaging. Prefilled from the saved project when there is
+  // one, but always editable: the deliverable is named for what the reader
+  // types, not for what the tool guessed.
   // Signed-out visitors read as free; the plan only ever locks chrome —
   // generation itself stays client-side and ungated until a server export
   // API exists to enforce against.
@@ -72,8 +83,27 @@ export function ExportPanel({ system }: { system: DesignSystem }) {
       live = false;
     };
   }, []);
+  const [packProject, setPackProject] = useState(projectName ?? "");
+  const [packClient, setPackClient] = useState("");
+  const [packVersion, setPackVersion] = useState("v1");
+  // The saved name arrives after the project fetch; adopt it only while the
+  // reader has not typed their own, so a late fetch never clobbers input.
+  useEffect(() => {
+    if (projectName) setPackProject((prev) => prev || projectName);
+  }, [projectName]);
+  const packContext = useMemo<ExportContext>(
+    () => ({
+      projectName: packProject.trim() || undefined,
+      clientName: packClient.trim() || undefined,
+      versionLabel: packVersion.trim() || undefined,
+    }),
+    [packProject, packClient, packVersion],
+  );
   const adapter = ALL_ADAPTERS.find((a) => a.id === adapterId) ?? ALL_ADAPTERS[0];
-  const result = useMemo(() => adapter.generate(system), [adapter, system]);
+  const result = useMemo(
+    () => adapter.generate(system, packContext),
+    [adapter, system, packContext],
+  );
   const locked = !isPro && adapterRequiresPro(adapter.id);
 
   return (
@@ -134,6 +164,57 @@ export function ExportPanel({ system }: { system: DesignSystem }) {
       </div>
 
       <p className="text-xs text-zinc-500">{adapter.description}</p>
+
+      {adapter.id === "zip" && !locked && (
+        <fieldset className="rounded-xl border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-900/60">
+          <legend className="px-1 text-[11px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+            Client-ready packaging
+          </legend>
+          <div className="grid gap-2 sm:grid-cols-3">
+            <label className="block">
+              <span className="mb-1 block text-[11px] font-medium text-zinc-600 dark:text-zinc-400">
+                Project name
+              </span>
+              <input
+                type="text"
+                value={packProject}
+                onChange={(e) => setPackProject(e.target.value)}
+                placeholder="Acme Dashboard"
+                className="w-full rounded-lg border border-zinc-300 bg-white px-2.5 py-1.5 text-xs text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+              />
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-[11px] font-medium text-zinc-600 dark:text-zinc-400">
+                Prepared for
+              </span>
+              <input
+                type="text"
+                value={packClient}
+                onChange={(e) => setPackClient(e.target.value)}
+                placeholder="Acme Inc (optional)"
+                className="w-full rounded-lg border border-zinc-300 bg-white px-2.5 py-1.5 text-xs text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+              />
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-[11px] font-medium text-zinc-600 dark:text-zinc-400">
+                Version
+              </span>
+              <input
+                type="text"
+                value={packVersion}
+                onChange={(e) => setPackVersion(e.target.value)}
+                placeholder="v1"
+                className="w-full rounded-lg border border-zinc-300 bg-white px-2.5 py-1.5 text-xs text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+              />
+            </label>
+          </div>
+          <p className="mt-2 text-[11px] leading-4 text-zinc-500 dark:text-zinc-500">
+            Names every file for the project, stamps each header with the version
+            {packClient.trim() ? " and client" : ""}, and adds a README
+            presenting the bundle.
+          </p>
+        </fieldset>
+      )}
 
       {locked ? (
         <div className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-5 text-center dark:border-zinc-700 dark:bg-zinc-800/40">

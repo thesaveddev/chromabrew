@@ -10,7 +10,13 @@ import type { DesignSystem } from "@/lib/design-system/types";
  * of a long scrolling column. The full format picker renders inside a modal
  * so no scroll position is lost.
  */
-export function ExportModalButton({ system }: { system: DesignSystem }) {
+export function ExportModalButton({
+  system,
+  projectName,
+}: {
+  system: DesignSystem;
+  projectName?: string;
+}) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -68,7 +74,7 @@ export function ExportModalButton({ system }: { system: DesignSystem }) {
                 ✕
               </button>
             </div>
-            <ExportPanel system={system} />
+            <ExportPanel system={system} projectName={projectName} />
           </div>
         </div>
       )}

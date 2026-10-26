@@ -1,6 +1,11 @@
 import type { DesignSystem } from "../types";
 import type { ExportAdapter } from "./adapter";
 import { TOKEN_GROUPS } from "./css";
+import {
+  whiteLabelFilename,
+  whiteLabelLines,
+  type ExportContext,
+} from "./context";
 
 function varsBlock(
   system: DesignSystem,
@@ -30,7 +35,9 @@ export const tailwindAdapter: ExportAdapter = {
   id: "tailwind",
   name: "Tailwind CSS v4",
   description: "Theme variables for Tailwind v4 (@theme inline).",
-  generate(system: DesignSystem) {
+  generate(system: DesignSystem, ctx?: ExportContext) {
+    const { title, provenance } = whiteLabelLines(system, ctx, "Tailwind CSS v4 theme");
+    const header = `/* ${title} — ${provenance} */\n`;
     const light = varsBlock(system, ":root", "light", (h) => h.toLowerCase());
     const dark = varsBlock(system, ".dark", "dark", (h) => h.toLowerCase());
 
@@ -63,7 +70,7 @@ export const tailwindAdapter: ExportAdapter = {
     // Spacing intentionally left at the Tailwind v4 default multiplier so
     // all built-in padding/margin/gap utilities keep working.
 
-    const code = `@import "tailwindcss";
+    const code = `${header}@import "tailwindcss";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -80,6 +87,10 @@ ${themeLines.join("\n")}
 }
 `;
 
-    return { code, language: "css", suggestedFilename: "tailwind-theme.css" };
+    return {
+      code,
+      language: "css",
+      suggestedFilename: whiteLabelFilename("tailwind-theme.css", ctx),
+    };
   },
 };

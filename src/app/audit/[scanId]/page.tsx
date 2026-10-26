@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 
 import { ScanProgress } from "@/components/audit/scan-progress";
 import { ScanReport } from "@/components/audit/scan-report";
+import { ScanTimeline } from "@/components/audit/scan-timeline";
 import { ShareScanButton } from "@/components/audit/share-scan-button";
 import { getScanResultsDto } from "@/lib/audit/queries";
 import { isReportReady, type ScanStatusId } from "@/lib/audit/types";
@@ -31,6 +32,9 @@ export default async function ScanPage({ params }: { params: Promise<{ scanId: s
           <>
             <ShareScanButton scanId={scanId} />
             <ScanReport results={results} />
+            {/* Owner-only: history, regression and watches hide themselves
+                for anonymous scans and other people's links. */}
+            <ScanTimeline scanId={scanId} siteUrl={results.scan.normalizedUrl} />
           </>
         ) : (
           <ScanProgress scanId={scanId} refreshOnFinish />

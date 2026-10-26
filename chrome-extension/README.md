@@ -23,9 +23,13 @@ Requires Chrome 114+ (Side Panel API; EyeDropper itself is Chrome 95+).
 | Permission | Why |
 | --- | --- |
 | `sidePanel` | Hosts the picker UI next to the page |
+| `activeTab` + `scripting` | Runs the audit bundle in the tab you are looking at, only when you click *Audit this page* |
 | EyeDropper API | Screen sampling — a web API, needs **no** manifest permission |
 
-There are **no host permissions**: the extension never reads page content.
+There are **no standing host permissions**: the extension never reads page
+content unless you click *Audit this page*, and the audit itself runs entirely
+in your tab — past Cloudflare challenges, logins and IP allowlists you have
+already cleared — with nothing uploaded anywhere.
 `chrome.storage.sync` (part of the extension API surface) keeps your recent
 colors and settings across your Chrome profile, and `chrome.tabs.create`
 opens the generator tab.

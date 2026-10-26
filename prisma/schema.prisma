@@ -19,6 +19,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   projects      Project[]
+  projectMemberships ProjectMember[]
   scans         Scan[]
   polarCustomer PolarCustomer?
   polarSubscriptions PolarSubscription[]
@@ -79,6 +80,7 @@ model Project {
   userId   String
   user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   versions ProjectVersion[]
+  members  ProjectMember[]
 
   @@index([userId])
   @@index([visibility])
@@ -101,6 +103,40 @@ model ProjectVersion {
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@index([projectId])
+  @@schema("chromabrew")
+}
+
+// --- Team sharing --------------------------------------------------------
+//
+// Per-project collaborators, the thing behind the Pro "team sharing" line.
+// The owner invites by email; the invitee needs a ChromaBrew account (OAuth
+// or email) because access is granted to their user row, not to a token —
+// no bearer links that leak the project to anyone holding them. `viewer`
+// reads (including private projects); `editor` additionally saves config and
+// manages versions. Ownership, deletion, visibility and membership itself
+// stay owner-only. This is project-level collaboration, not a Phase 8 org:
+// no workspaces, no roles beyond the project.
+
+enum ProjectMemberRole {
+  viewer
+  editor
+  @@schema("chromabrew")
+}
+
+model ProjectMember {
+  id        String            @id @default(cuid())
+  role      ProjectMemberRole @default(viewer)
+  createdAt DateTime          @default(now())
+
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@index([projectId])
+  @@index([userId])
   @@schema("chromabrew")
 }
 
@@ -426,5 +462,29 @@ model WorkerHeartbeat {
   version           String?
   host              String?
   @@index([lastSeenAt])
+  @@schema("chromabrew")
+}
+
+// Scheduled whole-site re-scans (see src/lib/audit/schedules.ts). One row per
+// watched site per user: the worker enqueues a fresh scan whenever nextRunAt
+// passes, then advances it by intervalDays. userId is a plain string, not a
+// relation — it is only ever filtered on, never joined.
+model AuditSchedule {
+  id                String        @id @default(cuid())
+  userId            String
+  url               String        @db.Text
+  normalizedUrl     String        @db.Text
+  scope             ScanScope     @default(homepage_plus_pages)
+  viewportId        String        @default("desktop")
+  intervalDays      Int           @default(7)
+  active            Boolean       @default(true)
+  nextRunAt         DateTime
+  lastRunAt         DateTime?
+  lastScanId        String?
+  failureCount      Int           @default(0)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  @@index([active, nextRunAt])
+  @@index([userId])
   @@schema("chromabrew")
 }

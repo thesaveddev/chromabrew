@@ -10,6 +10,11 @@ import { prisma } from "@/lib/db";
 // The rule catalogue lives with the rules; queries only needs the count as a
 // fallback for rows written before it was recorded in metadata.
 import { AUDIT_RULE_COUNT } from "./analyzer";
+import {
+  diffScanFindings,
+  type RegressionDiff,
+  type RegressionInput,
+} from "./regression";
 import { buildScanCoverage } from "./coverage";
 import {
   PROPOSED_FIX_KEY,
@@ -288,5 +293,138 @@ export async function getScanResultsDto(
     findings,
     duplicatesGrouped: parseNumber(scan.metadata, "duplicatesGrouped") ?? 0,
     coverage: buildScanCoverage(scan.metadata, AUDIT_RULE_COUNT),
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/* History and regression                                              */
+/* ------------------------------------------------------------------ */
+
+export interface ScanHistoryEntryDto {
+  id: string;
+  status: ScanStatusId;
+  createdAt: string;
+  findings: number;
+  critical: number;
+  pagesScanned: number;
+  isCurrent: boolean;
+}
+
+export interface ScanRegressionDto {
+  /** The scan this one is compared against — the newest earlier run. */
+  previousScanId: string;
+  previousCreatedAt: string;
+  diff: RegressionDiff;
+}
+
+/**
+ * Earlier scans of the same normalized URL, newest first.
+ *
+ * Matching is on `normalizedUrl`, not the raw submit string, so
+ * `example.com` and `https://example.com/` are the same site. Only finished
+ * scans with a report are counted — a queued or failed run is not history a
+ * reader can compare against.
+ */
+export async function getScanHistory(
+  scanId: string,
+  take = 8,
+): Promise<ScanHistoryEntryDto[]> {
+  const current = await prisma.scan.findUnique({
+    where: { id: scanId },
+    select: { id: true, normalizedUrl: true },
+  });
+  if (!current) return [];
+
+  const rows = await prisma.scan.findMany({
+    where: {
+      normalizedUrl: current.normalizedUrl,
+      status: { in: ["completed", "partially_completed"] },
+    },
+    orderBy: { createdAt: "desc" },
+    take,
+    select: {
+      id: true,
+      status: true,
+      createdAt: true,
+      pagesScanned: true,
+      findings: {
+        where: { isDuplicate: false },
+        select: { severity: true },
+      },
+    },
+  });
+
+  return rows.map((row) => ({
+    id: row.id,
+    status: row.status as ScanStatusId,
+    createdAt: row.createdAt.toISOString(),
+    findings: row.findings.length,
+    critical: row.findings.filter((f) => f.severity === "critical").length,
+    pagesScanned: row.pagesScanned,
+    isCurrent: row.id === current.id,
+  }));
+}
+
+/**
+ * What changed since the previous scan of this site.
+ *
+ * Null when this is the first finished scan of that URL — the timeline then
+ * says "first run" rather than inventing a baseline. The previous run is the
+ * newest finished scan older than this one, so the comparison is stable even
+ * when a later scan has since been queued.
+ */
+export async function getScanRegression(
+  scanId: string,
+): Promise<ScanRegressionDto | null> {
+  const current = await prisma.scan.findUnique({
+    where: { id: scanId },
+    select: { id: true, normalizedUrl: true, createdAt: true, status: true },
+  });
+  if (!current) return null;
+  if (current.status !== "completed" && current.status !== "partially_completed") {
+    return null;
+  }
+
+  const previous = await prisma.scan.findFirst({
+    where: {
+      normalizedUrl: current.normalizedUrl,
+      status: { in: ["completed", "partially_completed"] },
+      createdAt: { lt: current.createdAt },
+    },
+    orderBy: { createdAt: "desc" },
+    select: { id: true, createdAt: true },
+  });
+  if (!previous) return null;
+
+  const findingSelect = {
+    ruleId: true,
+    severity: true,
+    title: true,
+    page: { select: { url: true } },
+  } as const;
+
+  const [currentFindings, previousFindings] = await Promise.all([
+    prisma.finding.findMany({
+      where: { scanId: current.id, isDuplicate: false },
+      select: findingSelect,
+    }),
+    prisma.finding.findMany({
+      where: { scanId: previous.id, isDuplicate: false },
+      select: findingSelect,
+    }),
+  ]);
+
+  const toInput = (rows: typeof currentFindings): RegressionInput[] =>
+    rows.map((row) => ({
+      ruleId: row.ruleId,
+      severity: row.severity,
+      title: row.title,
+      pageUrl: row.page?.url ?? null,
+    }));
+
+  return {
+    previousScanId: previous.id,
+    previousCreatedAt: previous.createdAt.toISOString(),
+    diff: diffScanFindings(toInput(previousFindings), toInput(currentFindings)),
   };
 }

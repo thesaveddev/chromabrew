@@ -11,11 +11,12 @@ type Version = {
 
 type Props = {
   projectId: string;
-  isOwner: boolean;
+  /** Owners and editors; viewers (and strangers, who never get here) read only. */
+  canEdit: boolean;
   onRestore?: (config: unknown) => void;
 };
 
-export function VersionsPanel({ projectId, isOwner, onRestore }: Props) {
+export function VersionsPanel({ projectId, canEdit, onRestore }: Props) {
   const [versions, setVersions] = useState<Version[]>([]);
   const [loading, setLoading] = useState(true);
   const [restoring, setRestoring] = useState<string | null>(null);
@@ -33,7 +34,7 @@ export function VersionsPanel({ projectId, isOwner, onRestore }: Props) {
   }, [loadVersions]);
 
   const handleRestore = async (version: Version) => {
-    if (!isOwner) return;
+    if (!canEdit) return;
     setRestoring(version.id);
     try {
       const res = await fetch(
@@ -51,7 +52,7 @@ export function VersionsPanel({ projectId, isOwner, onRestore }: Props) {
   };
 
   const handleDelete = async (versionId: string) => {
-    if (!isOwner) return;
+    if (!canEdit) return;
     const res = await fetch(
       `/api/projects/${projectId}/versions/${versionId}`,
       { method: "DELETE" },
@@ -103,7 +104,7 @@ export function VersionsPanel({ projectId, isOwner, onRestore }: Props) {
                 {new Date(v.createdAt).toLocaleString()}
               </p>
             </div>
-            {isOwner && (
+            {canEdit && (
               <div className="flex items-center gap-2">
                 <button
                   type="button"
