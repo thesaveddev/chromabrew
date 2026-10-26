@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   PALETTE_STRATEGIES,
   generatePalette,
@@ -13,6 +13,14 @@ import { ColourInput, ColourChip } from "@/components/ui/colour";
 export function PaletteTool({ initial = "#47003a" }: { initial?: string }) {
   const [raw, setRaw] = useState(initial);
   const [primary, setPrimary] = useState(initial);
+  // A deep-link (e.g. "make variations" from a gallery palette) seeds the
+  // tool with that color; adopt it when the link changes (client routing
+  // reuses the component instead of remounting it).
+  useEffect(() => {
+    setRaw(initial);
+    setPrimary(initial);
+    setInvalid(false);
+  }, [initial]);
   const [strategy, setStrategy] = useState<PaletteStrategyId>("complementary");
   const [invalid, setInvalid] = useState(false);
 

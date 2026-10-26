@@ -184,6 +184,31 @@ export function FastGenerator() {
     }
   };
 
+  const copyAll = async () => {
+    if (await copyToClipboard(colors.join(", ").toUpperCase())) {
+      setCopied("all");
+      window.setTimeout(() => setCopied((c) => (c === "all" ? null : c)), 1200);
+    }
+  };
+
+  const copyCss = async () => {
+    const css = `:root {\n${colors.map((c, i) => `  --color-${i + 1}: ${c.toUpperCase()};`).join("\n")}\n}`;
+    if (await copyToClipboard(css)) {
+      setCopied("css");
+      window.setTimeout(() => setCopied((c) => (c === "css" ? null : c)), 1200);
+    }
+  };
+
+  // Carry the whole palette over: first color leads, next two follow as
+  // secondary + accent so the design system starts from what you see here.
+  const generatorHref = useMemo(() => {
+    const params = new URLSearchParams();
+    if (colors[0]) params.set("primary", colors[0].replace("#", ""));
+    if (colors[1]) params.set("secondary", colors[1].replace("#", ""));
+    if (colors[2]) params.set("accent", colors[2].replace("#", ""));
+    return `/design-system?${params.toString()}`;
+  }, [colors]);
+
   const tuningActive = !settingsAreDefault(settings);
 
   return (
@@ -349,16 +374,22 @@ export function FastGenerator() {
         })}
       </div>
 
-      <p className="border-t border-zinc-200 px-4 py-2.5 text-center text-xs text-zinc-500 sm:px-6 dark:border-zinc-800 dark:text-zinc-400">
-        Press space to generate · drag the sliders to tune hue, brightness,
-        vibrance and contrast · click a hex to copy · lock the keepers ·{" "}
-        <a
-          href={`/design-system?primary=${colors[0]?.replace("#", "") ?? ""}`}
-          className="font-medium underline underline-offset-4"
-        >
-          open this palette in the design system generator
-        </a>
-      </p>
+      <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 border-t border-zinc-200 px-4 py-2.5 text-xs text-zinc-500 sm:px-6 dark:border-zinc-800 dark:text-zinc-400">
+        <span className="hidden lg:inline">
+          Space shuffles · sliders tune · click a hex to copy · lock the keepers
+        </span>
+        <span className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+          <a href={generatorHref} className="font-medium text-zinc-900 underline underline-offset-4 dark:text-zinc-100">
+            Open palette in generator
+          </a>
+          <button type="button" onClick={copyAll} className="font-medium underline underline-offset-4 hover:text-zinc-900 dark:hover:text-zinc-100">
+            {copied === "all" ? "Copied!" : "Copy all hex"}
+          </button>
+          <button type="button" onClick={copyCss} className="font-medium underline underline-offset-4 hover:text-zinc-900 dark:hover:text-zinc-100">
+            {copied === "css" ? "Copied!" : "Copy as CSS variables"}
+          </button>
+        </span>
+      </div>
     </div>
   );
 }

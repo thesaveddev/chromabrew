@@ -286,6 +286,49 @@ function prisma(args, databaseUrl) {
   );
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * A timed-out advisory lock (P1002 + pg_advisory_lock) means another deploy —
+ * or a pooled session that has not released yet — is migrating at the same
+ * moment, not that the schema is wrong. Retrying a few times with backoff
+ * lets the other holder finish instead of failing a build over contention.
+ * Anything else still fails fast: only this signature is retried.
+ */
+function isLockTimeout(output) {
+  return /P1002/.test(output) && /pg_advisory_lock/.test(output);
+}
+
+async function migrateDeployWithRetry(connection) {
+  const cli = path.join(ROOT, "node_modules", "prisma", "build", "index.js");
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    const result = spawnSync(process.execPath, [cli, "migrate", "deploy"], {
+      cwd: ROOT,
+      env: { ...process.env, DATABASE_URL: connection },
+      encoding: "utf8",
+    });
+    if (result.stdout) process.stdout.write(result.stdout);
+    if (result.stderr) process.stderr.write(result.stderr);
+    if (result.error) {
+      fail(`could not run \`prisma migrate deploy\`: ${result.error.message}`);
+    }
+    if (result.status === 0) return;
+    const output = `${result.stdout ?? ""}\n${result.stderr ?? ""}`;
+    if (attempt < 3 && isLockTimeout(output)) {
+      const waitMs = attempt === 1 ? 15000 : 30000;
+      log(`locked · another migrator holds the advisory lock (attempt ${attempt}/3); retrying in ${waitMs / 1000}s`);
+      await sleep(waitMs);
+      continue;
+    }
+    fail(
+      `\`prisma migrate deploy\` exited ${result.status}. The schema was not applied, ` +
+        "so this deploy is stopping rather than serving an app whose tables are missing.",
+    );
+  }
+}
+
 async function connect(connectionString) {
   const client = new pg.Client({ connectionString: sanitize(connectionString) });
   try {
@@ -531,7 +574,7 @@ async function main() {
     prisma(["migrate", "resolve", "--applied", migration.name], connection);
   }
 
-  prisma(["migrate", "deploy"], connection);
+  await migrateDeployWithRetry(connection);
 
   // `migrate deploy` succeeded, so its migrations are recorded. This confirms the
   // objects the app will query are really visible in the schema the app uses —

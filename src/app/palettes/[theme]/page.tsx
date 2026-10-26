@@ -7,6 +7,7 @@ import {
   palettesForTheme,
 } from "@/lib/palettes";
 import { PaletteCard } from "@/components/palettes/palette-card";
+import { ThemePaletteGrid } from "@/components/palettes/theme-palette-grid";
 import { JsonLd } from "@/components/site/json-ld";
 import { siteUrl } from "@/lib/site-url";
 import { defaultOgImage } from "@/lib/og";
@@ -88,13 +89,7 @@ export default async function ThemePage({ params }: Props) {
         ))}
       </header>
 
-      <ul className="mt-8 grid gap-4 sm:grid-cols-2">
-        {palettes.map((palette) => (
-          <li key={palette.slug}>
-            <PaletteCard palette={palette} />
-          </li>
-        ))}
-      </ul>
+      <ThemePaletteGrid palettes={palettes} />
 
       <section className="mt-12 border-t border-zinc-200 pt-8 dark:border-zinc-800">
         <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
