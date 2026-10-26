@@ -25,14 +25,16 @@ jobs:
             echo "No posts go live today; skipping deploy."
           fi
 
+      # NOTE: the `secrets` context is not allowed in `if:` conditions
+      # (GitHub rejects the whole file with "Unrecognized named-value:
+      # 'secrets'"), so the secret check lives inside the shell script.
       - name: Trigger Vercel production deploy
-        if: steps.gate.outputs.slugs != '' && secrets.VERCEL_DEPLOY_HOOK_URL != ''
+        if: steps.gate.outputs.slugs != ''
         run: |
-          curl --fail -X POST "$VERCEL_DEPLOY_HOOK_URL" -H "Content-Type: application/json" -d '{}'
+          if [ -z "$VERCEL_DEPLOY_HOOK_URL" ]; then
+            echo "::warning::VERCEL_DEPLOY_HOOK_URL secret is not configured. Today's posts will not publish until a deploy happens. Add the secret in Settings > Secrets and variables > Actions."
+          else
+            curl --fail -X POST "$VERCEL_DEPLOY_HOOK_URL" -H "Content-Type: application/json" -d '{}'
+          fi
         env:
           VERCEL_DEPLOY_HOOK_URL: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
-
-      - name: Notify missing secret
-        if: steps.gate.outputs.slugs != '' && secrets.VERCEL_DEPLOY_HOOK_URL == ''
-        run: |
-          echo "::warning::VERCEL_DEPLOY_HOOK_URL secret is not configured. Today's posts will not publish until a deploy happens. Add the secret in Settings > Secrets and variables > Actions."
