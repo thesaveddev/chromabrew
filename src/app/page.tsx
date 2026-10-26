@@ -16,6 +16,7 @@ import { siteUrl } from "@/lib/site-url";
 import { JsonLd } from "@/components/site/json-ld";
 import { defaultOgImage } from "@/lib/og";
 import { ProductHuntBadge } from "@/components/site/product-hunt-badge";
+import { ScrollReveal } from "@/components/site/scroll-reveal";
 
 /**
  * The home page positions the whole toolkit, not just the one-color pipeline.
@@ -176,23 +177,72 @@ export default function HomePage() {
       </section>
 
       {/* Instant generator band — the fastest door into making. */}
-      <section aria-labelledby="generate-heading" className="bg-zinc-950 py-14 dark:bg-black">
-        <div className="mx-auto flex max-w-7xl flex-col items-start gap-6 px-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
+      <section aria-labelledby="generate-heading" className="bg-zinc-950 py-20 sm:py-24 dark:bg-black">
+        <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 sm:px-6 lg:grid-cols-[1fr_minmax(0,1.15fr)] lg:gap-14">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-400">
               Instant palettes
             </p>
-            <h2 id="generate-heading" className="mt-2 text-2xl font-bold tracking-tight text-white sm:text-3xl">
+            <h2 id="generate-heading" className="mt-3 text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl">
               Press space. Keep the good ones.
             </h2>
-            <p className="mt-2 max-w-xl text-sm leading-6 text-zinc-400">
-              A lightning-fast palette generator: shuffle with the spacebar,
-              lock the keepers, copy any hex, share the palette as a link.
+            <p className="mt-4 max-w-xl text-base leading-7 text-zinc-400">
+              Every press of the spacebar deals a fresh set of colors. Lock the
+              keepers, nudge brightness and vibrance, then copy any hex or
+              share the whole palette as a link — nothing to sign up for.
             </p>
+            <LinkButton href="/generate" variant="primary" className="mt-7">
+              Start shuffling
+            </LinkButton>
           </div>
-          <LinkButton href="/generate" variant="primary">
-            Open the generator
-          </LinkButton>
+
+          {/* Static mock of the generator's own surface — the real one lives at /generate. */}
+          <div
+            aria-hidden
+            className="overflow-hidden rounded-2xl border border-zinc-700/60 bg-zinc-900 shadow-2xl ring-1 ring-black/20"
+          >
+            <div className="flex items-center gap-3 border-b border-zinc-800 px-4 py-3">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
+                Instant palettes
+              </span>
+              <span className="ml-auto rounded-lg bg-zinc-100 px-3 py-1.5 text-xs font-medium text-zinc-900">
+                Shuffle 
+                <kbd className="rounded bg-zinc-900/10 px-1.5 py-0.5 font-sans">space</kbd>
+              </span>
+              <span className="rounded-lg border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300">
+                Copy link
+              </span>
+            </div>
+            <div className="flex h-44 sm:h-56">
+              {["#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#e76f51"].map(
+                (hex, i) => (
+                  <div
+                    key={hex}
+                    className="relative flex-1"
+                    style={{ backgroundColor: hex }}
+                  >
+                    {i === 1 ? (
+                      <span className="absolute left-2 top-2 rounded-full bg-black/30 px-2 py-0.5 text-[10px] font-medium text-white">
+                        Locked
+                      </span>
+                    ) : null}
+                    <span className="absolute inset-x-0 bottom-0 bg-black/25 px-1 py-1.5 text-center font-mono text-[10px] text-white sm:text-[11px]">
+                      {hex}
+                    </span>
+                  </div>
+                ),
+              )}
+            </div>
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-1 border-t border-zinc-800 px-4 py-3 text-[11px] text-zinc-400">
+              <span className="tabular-nums">5 colors</span>
+              <span>Brightness 0%</span>
+              <span>Vibrance 100%</span>
+              <span className="ml-auto flex items-center gap-1.5 text-zinc-500">
+                <kbd className="rounded border border-zinc-700 px-1.5 py-0.5 font-sans">space</kbd>
+                to shuffle
+              </span>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -200,14 +250,14 @@ export default function HomePage() {
       <section aria-label="How it works" className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
         <ol className="grid gap-x-6 gap-y-6 sm:grid-cols-2 lg:grid-cols-6">
           {PIPELINE.map(([title, body], i) => (
-            <li key={title} className="relative">
+            <ScrollReveal key={title} as="li" delay={(i % 6) * 70} className="relative">
               {/* zinc-400 on white measures 2.62:1 at 11px — below AA for body text. */}
               <span className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
                 Step {i + 1}
               </span>
               <h2 className="mt-1 text-sm font-semibold text-zinc-900 dark:text-zinc-100">{title}</h2>
               <p className="mt-1 text-xs leading-5 text-zinc-600 dark:text-zinc-400">{body}</p>
-            </li>
+            </ScrollReveal>
           ))}
         </ol>
       </section>
@@ -221,7 +271,7 @@ export default function HomePage() {
                 Real interfaces, not swatches
               </h2>
               <p className="mt-1 max-w-xl text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                This dashboard is rendered live from the default example color
+                This dashboard is rendered live from the example color
                 #47003A. Open the generator to change it and watch every
                 surface, badge and button follow.
               </p>
@@ -242,11 +292,11 @@ export default function HomePage() {
           Built like part of your team&apos;s toolchain
         </h2>
         <div className="mt-6 grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
-          {FEATURES.map((feature) => (
-            <article key={feature.title}>
+          {FEATURES.map((feature, i) => (
+            <ScrollReveal key={feature.title} as="article" delay={(i % 3) * 80}>
               <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{feature.title}</h3>
               <p className="mt-1.5 text-sm leading-6 text-zinc-600 dark:text-zinc-400">{feature.body}</p>
-            </article>
+            </ScrollReveal>
           ))}
         </div>
       </section>
@@ -262,7 +312,7 @@ export default function HomePage() {
           What you can do with ChromaBrew
         </h2>
         <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          <div className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+          <ScrollReveal delay={0} className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
             <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Generate a color palette from one color</h3>
             <p className="mt-1.5 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
               Start with any HEX, RGB or HSL value and get complementary, analogous, triadic, split-complementary, monochromatic or tetradic palettes — all computed in OKLCH for perceptual consistency.
@@ -270,8 +320,8 @@ export default function HomePage() {
             <Link href="/tools/color-palette-generator" className="mt-3 inline-block text-xs font-medium text-zinc-900 dark:text-zinc-100 underline underline-offset-4">
               Try the color palette generator
             </Link>
-          </div>
-          <div className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+          </ScrollReveal>
+          <ScrollReveal delay={80} className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
             <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Extract colors from an image</h3>
             <p className="mt-1.5 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
               Upload any photo and instantly get its dominant colors as a clean palette. Perfect for matching designs to photography or building brand palettes from reference images.
@@ -279,8 +329,8 @@ export default function HomePage() {
             <Link href="/tools/image-color-extractor" className="mt-3 inline-block text-xs font-medium text-zinc-900 dark:text-zinc-100 underline underline-offset-4">
               Try the image color extractor
             </Link>
-          </div>
-          <div className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+          </ScrollReveal>
+          <ScrollReveal delay={160} className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
             <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Check color contrast for accessibility</h3>
             <p className="mt-1.5 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
               Verify any text/background pair against WCAG 2.x AA and AAA thresholds. When a combination fails, get a one-click fix that adjusts the color to meet the required ratio.
@@ -288,8 +338,8 @@ export default function HomePage() {
             <Link href="/tools/contrast-checker" className="mt-3 inline-block text-xs font-medium text-zinc-900 dark:text-zinc-100 underline underline-offset-4">
               Try the contrast checker
             </Link>
-          </div>
-          <div className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+          </ScrollReveal>
+          <ScrollReveal delay={0} className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
             <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Build Tailwind CSS color themes</h3>
             <p className="mt-1.5 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
               Generate Tailwind CSS v4 @theme color variables from a single brand color. Get a full 50–950 perceptual scale ready to paste into your project.
@@ -297,8 +347,8 @@ export default function HomePage() {
             <Link href="/tools/tailwind-color-generator" className="mt-3 inline-block text-xs font-medium text-zinc-900 dark:text-zinc-100 underline underline-offset-4">
               Try the Tailwind color generator
             </Link>
-          </div>
-          <div className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+          </ScrollReveal>
+          <ScrollReveal delay={80} className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
             <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Create accessible dark themes</h3>
             <p className="mt-1.5 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
               Turn any brand color into a proper dark mode with semantic tokens — never a mechanical inversion. Includes verified foreground/background pairs and WCAG contrast checks.
@@ -306,8 +356,8 @@ export default function HomePage() {
             <Link href="/tools/dark-mode-generator" className="mt-3 inline-block text-xs font-medium text-zinc-900 dark:text-zinc-100 underline underline-offset-4">
               Try the dark mode generator
             </Link>
-          </div>
-          <div className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+          </ScrollReveal>
+          <ScrollReveal delay={160} className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
             <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Simulate color blindness</h3>
             <p className="mt-1.5 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
               See how your colors appear to people with protanopia, deuteranopia, tritanopia and achromatopsia. Build designs that work for the 8% of men with color vision deficiency.
@@ -315,7 +365,7 @@ export default function HomePage() {
             <Link href="/tools/color-blindness-simulator" className="mt-3 inline-block text-xs font-medium text-zinc-900 dark:text-zinc-100 underline underline-offset-4">
               Try the color blindness simulator
             </Link>
-          </div>
+          </ScrollReveal>
         </div>
       </section>
 
@@ -330,8 +380,8 @@ export default function HomePage() {
             Generate color palettes, extract colors from images, check WCAG contrast ratios, convert color formats, and build CSS gradients — all free, no sign-up required.
           </p>
           <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-            {TOOLS.map((tool) => (
-              <li key={tool.href}>
+            {TOOLS.map((tool, i) => (
+              <ScrollReveal key={tool.href} as="li" delay={(i % 5) * 60}>
                 <Link
                   href={tool.href}
                   className="group block h-full rounded-xl border border-zinc-200 bg-white p-4 transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-600 dark:focus-visible:outline-zinc-100"
@@ -343,7 +393,7 @@ export default function HomePage() {
                     {tool.blurb}
                   </span>
                 </Link>
-              </li>
+              </ScrollReveal>
             ))}
           </ul>
         </div>

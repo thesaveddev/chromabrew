@@ -3,6 +3,7 @@ import Link from "next/link";
 import { PALETTE_THEMES, GALLERY_PALETTES, palettesForTheme } from "@/lib/palettes";
 import { PaletteCard } from "@/components/palettes/palette-card";
 import { PaletteExplorer } from "@/components/palettes/palette-explorer";
+import { LazyThemeSection } from "@/components/palettes/lazy-theme-section";
 import { JsonLd } from "@/components/site/json-ld";
 import { siteUrl } from "@/lib/site-url";
 import { defaultOgImage } from "@/lib/og";
@@ -62,13 +63,13 @@ export default function PalettesIndexPage() {
 
       <PaletteExplorer palettes={GALLERY_PALETTES} themes={PALETTE_THEMES} />
 
-      {PALETTE_THEMES.map((theme) => {
+      {PALETTE_THEMES.map((theme, index) => {
         const palettes = palettesForTheme(theme.slug);
         const preview = palettes
           .flatMap((p) => p.colors)
           .slice(0, 10);
         return (
-          <section key={theme.slug} className="mt-12">
+          <LazyThemeSection key={theme.slug} eager={index === 0}>
             <div className="flex items-end justify-between gap-4">
               <div>
                 <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
@@ -116,7 +117,7 @@ export default function PalettesIndexPage() {
               </Link>
               .
             </p>
-          </section>
+          </LazyThemeSection>
         );
       })}
 

@@ -13,7 +13,7 @@ import {
   type StrategyChoice,
 } from "@/lib/quick-palette";
 import { PALETTE_STRATEGIES } from "@/lib/design-system/palette/generate";
-import { Button, TabList, copyToClipboard } from "@/components/ui/primitives";
+import { Button, LockIcon, TabList, copyToClipboard } from "@/components/ui/primitives";
 
 const STRATEGY_OPTIONS: { id: StrategyChoice; label: string }[] = [
   { id: "random", label: "Random" },
@@ -44,7 +44,28 @@ const SLIDERS: Array<{
  * adopted right after hydration, mirroring how the design-system workspace
  * adopts URL config post-mount.
  */
-const FIRST_PAINT_PALETTE = ["#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#e76f51"];
+const FIRST_PAINT_PALETTE = ["#0ea5e9", "#8b5cf6", "#ec4899", "#f59e0b", "#10b981"];
+
+/**
+ * Legible ink for text sitting directly on a swatch: near-black on light
+ * colours, white on dark ones, plus a soft pill wash behind the lock
+ * control so it reads at rest instead of only on hover.
+ */
+function inkOn(hex: string): { color: string; pill: string; shadow: string } {
+  const n = parseInt(hex.replace("#", ""), 16);
+  const lum =
+    (0.2126 * ((n >> 16) & 0xff) +
+      0.7152 * ((n >> 8) & 0xff) +
+      0.0722 * (n & 0xff)) /
+    255;
+  return lum > 0.42
+    ? { color: "#18181b", pill: "rgba(0,0,0,0.10)", shadow: "none" }
+    : {
+        color: "#fafafa",
+        pill: "rgba(255,255,255,0.18)",
+        shadow: "0 1px 10px rgba(0,0,0,0.35)",
+      };
+}
 
 export function FastGenerator() {
   // One lazy init for both — two separate initializers would disagree about
@@ -77,7 +98,6 @@ export function FastGenerator() {
     );
     const next = fromUrl ?? quickPalette(FIRST_PAINT_PALETTE.length, []);
     // Locks are all-false in both branches, so only the palette moves.
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time bootstrap from window state after hydration
     setBase(next);
   }, []);
 
@@ -290,18 +310,21 @@ export function FastGenerator() {
         role="list"
         aria-label="Generated palette"
       >
-        {colors.map((hex, i) => (
+        {colors.map((hex, i) => {
+          const ink = inkOn(hex);
+          return (
           <div
             key={`${i}-${colors.length}`}
             role="listitem"
             className="group relative flex min-h-24 flex-1 items-end justify-center pb-5 transition-[flex] sm:min-h-0 sm:items-center sm:pb-0"
             style={{ backgroundColor: hex }}
           >
-            <div className="flex flex-col items-center gap-2 text-white mix-blend-difference">
+            <div className="flex flex-col items-center gap-2">
               <button
                 type="button"
                 onClick={() => copyColor(hex)}
-                className="rounded-md px-2 py-1 font-mono text-sm font-semibold uppercase tracking-wider hover:bg-white/20 sm:text-base"
+                className="rounded-md px-2 py-1 font-mono text-sm font-semibold uppercase tracking-wider transition-colors hover:bg-black/10 sm:text-base dark:hover:bg-white/20"
+                style={{ color: ink.color, textShadow: ink.shadow }}
                 aria-label={`Copy ${hex}`}
               >
                 {copied === hex ? "Copied!" : hex.replace("#", "")}
@@ -311,13 +334,19 @@ export function FastGenerator() {
                 onClick={() => toggleLock(i)}
                 aria-pressed={locked[i]}
                 aria-label={locked[i] ? `Unlock color ${i + 1}` : `Lock color ${i + 1}`}
-                className="rounded-md px-2 py-1 text-xs font-medium uppercase tracking-widest opacity-70 hover:bg-white/20 hover:opacity-100 sm:opacity-0 sm:group-hover:opacity-70 sm:focus-visible:opacity-100"
+                style={{
+                  color: ink.color,
+                  backgroundColor: locked[i] ? ink.pill : undefined,
+                }}
+                className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium uppercase tracking-widest opacity-80 transition-all hover:opacity-100 sm:opacity-0 sm:group-hover:opacity-80 sm:focus-visible:opacity-100"
               >
-                {locked[i] ? "🔒 Locked" : "🔓 Lock"}
+                <LockIcon locked={locked[i]} />
+                {locked[i] ? "Locked" : "Lock"}
               </button>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
 
       <p className="border-t border-zinc-200 px-4 py-2.5 text-center text-xs text-zinc-500 sm:px-6 dark:border-zinc-800 dark:text-zinc-400">

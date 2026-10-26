@@ -175,6 +175,38 @@ function base64ToBlob(base64: string, mimeType: string): Blob {
 }
 
 /* ------------------------------------------------------------------ */
+/* Lock icon (padlock with open/closed shackle — never an emoji)       */
+/* ------------------------------------------------------------------ */
+
+export function LockIcon({
+  locked,
+  className = "h-3.5 w-3.5",
+}: {
+  locked: boolean;
+  className?: string;
+}) {
+  return (
+    <svg
+      viewBox="0 0 16 16"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.75}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      {locked ? (
+        <path d="M5.5 7.5V5.75a2.5 2.5 0 0 1 5 0V7.5" />
+      ) : (
+        <path d="M5.5 7.5V5.75a2.5 2.5 0 0 1 4.9-.65" />
+      )}
+      <rect x="3.5" y="7.5" width="9" height="6" rx="1.5" />
+    </svg>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /* Tabs (accessible, roving behaviour not required — arrow keys via    */
 /* native radio pattern is overkill for two-to-four options)           */
 /* ------------------------------------------------------------------ */

@@ -6,7 +6,7 @@ import {
 } from "@/lib/design-system/palette/generate";
 import { parseColour } from "@/lib/design-system/colour/convert";
 import type { PaletteColour, PaletteStrategyId } from "@/lib/design-system/types";
-import { CopyButton, TabList } from "@/components/ui/primitives";
+import { CopyButton, LockIcon, TabList } from "@/components/ui/primitives";
 
 export function PalettePanel({
   palette,
@@ -150,10 +150,11 @@ function SwatchRow({
           onClick={onToggleLock}
           aria-pressed={swatch.locked}
           title={swatch.locked ? "Unlock swatch" : "Lock swatch"}
-          className={`rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide transition-opacity focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-current ${
+          className={`flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide transition-opacity focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-current ${
             swatch.locked ? "opacity-100" : "opacity-50 hover:opacity-90"
           }`}
         >
+          <LockIcon locked={swatch.locked} className="h-3 w-3" />
           {swatch.locked ? "Locked" : "Lock"}
         </button>
         <button

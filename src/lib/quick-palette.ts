@@ -18,9 +18,22 @@ export function randomHex(): string {
   return hex;
 }
 
+/**
+ * Vivid anchor colour for instant shuffles: brighter and more saturated
+ * than the shared pleasant default, so first paint and every shuffle look
+ * luminous instead of muddy. Bounds stay inside the anchor test guarantees
+ * (L 0.40–0.75, C ≥ 0.07); oklchToHex gamut-maps anything out of range.
+ */
+export function randomVividHex(
+  l = 0.55 + Math.random() * 0.2,
+  c = 0.16 + Math.random() * 0.08,
+): string {
+  return randomPleasantHex(undefined, l, c);
+}
+
 /** The vivid anchor colour shuffles start from (see quickPalette). */
 export function randomPleasantColour(): string {
-  return randomPleasantHex();
+  return randomVividHex();
 }
 
 /** Which harmony a shuffle runs: a fixed strategy or a fresh random one. */
@@ -113,7 +126,7 @@ export function quickPalette(
     strategy === "random"
       ? PALETTE_STRATEGIES[Math.floor(Math.random() * PALETTE_STRATEGIES.length)].id
       : strategy;
-  const swatches = generatePalette(randomPleasantHex(), chosen, { size: count });
+  const swatches = generatePalette(randomVividHex(), chosen, { size: count });
   return Array.from({ length: count }, (_, i) => {
     const keep = locked[i];
     if (keep && normalizeHex(keep)) return normalizeHex(keep) as string;

@@ -61,11 +61,11 @@ describe("quickPalette anchors", () => {
   it("starts from a vivid mid-lightness anchor, never a muddy grey", () => {
     for (let run = 0; run < 12; run++) {
       const [anchor] = quickPalette(5, [], "complementary");
-      // randomPleasantHex bounds: L 0.45–0.70, C ≥ 0.09 — grey or near-black
-      // anchors are what made unguided shuffles look dull.
+      // randomVividHex bounds: L 0.55–0.75, C 0.16–0.24 — vivid anchors
+      // are what keep unguided shuffles from looking dull.
       expect(l(anchor)).toBeGreaterThanOrEqual(0.4);
       expect(l(anchor)).toBeLessThanOrEqual(0.75);
-      expect(c(anchor)).toBeGreaterThanOrEqual(0.07);
+      expect(c(anchor)).toBeGreaterThanOrEqual(0.1);
     }
   });
 

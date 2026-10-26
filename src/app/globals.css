@@ -114,6 +114,32 @@ html {
   }
 }
 
+/* Scroll reveal: fade + rise once per element, stagger via --reveal-delay.
+   The observer adds .is-visible on entry; reduced-motion visitors get the
+   final state with no transition, same contract as ribbon/scanner above. */
+.reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 0.6s ease,
+    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
 body {
   text-rendering: optimizeLegibility;
 }

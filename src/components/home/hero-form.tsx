@@ -1,12 +1,46 @@
 ﻿"use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { parseColour } from "@/lib/design-system/colour/convert";
+import { useSyncExternalStore, useState } from "react";
+import { hslToHex, parseColour } from "@/lib/design-system/colour/convert";
 import { Button } from "@/components/ui/primitives";
 import { ColourInput } from "@/components/ui/colour";
 
+/**
+ * Hydration-stable fallback: the page is statically rendered, so the server
+ * HTML must match the client's first render. Real colors arrive after mount.
+ */
 const EXAMPLES = ["#47003A", "#0F4C81", "#B45309", "#166534"];
+
+/**
+ * A deep seed in the taste of the four curated examples: saturated enough to
+ * carry a palette, dark enough to generate a real scale from. Hue is passed
+ * in so chips can be quartered around the wheel and never read alike.
+ */
+function randomSeed(hue: number): string {
+  const s = 48 + Math.floor(Math.random() * 36);
+  const l = 18 + Math.floor(Math.random() * 20);
+  return hslToHex(((hue % 360) + 360) % 360, s, l);
+}
+
+/** Four fresh seeds, spread a quarter-turn apart with a little jitter. */
+function randomSeeds(): string[] {
+  const base = Math.floor(Math.random() * 360);
+  return [0, 90, 180, 270].map((offset) =>
+    randomSeed(base + offset - 15 + Math.floor(Math.random() * 30)),
+  );
+}
+
+/**
+ * One random seed set per page load, served through useSyncExternalStore:
+ * the server snapshot keeps the statically rendered HTML deterministic, and
+ * the client snapshot swaps in the random colors immediately after hydration
+ * — no effects, no hydration mismatch, stable across re-renders.
+ */
+let clientSeeds: string[] | null = null;
+const subscribeSeeds = () => () => {};
+const getSeeds = (): string[] => (clientSeeds ??= randomSeeds());
+const getServerSeeds = (): string[] => EXAMPLES;
 
 /**
  * `tone` exists because this form is used on two surfaces with opposite
@@ -24,7 +58,10 @@ export function HeroColourForm({
 }) {
   const onDark = tone === "dark";
   const router = useRouter();
-  const [raw, setRaw] = useState("#47003A");
+  const tryColors = useSyncExternalStore(subscribeSeeds, getSeeds, getServerSeeds);
+  // The user's own edits win over the random seed; null means "show the seed".
+  const [draft, setDraft] = useState<string | null>(null);
+  const raw = draft ?? tryColors[0];
   const [invalid, setInvalid] = useState(false);
 
   const submit = (candidate: string) => {
@@ -55,7 +92,7 @@ export function HeroColourForm({
             invalid={invalid}
             errorMessage="Enter a valid HEX, rgb() or hsl() color."
             onChange={(next) => {
-              setRaw(next);
+              setDraft(next);
               setInvalid(false);
             }}
             onSubmit={(candidate) => candidate && submit(candidate)}
@@ -71,12 +108,12 @@ export function HeroColourForm({
         }`}
       >
         <span>Try:</span>
-        {EXAMPLES.map((hex) => (
+        {tryColors.map((hex) => (
           <button
             key={hex}
             type="button"
             onClick={() => {
-              setRaw(hex);
+              setDraft(hex);
               setInvalid(false);
               submit(hex);
             }}

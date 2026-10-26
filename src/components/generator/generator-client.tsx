@@ -36,6 +36,7 @@ import { ExportPanel } from "./panels/export-panel";
 import { HistoryPanel } from "./panels/history-panel";
 import { usePaletteHistory, type HistoryEntry } from "./use-palette-history";
 import { AiPaletteSuggestion } from "./ai-palette-suggestion";
+import { PreviewColorPicker } from "./preview-color-picker";
 import { PreviewFrame } from "./previews/preview-frame";
 import { SaasPreview } from "./previews/saas-preview";
 import { MarketingPreview } from "./previews/marketing-preview";
@@ -63,6 +64,7 @@ export function GeneratorWorkspace() {
   const [config, setConfig] = useState<GeneratorConfig>(DEFAULT_CONFIG);
   const [mode, setMode] = useState<ThemeMode>("light");
   const [preview, setPreview] = useState<PreviewId>("saas");
+  const [pickingColours, setPickingColours] = useState(false);
   const [projectId, setProjectId] = useState<string | null>(null);
   const [projectName, setProjectName] = useState("");
   const [saving, setSaving] = useState(false);
@@ -450,18 +452,38 @@ export function GeneratorWorkspace() {
         <div className="min-w-0 space-y-10">
           <section aria-label="Live interface previews" className="space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <TabList
-                label="Preview environment"
-                size="sm"
-                options={PREVIEW_OPTIONS}
-                value={preview}
-                onChange={setPreview}
-              />
+              <div className="flex flex-wrap items-center gap-2">
+                <TabList
+                  label="Preview environment"
+                  size="sm"
+                  options={PREVIEW_OPTIONS}
+                  value={preview}
+                  onChange={setPreview}
+                />
+                <Button
+                  type="button"
+                  variant="secondary"
+                  aria-pressed={pickingColours}
+                  className="px-2.5 py-1 text-xs"
+                  onClick={() => setPickingColours((on) => !on)}
+                >
+                  {pickingColours ? "Done picking (esc)" : "Pick a color"}
+                </Button>
+              </div>
               <p className="text-[11px] text-zinc-400">
-                Placeholder content — your tokens, real interfaces
+                {pickingColours
+                  ? "Hover any color in the preview — click to copy"
+                  : "Placeholder content — your tokens, real interfaces"}
               </p>
             </div>
-            {previewNode}
+            <PreviewColorPicker
+              active={pickingColours}
+              tokens={system.themes[mode]}
+              palette={palette.map((swatch) => swatch.hex)}
+              onExit={() => setPickingColours(false)}
+            >
+              {previewNode}
+            </PreviewColorPicker>
           </section>
 
           <section aria-label="Accessibility report">
