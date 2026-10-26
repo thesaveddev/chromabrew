@@ -16,11 +16,13 @@ import {
   type RegressionInput,
 } from "./regression";
 import { buildScanCoverage } from "./coverage";
+import { scoreFromSeverities } from "./score";
 import {
   PROPOSED_FIX_KEY,
   parseProposedFix,
   SEVERITY_ORDER,
   type DetectionMethodId,
+  type ElementRect,
   type FindingCategoryId,
   type FindingDto,
   type FindingSeverityId,
@@ -33,6 +35,31 @@ import {
   type ScanStatusId,
   type ScannedPageDto,
 } from "./types";
+
+/**
+ * Element boxes the renderer measured, read back off the page record.
+ * Validated field by field: a corrupt entry is dropped, never trusted —
+ * these numbers become pixel positions in the report.
+ */
+function parseElementRects(metadata: unknown): ElementRect[] {
+  const raw =
+    metadata && typeof metadata === "object" && !Array.isArray(metadata)
+      ? (metadata as Record<string, unknown>).elementRects
+      : undefined;
+  if (!Array.isArray(raw)) return [];
+  const rects: ElementRect[] = [];
+  for (const entry of raw) {
+    if (!entry || typeof entry !== "object" || Array.isArray(entry)) continue;
+    const rect = entry as Record<string, unknown>;
+    const { selector, x, y, width, height } = rect;
+    if (typeof selector !== "string" || selector.length === 0) continue;
+    if (typeof x !== "number" || typeof y !== "number") continue;
+    if (typeof width !== "number" || typeof height !== "number") continue;
+    if (![x, y, width, height].every(Number.isFinite)) continue;
+    rects.push({ selector, x, y, width, height });
+  }
+  return rects;
+}
 
 export type { ScanResultsDto, ScanStatusDto };
 
@@ -198,6 +225,7 @@ export async function getScanResultsDto(
           loadTimeMs: true,
           errorMessage: true,
           rendered: true,
+          metadata: true,
           // Loaded only to answer "was a screenshot captured?" — the bytes
           // never enter the DTO. Gating on the path alone advertised images
           // the web tier could not serve: the path names a file on the
@@ -242,6 +270,7 @@ export async function getScanResultsDto(
     url: page.url,
     title: page.title,
     statusCode: page.statusCode,
+    elementRects: parseElementRects(page.metadata),
     loadTimeMs: page.loadTimeMs,
     errorMessage: page.errorMessage,
     rendered: page.rendered,
@@ -306,6 +335,7 @@ export interface ScanHistoryEntryDto {
   createdAt: string;
   findings: number;
   critical: number;
+  score: number;
   pagesScanned: number;
   isCurrent: boolean;
 }
@@ -360,6 +390,7 @@ export async function getScanHistory(
     createdAt: row.createdAt.toISOString(),
     findings: row.findings.length,
     critical: row.findings.filter((f) => f.severity === "critical").length,
+    score: scoreFromSeverities(row.findings.map((f) => f.severity)),
     pagesScanned: row.pagesScanned,
     isCurrent: row.id === current.id,
   }));

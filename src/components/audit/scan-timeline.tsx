@@ -29,6 +29,67 @@ interface ScheduleSummary {
   failureCount: number;
 }
 
+/**
+ * The health-score story across runs: one dot per finished scan, oldest to
+ * newest, so a reader sees at a glance whether the site is getting better.
+ * Pure SVG, no chart dependency — eight points do not need one. Hidden when
+ * there is a single run, where a "trend" would be a straight line to itself.
+ */
+function ScoreTrend({ history }: { history: ScanHistoryEntryDto[] }) {
+  const points = [...history].reverse();
+  if (points.length < 2) return null;
+  const W = 220;
+  const H = 56;
+  const PAD = 8;
+  const x = (i: number) =>
+    PAD + (i * (W - PAD * 2)) / Math.max(1, points.length - 1);
+  const y = (score: number) =>
+    H - PAD - (Math.max(0, Math.min(100, score)) / 100) * (H - PAD * 2);
+  const line = points.map((p, i) => `${x(i).toFixed(1)},${y(p.score).toFixed(1)}`).join(" ");
+  const first = points[0].score;
+  const last = points[points.length - 1].score;
+  const delta = last - first;
+  return (
+    <figure className="mt-1">
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        className="h-14 w-full max-w-[220px]"
+        role="img"
+        aria-label={`Health score trend across ${points.length} scans: ${first} then, ${last} now`}
+      >
+        <polyline
+          points={line}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinejoin="round"
+          strokeLinecap="round"
+          className="text-zinc-700 dark:text-zinc-200"
+        />
+        {points.map((p, i) => (
+          <circle
+            key={p.id}
+            cx={x(i)}
+            cy={y(p.score)}
+            r={p.isCurrent ? 3.5 : 2.5}
+            className={
+              p.isCurrent
+                ? "fill-zinc-900 dark:fill-zinc-100"
+                : "fill-zinc-400 dark:fill-zinc-500"
+            }
+          >
+            <title>{`${p.score} on ${formatDate(p.createdAt)}`}</title>
+          </circle>
+        ))}
+      </svg>
+      <figcaption className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+        Score {first} → {last}
+        {delta !== 0 ? ` (${delta > 0 ? "+" : ""}${delta})` : " (unchanged)"}
+      </figcaption>
+    </figure>
+  );
+}
+
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleString(undefined, {
     month: "short",
@@ -186,6 +247,7 @@ export function ScanTimeline({ scanId, siteUrl }: { scanId: string; siteUrl: str
           <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
             Earlier scans
           </h3>
+          <ScoreTrend history={history} />
           <ul className="mt-2 divide-y divide-zinc-100 dark:divide-zinc-800">
             {history
               .filter((entry) => entry.id !== scanId)

@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { chromium, type Browser, type Page } from "playwright";
 import {
+  collectElementRects,
   collectPageLinks,
   collectTextSamples,
   isBrowserRendererAvailable,
@@ -174,6 +175,28 @@ describe.skipIf(!browserAvailable)("collectTextSamples in a real browser", () =>
 
     // And the page is reported clean, because it is clean.
     expect(buildContrastFindings(result.samples as TextSample[])).toHaveLength(0);
+  }, 60_000);
+
+  it("captures viewport rects for selectors that resolve to a visible element", async () => {
+    const page = await requireBrowser().newPage();
+    await page.setContent(
+      `<body>
+         <h1 id="visible" style="font-size:32px">Headline</h1>
+         <p id="hidden" style="display:none">Not rendered</p>
+       </body>`,
+    );
+    const result = await page.evaluate(collectElementRects, {
+      selectors: ["#visible", "#missing", "#hidden"],
+      cap: 10,
+    });
+    await page.close();
+
+    expect(result).toHaveLength(1);
+    expect(result[0].selector).toBe("#visible");
+    expect(result[0].width).toBeGreaterThan(0);
+    expect(result[0].height).toBeGreaterThan(0);
+    expect(Number.isFinite(result[0].x)).toBe(true);
+    expect(Number.isFinite(result[0].y)).toBe(true);
   }, 60_000);
 
   it("refuses to measure when a colour cannot be resolved, rather than skipping the layer", async () => {

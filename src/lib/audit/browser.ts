@@ -34,6 +34,7 @@ import { assertAllowedUrlSyntax, classifyIp, resolveAndAssertPublic, type HostRe
 import type {
   BackgroundSource,
   DiscoveredLink,
+  ElementRect,
   LinkInventory,
   TextSample,
   UnmeasurableReasonId,
@@ -46,6 +47,13 @@ export const RENDERER_MAX_REQUESTS = 500;
 export const RENDERER_MAX_TEXT_SAMPLES = 400;
 export const RENDERER_MAX_ELEMENTS_VISITED = 6_000;
 export const RENDERER_MAX_LINKS = 300;
+/**
+ * How many element boxes the renderer measures per page. Findings reference
+ * a subset of selectors; measuring generously here means the report can draw
+ * markers without a second browser pass, and the cap keeps the scan record
+ * small. Unmatched rects are simply never drawn.
+ */
+export const RENDERER_MAX_ELEMENT_RECTS = 80;
 
 export class RendererUnavailableError extends Error {
   constructor(message = "No browser renderer is available on this host.") {
@@ -68,9 +76,9 @@ export class RendererError extends Error {
 /* In-page extraction                                                  */
 /* ------------------------------------------------------------------ */
 
-import { collectPageLinks, collectTextSamples } from "./dom-collect";
+import { collectElementRects, collectPageLinks, collectTextSamples } from "./dom-collect";
 
-export { collectPageLinks, collectTextSamples };
+export { collectElementRects, collectPageLinks, collectTextSamples };
 
 /* ------------------------------------------------------------------ */
 
@@ -177,6 +185,8 @@ export interface RenderedPage {
   blockedRequests: string[];
   requestCount: number;
   axeResults: AxeResults | null;
+  /** Measured boxes for finding selectors, CSS px relative to the document. */
+  elementRects: ElementRect[];
   axeVersion: string | null;
   /** Why axe produced no results, or null when it ran cleanly. */
   axeError: string | null;
@@ -444,6 +454,36 @@ export async function renderPage(url: URL, options: RenderOptions): Promise<Rend
     const axeVersion = axe.version;
     const axeError = axe.error;
 
+    // Boxes for the selectors findings will name, measured while the page is
+    // still alive: text-sample selectors plus every axe node target, first
+    // match per selector. A missing marker degrades the report, never the scan.
+    let elementRects: ElementRect[] = [];
+    try {
+      const candidates = new Set<string>();
+      for (const sample of extraction.samples) {
+        if (sample.selector) candidates.add(sample.selector);
+      }
+      for (const violation of axeResults?.violations ?? []) {
+        for (const node of violation.nodes ?? []) {
+          if (node.target.length > 0) candidates.add(node.target.join(" "));
+        }
+      }
+      if (candidates.size > 0) {
+        elementRects = await withTimeout(
+          ensurePageShim(page).then(() =>
+            page.evaluate(collectElementRects, {
+              selectors: [...candidates],
+              cap: RENDERER_MAX_ELEMENT_RECTS,
+            }),
+          ),
+          RENDERER_TOOL_TIMEOUT_MS,
+          "Measuring element positions timed out.",
+        );
+      }
+    } catch {
+      elementRects = [];
+    }
+
     return {
       finalUrl,
       statusCode,
@@ -459,6 +499,7 @@ export async function renderPage(url: URL, options: RenderOptions): Promise<Rend
       blockedRequests,
       requestCount,
       axeResults,
+      elementRects,
       axeVersion,
       axeError,
       loadTimeMs: Date.now() - started,

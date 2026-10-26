@@ -38,7 +38,7 @@ import { buildContrastFindings, measureContrast } from "./contrast-rules";
 import { dedupeFindings } from "./dedupe";
 import { applyProposedFixes } from "./fixes";
 import type { HostResolver } from "./url-validator";
-import type { FindingDraft, JsonObject, LinkInventory, RenderModeId, ScanStageId } from "./types";
+import type { ElementRect, FindingDraft, JsonObject, LinkInventory, RenderModeId, ScanStageId } from "./types";
 
 /** How many refused request URLs to keep as evidence. */
 const MAX_RECORDED_BLOCKED_REQUESTS = 10;
@@ -58,6 +58,8 @@ export interface AnalysisOutcome {
   facts: PageFacts;
   /** The link inventory, or null when the HTML was fetched instead of rendered. */
   links: LinkInventory | null;
+  /** Measured boxes for finding selectors, or null when nothing rendered. */
+  elementRects: ElementRect[] | null;
   /** Deduplicated: findings that lost to a better-sourced twin are in `duplicates`. */
   findings: FindingDraft[];
   duplicates: { finding: FindingDraft; groupId: string; keptRuleId: string }[];
@@ -119,9 +121,10 @@ async function analyzeWithFetch(
     bytes: outcome.page.bytes,
     truncated: outcome.page.truncated,
     redirects: outcome.page.redirects,
-    facts: outcome.facts,
+    facts: outcome.    facts,
     // Link discovery needs a DOM: a fetch sees only the served HTML.
     links: null,
+    elementRects: null,
     // Fixes are generated once, here, for both pipelines: the metadata rules run
     // on the served HTML too, so a fetch-only scan still gets them.
     findings: applyProposedFixes(deduped.kept),
@@ -187,6 +190,7 @@ async function analyzeWithBrowser(
       facts,
       // The interstitial's links belong to the provider, not the site.
       links: null,
+      elementRects: rendered.elementRects,
       findings: applyProposedFixes(analyzePageFacts(facts, context)),
       duplicates: [],
       duplicatesGrouped: 0,
@@ -225,6 +229,7 @@ async function analyzeWithBrowser(
     redirects: [],
     facts,
     links: rendered.links,
+    elementRects: rendered.elementRects,
     findings: fixed,
     duplicates: deduped.duplicates,
     duplicatesGrouped: deduped.duplicates.length,

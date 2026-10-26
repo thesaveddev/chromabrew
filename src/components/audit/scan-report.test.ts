@@ -88,6 +88,7 @@ function report(overrides: Partial<ScanResultsDto> = {}): ScanResultsDto {
         errorMessage: null,
         rendered: true,
         screenshotUrl: `/r/${TOKEN}/screenshot?page=page-1`,
+        elementRects: [],
       },
     ],
     findings: [finding],
@@ -192,6 +193,7 @@ describe("ScanReport", () => {
           errorMessage: null,
           rendered: true,
           screenshotUrl: `/r/${TOKEN}/screenshot?page=page-2`,
+          elementRects: [],
         },
         {
           id: "page-3",
@@ -202,6 +204,7 @@ describe("ScanReport", () => {
           errorMessage: "The page could not be analysed.",
           rendered: false,
           screenshotUrl: null,
+          elementRects: [],
         },
       ],
       findings: [

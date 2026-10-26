@@ -73,6 +73,7 @@ function renderer(pages: Record<string, { title: string; links: string[]; status
         blockedRequests: [],
         requestCount: 1,
         axeResults: null,
+        elementRects: [],
         axeVersion: null,
         axeError: "axe not loaded in fixtures",
         loadTimeMs: 100,

@@ -144,6 +144,52 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/* Printed report: the page chrome (site header, audit masthead, action
+   buttons) stays on screen, while the report itself prints light-on-white
+   so ink is not spent on dark panels. Cards keep their borders and stack
+   full-width; findings must never be cut mid-item across pages. */
+@media print {
+  .no-print,
+  body > header,
+  body > footer,
+  header.sticky,
+  footer {
+    display: none !important;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  main,
+  [class*="max-w-"] {
+    max-width: none !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  section,
+  figure {
+    break-inside: avoid;
+  }
+
+  li {
+    break-inside: avoid;
+  }
+
+  a {
+    text-decoration: none !important;
+    color: inherit !important;
+  }
+
+  a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.85em;
+    word-break: break-all;
+  }
+}
+
 @layer components {
   .panel-title {
     font-size: 0.6875rem;

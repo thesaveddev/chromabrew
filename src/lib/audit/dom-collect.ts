@@ -14,6 +14,7 @@
 import type {
   BackgroundSource,
   DiscoveredLink,
+  ElementRect,
   LinkInventory,
   TextSample,
   UnmeasurableReasonId,
@@ -489,6 +490,49 @@ export function collectPageLinks(options: { maxLinks: number }): LinkInventory {
     truncated,
     links,
   };
+}
+
+/**
+ * Measure where selectors sit in the rendered page, so the report can draw
+ * findings on the screenshot. Runs inside the page like the other
+ * collectors and must stay self-contained.
+ *
+ * Coordinates are CSS pixels relative to the document's top-left. Selectors
+ * that match nothing, match something with no box, or throw are skipped — a
+ * missing marker is better than a failed scan. First match wins, matching
+ * how the report attributes a finding to one element.
+ */
+export function collectElementRects(options: { selectors: string[]; cap: number }): ElementRect[] {
+  const { selectors, cap } = options;
+  const rects: ElementRect[] = [];
+  const seen = new Set<string>();
+  const scrollX = window.scrollX || 0;
+  const scrollY = window.scrollY || 0;
+  for (const selector of selectors) {
+    if (rects.length >= cap) break;
+    if (!selector || seen.has(selector)) continue;
+    seen.add(selector);
+    let element: Element | null = null;
+    try {
+      element = document.querySelector(selector);
+    } catch {
+      continue;
+    }
+    if (!element) continue;
+    const box =
+      typeof element.getBoundingClientRect === "function"
+        ? element.getBoundingClientRect()
+        : null;
+    if (!box || box.width <= 0 || box.height <= 0) continue;
+    rects.push({
+      selector,
+      x: Math.round((box.left + scrollX) * 10) / 10,
+      y: Math.round((box.top + scrollY) * 10) / 10,
+      width: Math.round(box.width * 10) / 10,
+      height: Math.round(box.height * 10) / 10,
+    });
+  }
+  return rects;
 }
 
 /* ------------------------------------------------------------------ */

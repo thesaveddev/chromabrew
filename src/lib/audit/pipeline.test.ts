@@ -95,6 +95,7 @@ function renderedPage(overrides: Partial<RenderedPage> = {}): RenderedPage {
     },
     axeVersion: "4.13.0",
     axeError: null,
+    elementRects: [],
     loadTimeMs: 1200,
     ...overrides,
   };

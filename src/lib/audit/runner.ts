@@ -304,6 +304,9 @@ async function persistScannedPage(
         facts: outcome.facts as unknown as Prisma.InputJsonValue,
         renderMode: outcome.renderMode,
         render: outcome.renderMeta,
+        // Measured boxes for the report's screenshot markers. Capped at
+        // capture time; validated again on the way out in queries.ts.
+        elementRects: (outcome.elementRects ?? []) as unknown as Prisma.InputJsonValue,
         // The deduplicated link inventory the crawler plans the next pages
         // from; capped by the renderer, and the render meta records whether
         // the cap was hit.

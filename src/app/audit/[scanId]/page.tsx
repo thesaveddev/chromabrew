@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 
+import { BundleDownloadButton, PrintReportButton } from "@/components/audit/report-actions";
 import { ScanProgress } from "@/components/audit/scan-progress";
 import { ScanReport } from "@/components/audit/scan-report";
 import { ScanTimeline } from "@/components/audit/scan-timeline";
@@ -30,7 +31,11 @@ export default async function ScanPage({ params }: { params: Promise<{ scanId: s
       <div className="mx-auto w-full max-w-4xl space-y-6">
         {ready ? (
           <>
-            <ShareScanButton scanId={scanId} />
+            <div className="no-print flex flex-wrap items-center gap-2">
+              <ShareScanButton scanId={scanId} />
+              <BundleDownloadButton scanId={scanId} />
+              <PrintReportButton />
+            </div>
             <ScanReport results={results} />
             {/* Owner-only: history, regression and watches hide themselves
                 for anonymous scans and other people's links. */}

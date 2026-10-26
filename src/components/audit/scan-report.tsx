@@ -1,7 +1,7 @@
-import Image from "next/image";
-
+import { AnnotatedScreenshot } from "@/components/audit/annotated-screenshot";
 import { CoveragePanel } from "@/components/audit/coverage-panel";
 import { FindingsList, SeveritySummary } from "@/components/audit/findings-list";
+import { ScorePanel } from "@/components/audit/score-panel";
 import {
   RENDER_MODE_LABELS,
   RENDER_MODE_NOTES,
@@ -116,6 +116,8 @@ export function ScanReport({ results }: { results: ScanResultsDto }) {
         ) : null}
       </div>
 
+      <ScorePanel results={results} />
+
       {page && !page.screenshotUrl ? (
         <p className="rounded-xl border border-dashed border-zinc-300 bg-zinc-50 px-4 py-3 text-xs leading-5 text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800/40 dark:text-zinc-400">
           No screenshot was captured for this scan — usually because the page
@@ -125,21 +127,12 @@ export function ScanReport({ results }: { results: ScanResultsDto }) {
       ) : null}
 
       {page?.screenshotUrl ? (
-        <figure className="overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-          <Image
-            src={page.screenshotUrl}
-            alt={`Screenshot of ${page.url} as the scanner rendered it`}
-            width={results.scan.viewportWidth}
-            height={results.scan.viewportHeight}
-            unoptimized
-            className="block h-auto w-full"
-          />
-          <figcaption className="border-t border-zinc-200 px-4 py-2 text-xs text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
-            The viewport as the scanner rendered it, at {results.scan.viewportWidth}×
-            {results.scan.viewportHeight}. Nothing here has been changed — before-and-after
-            previews come later.
-          </figcaption>
-        </figure>
+        <AnnotatedScreenshot
+          page={page}
+          findings={results.findings.filter((finding) => finding.pageUrl === page.url)}
+          viewportWidth={results.scan.viewportWidth}
+          viewportHeight={results.scan.viewportHeight}
+        />
       ) : null}
 
       {/* Every page the crawl visited, with what it cost and what it found.

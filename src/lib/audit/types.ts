@@ -271,6 +271,20 @@ export type BackgroundSource = "element" | "ancestor" | "assumed-white" | "unmea
  * solid colour (an image, a gradient, or an ancestor with opacity). Such a
  * sample is deliberately *not* reported as a failure — see contrast-rules.ts.
  */
+/**
+ * Where one finding's element sits in the page, in CSS pixels relative to
+ * the document's top-left. Captured by the renderer so the report can draw
+ * the finding on the screenshot; absent for fetch-only scans.
+ */
+export interface ElementRect {
+  /** The selector that was measured (first match wins). */
+  selector: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export interface TextSample {
   /** Best-effort CSS selector for the element, unique within the page. */
   selector: string;
@@ -559,6 +573,8 @@ export interface ScannedPageDto {
   rendered: boolean;
   /** Same-origin path to the stored screenshot, or null when none was captured. */
   screenshotUrl: string | null;
+  /** Measured boxes for finding selectors, in CSS px relative to the document. */
+  elementRects: ElementRect[];
 }
 
 export interface ScanStatusDto {
