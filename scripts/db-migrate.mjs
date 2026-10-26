@@ -216,6 +216,29 @@ async function loadEnvFiles() {
 }
 
 /**
+ * Migrations must not run through a transaction-mode pooler: an advisory lock
+ * is held by a server session, and a pooled client can land on a different
+ * server session per statement — so `migrate deploy` ends up waiting on a
+ * lock no session will ever release for it (P1002, every deploy, forever).
+ * Neon exposes the same database on a direct host that is the pooler host
+ * without the `-pooler` suffix, so prefer it whenever the URL names one.
+ * The app itself keeps using the pooler; this is only for the build step.
+ */
+function directConnection(connectionString) {
+  try {
+    const url = new URL(connectionString);
+    if (url.hostname.includes("-pooler")) {
+      url.hostname = url.hostname.replace("-pooler", "");
+      log(`pooler · migrating through the direct host ${url.hostname} instead`);
+      return url.toString();
+    }
+    return connectionString;
+  } catch {
+    return connectionString;
+  }
+}
+
+/**
  * The `pg` driver rejects `channel_binding`, which Neon's pooled URL carries by
  * default — the same reason `src/lib/db.ts` strips it for the app.
  */
@@ -457,7 +480,7 @@ async function main() {
   }
 
   const schema = readSchemaName();
-  const connection = withSchema(connectionString, schema);
+  const connection = withSchema(directConnection(connectionString), schema);
   const client = await connect(connection);
 
   let objects;
@@ -480,7 +503,7 @@ async function main() {
 
   // Every row of every history schema, so a blocked build names its blocker
   // in the log rather than only in a Prisma error code.
-  const diag = await connect(withSchema(connectionString, schema));
+  const diag = await connect(connection);
   try {
     for (const histSchema of [schema, ...stray]) {
       try {
