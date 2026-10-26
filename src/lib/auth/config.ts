@@ -61,8 +61,36 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     signIn: "/sign-in",
   },
   callbacks: {
-    jwt({ token, user }) {
+    async jwt({ token, user, account, profile }) {
       if (user) token.id = user.id;
+      // OAuth never syncs the profile back to an existing row: a user created
+      // by email signup (nameless) who later links GitHub would stay
+      // "Unnamed" forever. Fill the blanks from the provider profile once —
+      // never overwrite a name the user set themselves.
+      if (account && profile && user && (!user.name || !user.image)) {
+        const p = profile as Record<string, unknown>;
+        const str = (v: unknown) =>
+          typeof v === "string" && v.trim() ? v.trim() : null;
+        // GitHub often has no public name; the username is the fallback.
+        // Google provides name + picture directly.
+        const name = str(p.name) ?? str(p.login);
+        const image = str(p.avatar_url) ?? str(p.picture);
+        if ((name && !user.name) || (image && !user.image)) {
+          try {
+            await prisma.user.update({
+              where: { id: user.id },
+              data: {
+                ...(user.name ? {} : name ? { name } : {}),
+                ...(user.image ? {} : image ? { image } : {}),
+              },
+            });
+            if (name && !token.name) token.name = name;
+            if (image && !token.picture) token.picture = image;
+          } catch (error) {
+            console.error("[auth] profile backfill failed", error);
+          }
+        }
+      }
       return token;
     },
     session({ session, token }) {

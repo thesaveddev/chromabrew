@@ -18,6 +18,13 @@ export async function POST(request: Request) {
       );
     }
 
+    if (!name?.trim()) {
+      return NextResponse.json(
+        { error: "Please tell us your name" },
+        { status: 400 },
+      );
+    }
+
     if (password.length < 8) {
       return NextResponse.json(
         { error: "Password must be at least 8 characters" },
@@ -38,7 +45,7 @@ export async function POST(request: Request) {
 
     const user = await prisma.user.create({
       data: {
-        name: name?.trim() || null,
+        name: name.trim(),
         email,
         passwordHash,
       },
