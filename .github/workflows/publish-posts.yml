@@ -1,59 +1,38 @@
 name: Publish scheduled posts
 
+# Rebuild production once a day; the gate step only triggers a deploy when a
+# post's publishedAt date is today (UTC). Blog pages are statically generated,
+# so a future-dated post goes live on the first deploy after its date.
 on:
   schedule:
-    # Publish posts at 09:00 UTC on dates when future-dated posts go live.
-    # Adjust as needed; workflow_dispatch also allows manual rebuilds.
-    - cron: '0 9 12 10 *'  # Oct 12
-    - cron: '0 9 14 10 *'  # Oct 14
-    - cron: '0 9 16 10 *'  # Oct 16
-    - cron: '0 9 19 10 *'  # Oct 19
-    - cron: '0 9 20 10 *'  # Oct 20 — daily tutorials begin
-    - cron: '0 9 21 10 *'  # Oct 21
-    - cron: '0 9 22 10 *'  # Oct 22
-    - cron: '0 9 23 10 *'  # Oct 23
-    - cron: '0 9 24 10 *'  # Oct 24
-    - cron: '0 9 25 10 *'  # Oct 25
-    - cron: '0 9 26 10 *'  # Oct 26
-    - cron: '0 9 27 10 *'  # Oct 27
-    - cron: '0 9 28 10 *'  # Oct 28
-    - cron: '0 9 29 10 *'  # Oct 29
-    - cron: '0 9 30 10 *'  # Oct 30
-    - cron: '0 9 31 10 *'  # Oct 31
-    - cron: '0 9 1 11 *'   # Nov 1
-    - cron: '0 9 2 11 *'   # Nov 2
-    - cron: '0 9 3 11 *'   # Nov 3
-    - cron: '0 9 4 11 *'   # Nov 4
-    - cron: '0 9 5 11 *'   # Nov 5
-    - cron: '0 9 6 11 *'   # Nov 6
-    - cron: '0 9 7 11 *'   # Nov 7
-    - cron: '0 9 8 11 *'   # Nov 8
-    - cron: '0 9 9 11 *'   # Nov 9
-    - cron: '0 9 10 11 *'  # Nov 10
-    - cron: '0 9 11 11 *'  # Nov 11
-    - cron: '0 9 12 11 *'  # Nov 12
-    - cron: '0 9 13 11 *'  # Nov 13
-    - cron: '0 9 14 11 *'  # Nov 14
-    - cron: '0 9 15 11 *'  # Nov 15
-    - cron: '0 9 16 11 *'  # Nov 16
-    - cron: '0 9 17 11 *'  # Nov 17
-    - cron: '0 9 18 11 *'  # Nov 18 — daily tutorials end
-
+    - cron: '0 9 * * *'
   workflow_dispatch:
 
 jobs:
   trigger-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger Vercel Production Deploy
-        if: ${{ secrets.VERCEL_DEPLOY_HOOK_URL != '' }}
+      - uses: actions/checkout@v4
+
+      - name: Check for posts going live today (UTC)
+        id: gate
         run: |
-          curl -X POST "$VERCEL_DEPLOY_HOOK_URL" -H "Content-Type: application/json" -d "{}"
+          SLUGS=$(node scripts/check-publish-date.mjs "$(date -u +%F)")
+          echo "slugs=$SLUGS" >> "$GITHUB_OUTPUT"
+          if [ -n "$SLUGS" ]; then
+            echo "Posts going live today: $SLUGS"
+          else
+            echo "No posts go live today; skipping deploy."
+          fi
+
+      - name: Trigger Vercel production deploy
+        if: steps.gate.outputs.slugs != '' && secrets.VERCEL_DEPLOY_HOOK_URL != ''
+        run: |
+          curl --fail -X POST "$VERCEL_DEPLOY_HOOK_URL" -H "Content-Type: application/json" -d '{}'
         env:
           VERCEL_DEPLOY_HOOK_URL: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
 
       - name: Notify missing secret
-        if: ${{ secrets.VERCEL_DEPLOY_HOOK_URL == '' }}
+        if: steps.gate.outputs.slugs != '' && secrets.VERCEL_DEPLOY_HOOK_URL == ''
         run: |
-          echo "::warning::VERCEL_DEPLOY_HOOK_URL secret is not configured. This workflow will not trigger a deploy."
-          echo "Add the secret in Settings > Secrets and variables > Actions for this repository."
+          echo "::warning::VERCEL_DEPLOY_HOOK_URL secret is not configured. Today's posts will not publish until a deploy happens. Add the secret in Settings > Secrets and variables > Actions."
