@@ -12,10 +12,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     GitHub({
       clientId: process.env.GITHUB_CLIENT_ID,
       clientSecret: process.env.GITHUB_CLIENT_SECRET,
+      // A GitHub email that matches an existing account belongs to the same
+      // person — GitHub verifies addresses before marking them primary, so
+      // linking on match is what un-breaks "Continue with GitHub" for
+      // anyone who first signed up with email + password.
+      allowDangerousEmailAccountLinking: true,
     }),
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      // Google addresses are verified by definition; same reasoning as above.
+      allowDangerousEmailAccountLinking: true,
     }),
     Credentials({
       name: "Email",

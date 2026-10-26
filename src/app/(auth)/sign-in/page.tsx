@@ -1,10 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
+import { redirect, useSearchParams } from "next/navigation";
 import Link from "next/link";
+
+/** Friendly text for the ?error= Auth.js appends when a redirect flow fails. */
+const OAUTH_ERRORS: Record<string, string> = {
+  OAuthAccountNotLinked:
+    "This email already has an account with a different sign-in method. Sign in with your original method first — your logins are linked for next time.",
+  OAuthCallback: "The sign-in provider returned an error. Please try again.",
+  AccessDenied: "Access was denied. Please try again or use a different method.",
+  Configuration: "Sign-in is misconfigured right now. Please try again later.",
+};
+
+function OAuthErrorNotice() {
+  const params = useSearchParams();
+  const message = OAUTH_ERRORS[params.get("error") ?? ""];
+  if (!message) return null;
+  return (
+    <div
+      role="alert"
+      className="rounded-lg bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-300"
+    >
+      {message}
+    </div>
+  );
+}
 
 export default function SignInPage() {
   const { data: session, status } = useSession();
@@ -52,6 +75,9 @@ export default function SignInPage() {
           </p>
         </div>
 
+        <Suspense>
+          <OAuthErrorNotice />
+        </Suspense>
         <form onSubmit={handleCredentials} className="space-y-4">
           {error && (
             <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
