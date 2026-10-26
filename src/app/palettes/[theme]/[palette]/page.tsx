@@ -7,6 +7,7 @@ import {
   paletteBySlug,
   relatedPalettes,
   paletteGeneratorHref,
+  variationSeedHex,
 } from "@/lib/palettes";
 import { PaletteCard, PaletteSwatches } from "@/components/palettes/palette-card";
 import { JsonLd } from "@/components/site/json-ld";
@@ -138,7 +139,7 @@ export default async function PaletteDetailPage({ params }: Props) {
           Open in generator
         </Link>
         <Link
-          href={`/tools/color-palette-generator?color=${palette.colors[0].replace("#", "")}`}
+          href={`/tools/color-palette-generator?color=${variationSeedHex(palette).replace("#", "")}`}
           className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-800"
         >
           Make palette variations

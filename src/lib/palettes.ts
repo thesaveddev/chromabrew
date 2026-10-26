@@ -2208,6 +2208,32 @@ export function relatedPalettes(palette: GalleryPalette, count = 3): GalleryPale
   return [...sameTheme, ...rest].slice(0, count);
 }
 
+/**
+ * The seed for "make variations": the palette's most vivid stop.
+ *
+ * Gallery palettes store the darkest feeling first, which is often a near-black
+ * ink anchor — seeding the harmony tool with it yields a complementary pair of
+ * near-blacks and looks like the tool is broken. The most saturated stop is the
+ * one variations should grow from.
+ */
+export function variationSeedHex(palette: GalleryPalette): string {
+  let best = palette.colors[0];
+  let bestScore = -1;
+  for (const hex of palette.colors) {
+    const n = parseInt(hex.replace("#", ""), 16);
+    const r = (n >> 16) & 0xff;
+    const g = (n >> 8) & 0xff;
+    const b = n & 0xff;
+    const max = Math.max(r, g, b);
+    const score = max === 0 ? 0 : (max - Math.min(r, g, b)) / max;
+    if (score > bestScore) {
+      bestScore = score;
+      best = hex;
+    }
+  }
+  return best;
+}
+
 /** Deep-link a palette into the generator: first color leads, next two follow. */
 export function paletteGeneratorHref(palette: GalleryPalette): string {
   const [primary, secondary, accent] = palette.colors;

@@ -7,6 +7,7 @@ import {
   palettesForTheme,
   relatedPalettes,
   paletteGeneratorHref,
+  variationSeedHex,
   isGalleryHex,
 } from "./palettes";
 
@@ -55,6 +56,18 @@ describe("palette gallery data", () => {
     const related = relatedPalettes(first, 3);
     expect(related).toHaveLength(3);
     expect(related.map((p) => p.slug)).not.toContain(first.slug);
+  });
+
+  it("seeds variations with the most vivid stop, never a near-black ink", () => {
+    for (const palette of GALLERY_PALETTES) {
+      const seed = variationSeedHex(palette);
+      expect(palette.colors, palette.slug).toContain(seed);
+      expect(isGalleryHex(seed), palette.slug).toBe(true);
+    }
+    // Midway Night stores its tent-shadow ink first; variations must grow
+    // from the hot pink instead, or the harmony tool shows two near-blacks.
+    const midway = paletteBySlug("circus", "midway-night")!;
+    expect(variationSeedHex(midway)).toBe("#a5317a");
   });
 
   it("deep-links palettes into the generator with valid hex params", () => {
