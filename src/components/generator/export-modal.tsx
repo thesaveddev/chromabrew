@@ -43,18 +43,23 @@ export function ExportModalButton({
         Export
       </Button>
       {open && (
+        // The overlay itself scrolls and the panel flows normally inside
+        // it (mx-auto + my-*), instead of flex-centering a fixed box.
+        // Flex-centering clips the panel's top above the viewport in some
+        // browser/sticky-header combinations with no way to scroll it
+        // back — the format picker then sits unreachable above the fold.
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 overflow-y-auto"
           role="dialog"
           aria-modal="true"
           aria-label="Export design system"
         >
           <div
-            className="absolute inset-0 bg-black/60"
+            className="fixed inset-0 bg-black/60"
             onClick={() => setOpen(false)}
             aria-hidden
           />
-          <div className="relative max-h-[85vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-zinc-200 bg-white p-5 shadow-2xl sm:p-6 dark:border-zinc-700 dark:bg-zinc-950">
+          <div className="relative mx-auto my-6 w-[calc(100%-2rem)] max-w-3xl rounded-2xl border border-zinc-200 bg-white p-5 shadow-2xl sm:p-6 dark:border-zinc-700 dark:bg-zinc-950">
             <div className="mb-4 flex items-start justify-between gap-3">
               <div>
                 <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
