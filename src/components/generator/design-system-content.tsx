@@ -111,7 +111,7 @@ export function DesignSystemContent() {
   return (
     <section
       aria-labelledby="generator-about"
-      className="relative w-full overflow-hidden border-t border-zinc-200 bg-gradient-to-b from-zinc-50 via-white to-white px-4 pb-24 pt-16 sm:px-6 sm:pt-20 dark:border-zinc-800 dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-950"
+      className="relative w-full overflow-hidden border-t border-zinc-200 bg-gradient-to-b from-zinc-50 via-white to-white px-4 pb-24 pt-16 sm:px-8 sm:pt-20 lg:px-12 dark:border-zinc-800 dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-950"
     >
       {/* Ambient depth: one soft radial wash + film grain, both non-interactive. */}
       <div aria-hidden className="pointer-events-none absolute inset-0">
@@ -149,7 +149,7 @@ export function DesignSystemContent() {
         }}
       />
 
-      <div className="relative mx-auto w-full max-w-7xl">
+      <div className="relative w-full max-w-none">
         {/* ---- Intro ---------------------------------------------------- */}
         <div className="max-w-[62ch]">
           <p className="flex items-center gap-2 text-[13px] font-medium text-zinc-500 dark:text-zinc-400">

@@ -38,7 +38,7 @@ export function ToolShell({
   const articles = relatedArticles(tool);
   const anchor = tool.href.replace(/\//g, "-");
   return (
-    <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
+    <div className="w-full max-w-none px-4 py-12 sm:px-8 lg:px-12">
       <JsonLd
         data={{
           "@context": "https://schema.org",

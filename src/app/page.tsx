@@ -109,7 +109,7 @@ export default function HomePage() {
       {/* Hero — the thesis is color itself: real curated palettes beside the
           pitch, every strip a door into the catalog. */}
       <section className="border-b border-zinc-200 dark:border-zinc-800">
-        <div className="mx-auto grid max-w-7xl gap-10 px-4 py-16 sm:px-6 sm:py-24 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+        <div className="grid w-full max-w-none gap-10 px-4 py-16 sm:px-8 sm:py-24 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:px-12">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
               Free browser-based color toolkit
@@ -154,7 +154,7 @@ export default function HomePage() {
       <PaletteRibbon />
 
       {/* Theme mosaic — browsing starts by feeling, not by reading. */}
-      <section aria-labelledby="themes-heading" className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
+      <section aria-labelledby="themes-heading" className="w-full max-w-none px-4 py-14 sm:px-8 lg:px-12">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
@@ -178,7 +178,7 @@ export default function HomePage() {
 
       {/* Instant generator band — the fastest door into making. */}
       <section aria-labelledby="generate-heading" className="bg-zinc-950 py-20 sm:py-24 dark:bg-black">
-        <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 sm:px-6 lg:grid-cols-[1fr_minmax(0,1.15fr)] lg:gap-14">
+        <div className="grid w-full max-w-none items-center gap-10 px-4 sm:px-8 lg:grid-cols-[1fr_minmax(0,1.15fr)] lg:gap-14 lg:px-12">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-400">
               Instant palettes
@@ -247,7 +247,7 @@ export default function HomePage() {
       </section>
 
       {/* Pipeline */}
-      <section aria-label="How it works" className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
+      <section aria-label="How it works" className="w-full max-w-none px-4 py-14 sm:px-8 lg:px-12">
         <ol className="grid gap-x-6 gap-y-6 sm:grid-cols-2 lg:grid-cols-6">
           {PIPELINE.map(([title, body], i) => (
             <ScrollReveal key={title} as="li" delay={(i % 6) * 70} className="relative">
@@ -264,7 +264,7 @@ export default function HomePage() {
 
       {/* Live demo */}
       <section aria-labelledby="demo-heading" className="bg-zinc-50 dark:bg-zinc-900/60 py-16">
-        <div className="mx-auto max-w-5xl px-4 sm:px-6">
+        <div className="w-full max-w-none px-4 sm:px-8 lg:px-12">
           <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
             <div>
               <h2 id="demo-heading" className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
@@ -287,7 +287,7 @@ export default function HomePage() {
       </section>
 
       {/* Features */}
-      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
+      <section className="w-full max-w-none px-4 py-16 sm:px-8 lg:px-12">
         <h2 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
           Built like part of your team&apos;s toolchain
         </h2>
@@ -307,7 +307,7 @@ export default function HomePage() {
       <AuditSection />
 
       {/* Use cases — keyword-rich copy for search engines */}
-      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
+      <section className="w-full max-w-none px-4 py-16 sm:px-8 lg:px-12">
         <h2 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
           What you can do with ChromaBrew
         </h2>
@@ -371,7 +371,7 @@ export default function HomePage() {
 
       {/* Tools */}
       <section className="border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/60 py-16">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <div className="w-full max-w-none px-4 sm:px-8 lg:px-12">
           <h2 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
             Free color &amp; design token tools
           </h2>
@@ -400,7 +400,7 @@ export default function HomePage() {
       </section>
 
       {/* Closing CTA */}
-      <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6">
+      <section className="w-full max-w-none px-4 py-20 sm:px-8 lg:px-12">
         <div className="rounded-2xl bg-zinc-900 px-6 py-12 text-center sm:px-12">
           <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
             Start with one color. Walk away with a design system.

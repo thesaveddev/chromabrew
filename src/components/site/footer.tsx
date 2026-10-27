@@ -14,7 +14,7 @@ export function SiteFooter() {
 
   return (
     <footer className="border-t border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/60">
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
+      <div className="w-full max-w-none px-4 py-12 sm:px-8 lg:px-12">
         <div className="grid gap-10 md:grid-cols-[1.2fr_2fr]">
           <div>
             <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">ChromaBrew</p>

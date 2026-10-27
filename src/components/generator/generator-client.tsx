@@ -330,7 +330,7 @@ export function GeneratorWorkspace() {
   );
 
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 pb-16 sm:px-6">
+    <div className="w-full max-w-none px-4 pb-16 sm:px-8 lg:px-12">
       {/* Toolbar */}
       <div className="sticky top-14 z-30 -mx-4 mb-6 border-b border-zinc-200 bg-white/90 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 dark:border-zinc-800 dark:bg-zinc-950/90">
         <div className="flex flex-wrap items-center gap-3">

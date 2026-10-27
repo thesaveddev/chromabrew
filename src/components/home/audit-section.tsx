@@ -27,7 +27,7 @@ export function AuditSection() {
       aria-labelledby="audit-heading"
       className="border-t border-zinc-200 bg-zinc-50 py-16 dark:border-zinc-800 dark:bg-zinc-900/60"
     >
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+      <div className="w-full max-w-none px-4 sm:px-8 lg:px-12">
         <div className="max-w-3xl">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
             Free website audit

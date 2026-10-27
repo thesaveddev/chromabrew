@@ -45,7 +45,7 @@ export default async function SharedReportPage({ params }: Props) {
   return (
     <div className="flex min-h-[calc(100vh-3.5rem)] flex-1 flex-col bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
       <div className="border-b border-zinc-200 dark:border-zinc-800">
-        <div className="mx-auto flex w-full max-w-5xl flex-wrap items-center gap-3 px-4 py-4 sm:px-6">
+        <div className="flex w-full max-w-none flex-wrap items-center gap-3 px-4 py-4 sm:px-8 lg:px-12">
           <span className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
             Shared report
           </span>
@@ -55,8 +55,8 @@ export default async function SharedReportPage({ params }: Props) {
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col px-4 py-8 sm:px-6">
-        <div className="mx-auto w-full max-w-4xl">
+      <div className="flex flex-1 flex-col px-4 py-8 sm:px-8 lg:px-12">
+        <div className="w-full max-w-none">
           <header className="rounded-xl border border-zinc-200 bg-zinc-50 p-5 dark:border-zinc-800 dark:bg-zinc-900/60">
             <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
               Audit of {report.scan.normalizedUrl}

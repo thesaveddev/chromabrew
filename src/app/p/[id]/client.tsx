@@ -33,8 +33,8 @@ export function ClientProjectView({ project }: Props) {
   const system = useMemo(() => buildDesignSystem(config), [config]);
 
   return (
-    <div className="flex flex-1 flex-col px-4 py-12 sm:px-6">
-      <div className="mx-auto w-full max-w-5xl space-y-8">
+    <div className="flex flex-1 flex-col px-4 py-12 sm:px-8 lg:px-12">
+      <div className="w-full max-w-none space-y-8">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
             {project.name}

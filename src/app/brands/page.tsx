@@ -26,7 +26,7 @@ export const dynamic = "force-static";
 
 export default function BrandsIndexPage() {
   return (
-    <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+    <div className="w-full max-w-none px-4 py-12 sm:px-8 lg:px-12">
       <JsonLd
         data={{
           "@context": "https://schema.org",
