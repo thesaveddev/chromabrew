@@ -12,19 +12,28 @@
  * session. No iframe tricks, no cookie smuggling, no credential exfiltration.
  *
  * Client-safe by construction: only client-safe audit modules (page-facts,
- * dom-collect, axe adapter, contrast rules, fixes, dedupe) plus `axe-core`.
- * Nothing here fetches the page, touches the network, or sends page content
- * anywhere — results stay on the visitor's machine unless they choose to
- * copy or export them. In particular this module never imports `browser.ts`
- * (Playwright), `analyzer.ts` (fetch/SSRF) or `url-validator.ts`
- * (`node:net`): it imports the client-safe `page-facts.ts` and
- * `dom-collect.ts` those modules were split out into.
+ * dom-collect, axe adapter, contrast rules, fixes, dedupe, ai-readiness)
+ * plus `axe-core`. The page itself is never fetched and page content is
+ * never sent anywhere — results stay on the visitor's machine unless they
+ * choose to copy or export them. The one network exception is the
+ * AI-readiness section, which fetches the site's own /robots.txt and
+ * /llms.txt same-origin in the visitor's session (public files, response
+ * stays local) — the same clearance inheritance this whole module exists
+ * for. In particular this module never imports `browser.ts` (Playwright),
+ * `analyzer.ts` (fetch/SSRF) or `url-validator.ts` (`node:net`).
  *
  * Coverage honesty is preserved: when axe cannot run, the result says so
  * with the reason instead of reporting an empty violation list as a pass —
  * the same rule the server pipeline follows.
  */
 
+import {
+  AI_READINESS_RULE_COUNT,
+  analyzeAiReadiness,
+  extractAiTrustSignals,
+  type AiReadinessFacts,
+  type DiscoveryDoc,
+} from "./ai-readiness";
 import { AXE_RUN_TAGS, mapAxeViolations, type AxeResults } from "./axe";
 import { buildContrastFindings, measureContrast } from "./contrast-rules";
 import { dedupeFindings } from "./dedupe";
@@ -53,6 +62,8 @@ export interface InBrowserCoverage {
   failing: number;
   unmeasurableReasons: Partial<Record<UnmeasurableReasonId, number>>;
   textSamplesTruncated: boolean;
+  /** Host-level AI-discovery facts, or null when the section was skipped. */
+  aiReadiness: AiReadinessFacts | null;
 }
 
 export interface InBrowserAuditResult {
@@ -83,6 +94,29 @@ async function loadAxe(): Promise<AxeModule> {
     throw new Error("axe-core did not expose a runnable engine.");
   }
   return axe;
+}
+
+/** Discovery documents are kilobytes; never hold more than this of either. */
+const DISCOVERY_MAX_CHARS = 65536;
+
+/**
+ * Fetch one AI discovery document same-origin in the visitor's session.
+ * A failed fetch resolves to null (unavailable) rather than rejecting, so
+ * one unreachable file can never fail the audit of the page the visitor is
+ * already reading. Relative paths only: there is no cross-origin surface.
+ */
+async function fetchSameOriginDoc(path: "/robots.txt" | "/llms.txt"): Promise<DiscoveryDoc | null> {
+  try {
+    const response = await fetch(path, { credentials: "same-origin" });
+    const body = await response.text();
+    return {
+      status: response.status,
+      contentType: response.headers.get("content-type"),
+      body: body.slice(0, DISCOVERY_MAX_CHARS),
+    };
+  } catch {
+    return null;
+  }
 }
 
 function describeError(error: unknown): string {
@@ -148,10 +182,20 @@ export async function runInBrowserAudit(
   ]);
   const findings = applyProposedFixes(kept);
 
+  // 4. AI-readiness: host-level discovery plus page trust signals, appended
+  // after deduplication like the server pipeline so host findings never
+  // disturb engine-overlap counts. Unavailable documents stay silent; the
+  // bot-challenge escape hatch has no error document to skip.
+  const [robots, llms] = await Promise.all([
+    fetchSameOriginDoc("/robots.txt"),
+    fetchSameOriginDoc("/llms.txt"),
+  ]);
+  const ai = analyzeAiReadiness({ robots, llms, ...extractAiTrustSignals(html) });
+
   return {
     url,
     title: typeof doc.title === "string" && doc.title.length > 0 ? doc.title : null,
-    findings,
+    findings: [...findings, ...ai.findings],
     duplicates,
     duplicatesGrouped: duplicates.length,
     coverage: {
@@ -163,6 +207,7 @@ export async function runInBrowserAudit(
       failing: summary.failing,
       unmeasurableReasons: collection.unmeasurableReasons,
       textSamplesTruncated: collection.truncated,
+      aiReadiness: ai.facts,
     },
     rulesVersion: AUDIT_RULES_VERSION,
     durationMs: Date.now() - started,
@@ -171,3 +216,6 @@ export async function runInBrowserAudit(
 
 /** The structural rule count, for coverage copy ("10 native rules"). */
 export { AUDIT_RULE_COUNT };
+
+/** Every rule the in-browser audit runs: page rules plus AI-readiness. */
+export const IN_BROWSER_RULE_COUNT = AUDIT_RULE_COUNT + AI_READINESS_RULE_COUNT;

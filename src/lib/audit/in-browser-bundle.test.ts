@@ -43,9 +43,28 @@ const FIXTURE_ORIGIN = "https://audit-fixture.test";
 
 async function openFixture(html: string): Promise<Page> {
   const context = await browser.newContext();
-  await context.route("**/*", (route) =>
-    route.fulfill({ status: 200, contentType: "text/html", body: html }),
-  );
+  // Discovery files are served for real: the in-browser audit fetches
+  // /robots.txt and /llms.txt same-origin, so a fixture claiming a clean
+  // page must be clean for the AI section too — an allow-all robots file
+  // and a present llms.txt keep the new rules passing with zero findings.
+  await context.route("**/*", (route) => {
+    const pathname = new URL(route.request().url()).pathname;
+    if (pathname === "/robots.txt") {
+      return route.fulfill({
+        status: 200,
+        contentType: "text/plain",
+        body: "User-agent: *\nDisallow:\n",
+      });
+    }
+    if (pathname === "/llms.txt") {
+      return route.fulfill({
+        status: 200,
+        contentType: "text/markdown",
+        body: "# Fixture\n\nA fixture site.\n",
+      });
+    }
+    return route.fulfill({ status: 200, contentType: "text/html", body: html });
+  });
   const page = await context.newPage();
   await page.goto(`${FIXTURE_ORIGIN}/`, { waitUntil: "domcontentloaded" });
   return page;
@@ -123,6 +142,8 @@ describe.skipIf(!browserAvailable)("in-browser audit bundle", () => {
         `<body><main><h1>Clean</h1>` +
         `<p style="color: #1a1a1a; background: #ffffff;">Dark text on white, comfortably above the minimum.</p>` +
         `<img src="/x.png" alt="A descriptive alternative">` +
+        // The AI trust-signals rule needs one of these to pass.
+        `<a href="/contact">Contact</a>` +
         `</main></body></html>`,
     );
 

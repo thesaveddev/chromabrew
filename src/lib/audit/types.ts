@@ -276,6 +276,11 @@ export type BackgroundSource = "element" | "ancestor" | "assumed-white" | "unmea
  * the document's top-left. Captured by the renderer so the report can draw
  * the finding on the screenshot; absent for fetch-only scans.
  */
+export interface ColorCount {
+  hex: string;
+  count: number;
+}
+
 export interface ElementRect {
   /** The selector that was measured (first match wins). */
   selector: string;
@@ -575,6 +580,12 @@ export interface ScannedPageDto {
   screenshotUrl: string | null;
   /** Measured boxes for finding selectors, in CSS px relative to the document. */
   elementRects: ElementRect[];
+  /**
+   * Aggregated colour measurements (hex plus how many samples used it),
+   * most used first. The raw text samples stay in the worker; the report
+   * only needs the histogram to name the site's dominant colours.
+   */
+  colorHistogram: ColorCount[];
 }
 
 export interface ScanStatusDto {
@@ -654,6 +665,21 @@ export interface ScanCoverageDto {
   linksExternal: number | null;
   /** Subresource requests the SSRF guard refused. */
   blockedRequests: number;
+  /**
+   * Host-level AI-discovery facts from /robots.txt and /llms.txt, or null
+   * when the scan predates them, never measured them, or was blocked before
+   * it could. The files describe the host, so absence here means "not
+   * measured" — never a pass.
+   */
+  aiDiscovery: AiDiscoveryCoverage | null;
+}
+
+/** What the scan recorded about AI crawler access and discovery files. */
+export interface AiDiscoveryCoverage {
+  robots: "present" | "absent" | "unavailable";
+  llms: "present" | "absent" | "unavailable";
+  /** AI agents the site's robots.txt tells off the root. */
+  blockedBots: string[];
 }
 
 /* ------------------------------------------------------------------ */

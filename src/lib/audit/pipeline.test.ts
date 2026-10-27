@@ -128,6 +128,11 @@ describe("analyzePage — the browser pipeline", () => {
       blockedRequestCount: 0,
     });
     expect(outcome.links?.distinct).toBe(1);
+    // The brand-fit section eats from this histogram, not from raw samples.
+    expect(outcome.colorHistogram).toEqual([
+      { hex: "#777777", count: 1 },
+      { hex: "#ffffff", count: 1 },
+    ]);
   });
 
   it("counts engines before deduplication and groups the overlap", async () => {
@@ -285,5 +290,37 @@ describe("analyzePage — degradation", () => {
       720,
     );
     expect(renderStages.mock.calls.map(([stage]) => stage)).toEqual(["rendering", "analyzing"]);
+  });
+
+  it("appends AI-readiness findings and host facts without touching engine counts", async () => {
+    const aiFetch = (async (input: string | URL | Request) => {
+      const path = new URL(String(input)).pathname;
+      if (path === "/robots.txt") {
+        return new Response("User-agent: *\nDisallow:\n", {
+          status: 200,
+          headers: { "content-type": "text/plain; charset=utf-8" },
+        });
+      }
+      if (path === "/llms.txt") return new Response("missing", { status: 404 });
+      return new Response(HTML, {
+        status: 200,
+        headers: { "content-type": "text/html; charset=utf-8" },
+      });
+    }) as unknown as typeof fetch;
+
+    const outcome = await analyzePage(
+      new URL("https://example.com/"),
+      { resolve, fetchImpl: aiFetch, renderer: rendererFor(async () => renderedPage()) },
+      1280,
+      720,
+    );
+
+    // Host facts for the scan metadata, from the seed page.
+    expect(outcome.aiReadiness).toEqual({ robots: "present", llms: "absent", blockedBots: [] });
+    // The missing llms.txt reports alongside the engine findings — and the
+    // engine counts the coverage panel quotes are exactly where they were.
+    expect(outcome.findings.map((finding) => finding.ruleId)).toContain("ai-llms-txt");
+    expect(outcome.renderMeta.nativeFindingCount).toBe(1);
+    expect(outcome.duplicatesGrouped).toBe(1);
   });
 });

@@ -43,11 +43,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Send a JSON body with a url." }, { status: 400 });
   }
 
-  const { url, scope, viewportId, intervalDays } = (body ?? {}) as {
+  const { url, scope, viewportId, intervalDays, emailRecipients } = (body ?? {}) as {
     url?: unknown;
     scope?: ScanScopeId;
     viewportId?: unknown;
     intervalDays?: unknown;
+    emailRecipients?: unknown;
   };
 
   if (typeof url !== "string" || url.trim() === "") {
@@ -66,6 +67,7 @@ export async function POST(request: Request) {
       viewportId: typeof viewportId === "string" ? viewportId : undefined,
       intervalDays,
       isPro,
+      emailRecipients,
     });
     return NextResponse.json({ schedule }, { status: 201 });
   } catch (error) {

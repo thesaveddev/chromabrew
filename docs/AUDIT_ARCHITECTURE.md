@@ -173,6 +173,19 @@ coverage rather than implying a complete audit:
 `meta-description`, `meta-viewport`, `html-lang`, `img-alt`, `heading-h1`,
 `robots-noindex`.
 
+Alongside them run four AI-readiness rules (`src/lib/audit/ai-readiness.ts`),
+which ask whether AI crawlers and citation engines can find, fetch and
+attribute the site: `ai-robots-txt` (robots.txt present), `ai-bot-blocked`
+(roots blocks naming AI agents), `ai-llms-txt` (llms.txt present, with a
+pointer to the free generator), and `ai-trust-signals` (a contact link or
+Organization schema on the page). They are pure functions of two fetched
+discovery documents plus page-HTML signals; the pipeline fetches
+`/robots.txt` and `/llms.txt` with the scanner's guard rails after analysis,
+skips the whole section on error documents and challenge pages, and records
+the host facts (`aiRobots`, `aiLlms`, `aiBlockedBots`) from the seed page for
+the coverage panel. Three are informational (score-neutral); the active
+misconfiguration — blocking AI crawlers — is low.
+
 Findings carry a `detectionMethod`. Everything Stage 1 produces is
 `deterministic` — measured, not inferred. Guidance-shaped checks
 (`meta-title-length`) are labelled as low severity, marked with a confidence
@@ -272,7 +285,7 @@ Stage 2 replaces the default analysis with a **rendered** one. A real browser
 loads the submitted page, and the pipeline measures the page that a visitor
 would actually get:
 
-1. the rendered DOM (not the served response) is scanned by the ten native rules;
+1. the rendered DOM (not the served response) is scanned by the native page rules, then the AI-readiness section is appended (skipped on error documents);
 2. axe-core runs inside the rendered document against WCAG 2.0/2.1/2.2 A+AA and
    best-practice tags, and its violations are translated into findings;
 3. text contrast is measured from computed styles, using the design-system

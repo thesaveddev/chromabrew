@@ -21,6 +21,7 @@ import {
   PROPOSED_FIX_KEY,
   parseProposedFix,
   SEVERITY_ORDER,
+  type ColorCount,
   type DetectionMethodId,
   type ElementRect,
   type FindingCategoryId,
@@ -59,6 +60,28 @@ function parseElementRects(metadata: unknown): ElementRect[] {
     rects.push({ selector, x, y, width, height });
   }
   return rects;
+}
+
+/**
+ * Colour frequencies the pipeline aggregated, read back off the page record.
+ * Validated the same way as the rects: a corrupt entry is dropped, because
+ * these hexes become swatches in the report.
+ */
+function parseColorHistogram(metadata: unknown): ColorCount[] {
+  const raw =
+    metadata && typeof metadata === "object" && !Array.isArray(metadata)
+      ? (metadata as Record<string, unknown>).colorHistogram
+      : undefined;
+  if (!Array.isArray(raw)) return [];
+  const counts: ColorCount[] = [];
+  for (const entry of raw) {
+    if (!entry || typeof entry !== "object" || Array.isArray(entry)) continue;
+    const { hex, count } = entry as Record<string, unknown>;
+    if (typeof hex !== "string" || !/^#[0-9a-fA-F]{6}$/.test(hex)) continue;
+    if (typeof count !== "number" || !Number.isFinite(count) || count <= 0) continue;
+    counts.push({ hex: hex.toLowerCase(), count });
+  }
+  return counts;
 }
 
 export type { ScanResultsDto, ScanStatusDto };
@@ -271,6 +294,7 @@ export async function getScanResultsDto(
     title: page.title,
     statusCode: page.statusCode,
     elementRects: parseElementRects(page.metadata),
+    colorHistogram: parseColorHistogram(page.metadata),
     loadTimeMs: page.loadTimeMs,
     errorMessage: page.errorMessage,
     rendered: page.rendered,

@@ -3,7 +3,7 @@ export interface ToolFaq {
   a: string;
 }
 
-export type ToolCategory = "color" | "converter" | "css" | "image";
+export type ToolCategory = "color" | "converter" | "css" | "image" | "ai";
 
 export interface ToolDefinition {
   href: string;
@@ -643,19 +643,16 @@ export const TOOLS: ToolDefinition[] = [
     description:
       "Describe your brand in words and get 5 smart palette options. Preview any suggestion in the design system generator. Free, no sign-up.",
     blurb: "Five palettes from a brand description.",
-    intro: [
-      "Describe your brand in plain words — industry, mood, audience — and get five palette suggestions, each pairing a starting color with the harmony strategy that suits it. Keyword matching maps your description to hue families, so a fintech brief and a bakery brief land in completely different places.",
-      "Every suggestion opens directly in the design system generator with its color and strategy pre-selected, turning the starting point into tonal scales, semantic tokens, light and dark themes, and contrast-checked exports.",
-    ],
+    // No intro paragraphs: the tagline above the tool plus the three usage
+    // steps below it already say everything, and repeating the generator
+    // handoff a fourth time made the page read like a chore. Other tools
+    // keep their intros; this one does not need it.
+    intro: [],
     category: "color",
     faqs: [
       {
         q: "How does the AI palette suggestion work?",
         a: "Type a brand description and keyword matching maps your words to hue families, then generates five palettes across different harmony strategies — complementary, analogous, triadic, split-complementary and monochromatic. No AI API key or account needed; the free tier allows 30 suggestions per minute.",
-      },
-      {
-        q: "What do I do with a suggestion I like?",
-        a: "Click 'Preview in generator' on any suggestion. It opens the design system generator with that color and strategy pre-selected, so you can judge it on real interfaces and export tokens, themes and CSS.",
       },
       {
         q: "Is it really AI?",
@@ -664,6 +661,36 @@ export const TOOLS: ToolDefinition[] = [
       {
         q: "Is the AI palette suggestion free?",
         a: "Yes — free with no account required. Anonymous visitors get 30 suggestions per minute; signed-in Pro users get a higher limit.",
+      },
+    ],
+  },
+  {
+    href: "/tools/llms-txt-generator",
+    navLabel: "llms.txt generator",
+    title: "llms.txt generator",
+    metaTitle: "llms.txt Generator — AI Discovery Files",
+    description:
+      "Generate llms.txt and ai.txt files that tell Perplexity, ChatGPT, Gemini and Claude what your site is. Free, no sign-up.",
+    blurb: "Machine-readable files AI search can cite.",
+    // One paragraph only: the tagline covers the what, the usage steps
+    // cover the how, and the FAQ covers the where. (See the AI palette
+    // tool — same lesson learned.)
+    intro: [
+      "Upload both files to your site root: crawlers and AI search tools look for llms.txt and ai.txt next to robots.txt, and a site without them is read from markup alone.",
+    ],
+    category: "ai",
+    faqs: [
+      {
+        q: "What is an llms.txt file?",
+        a: "A markdown file at your site root that summarises what the site does and links its key pages in a machine-readable shape. AI search tools from Perplexity, ChatGPT, Gemini and Claude read it to understand and cite a site correctly.",
+      },
+      {
+        q: "Where do I put the generated files?",
+        a: "Upload llms.txt and ai.txt to your site's root directory — the same place robots.txt lives — so they are served at /llms.txt and /ai.txt. Link them from your robots.txt too.",
+      },
+      {
+        q: "Is the llms.txt generator free?",
+        a: "Yes — free with no account required. Everything runs in your browser; your site details are never uploaded.",
       },
     ],
   },
@@ -678,6 +705,7 @@ const CATEGORY_LABELS: Record<ToolCategory, string> = {
   converter: "Converters",
   css: "CSS & tokens",
   image: "Image tools",
+  ai: "AI visibility",
 };
 
 export function categoryLabel(category: ToolCategory): string {

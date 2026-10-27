@@ -19,7 +19,9 @@ import {
   createSchedule,
   deleteSchedule,
   enqueueDueRescans,
+  parseReportRecipients,
   setScheduleActive,
+  setScheduleRecipients,
 } from "./schedules";
 
 const NOW = new Date("2026-10-26T12:00:00Z").getTime();
@@ -123,6 +125,66 @@ describe("setScheduleActive", () => {
 
     expect(schedule.active).toBe(true);
     expect(schedule.nextRunAt).toBe(new Date(NOW + 7 * 24 * 60 * 60 * 1000).toISOString());
+  });
+});
+
+describe("parseReportRecipients", () => {
+  it("accepts up to three addresses and normalises them", () => {
+    expect(parseReportRecipients(["Me@X.test ", "me@x.test", "b@x.test"])).toEqual([
+      "me@x.test",
+      "b@x.test",
+    ]);
+  });
+
+  it("refuses a fourth address, a bad address and a non-array", async () => {
+    expect(() => parseReportRecipients(["a@x.test", "b@x.test", "c@x.test", "d@x.test"])).toThrow(
+      expect.objectContaining({ code: "recipients_invalid" }),
+    );
+    expect(() => parseReportRecipients(["not-an-email"])).toThrow(
+      expect.objectContaining({ code: "recipients_invalid" }),
+    );
+    expect(() => parseReportRecipients("a@x.test")).toThrow(
+      expect.objectContaining({ code: "recipients_invalid" }),
+    );
+  });
+});
+
+describe("setScheduleRecipients", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("stores the list as JSON and returns it parsed", async () => {
+    db.auditSchedule.findFirst.mockResolvedValue({ id: "sched-1" });
+    db.auditSchedule.update.mockImplementation(async (args: { data: Record<string, unknown> }) => ({
+      ...scheduleRow(),
+      ...args.data,
+    }));
+
+    const schedule = await setScheduleRecipients({
+      userId: "u1",
+      id: "sched-1",
+      emailRecipients: ["a@x.test"],
+      isPro: true,
+    });
+
+    expect(db.auditSchedule.update).toHaveBeenCalledWith({
+      where: { id: "sched-1" },
+      data: { emailRecipients: '["a@x.test"]' },
+      select: expect.anything(),
+    });
+    expect(schedule.emailRecipients).toEqual(["a@x.test"]);
+  });
+
+  it("refuses recipients on the free plan and unknown watches", async () => {
+    await expect(
+      setScheduleRecipients({ userId: "u1", id: "s-1", emailRecipients: ["a@x.test"], isPro: false }),
+    ).rejects.toMatchObject({ code: "recipients_pro_only" });
+
+    db.auditSchedule.findFirst.mockResolvedValue(null);
+    await expect(
+      setScheduleRecipients({ userId: "u1", id: "missing", emailRecipients: [], isPro: true }),
+    ).rejects.toMatchObject({ code: "not_found" });
   });
 });
 

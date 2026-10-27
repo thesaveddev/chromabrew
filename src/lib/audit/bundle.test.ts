@@ -64,6 +64,7 @@ function results(): ScanResultsDto {
         rendered: true,
         screenshotUrl: "/r/token/screenshot?page=page-1",
         elementRects: [],
+        colorHistogram: [],
       },
     ],
     findings: [finding],
@@ -83,6 +84,7 @@ function results(): ScanResultsDto {
       linksFound: 0,
       linksExternal: 0,
       blockedRequests: 0,
+      aiDiscovery: null,
     },
   };
 }

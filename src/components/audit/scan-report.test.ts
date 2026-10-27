@@ -33,6 +33,7 @@ const coverage: ScanCoverageDto = {
   linksFound: 1,
   linksExternal: 1,
   blockedRequests: 0,
+  aiDiscovery: null,
 };
 
 const finding: FindingDto = {
@@ -89,6 +90,7 @@ function report(overrides: Partial<ScanResultsDto> = {}): ScanResultsDto {
         rendered: true,
         screenshotUrl: `/r/${TOKEN}/screenshot?page=page-1`,
         elementRects: [],
+        colorHistogram: [],
       },
     ],
     findings: [finding],
@@ -194,6 +196,7 @@ describe("ScanReport", () => {
           rendered: true,
           screenshotUrl: `/r/${TOKEN}/screenshot?page=page-2`,
           elementRects: [],
+        colorHistogram: [],
         },
         {
           id: "page-3",
@@ -205,6 +208,7 @@ describe("ScanReport", () => {
           rendered: false,
           screenshotUrl: null,
           elementRects: [],
+        colorHistogram: [],
         },
       ],
       findings: [
@@ -213,23 +217,28 @@ describe("ScanReport", () => {
       ],
     });
 
-    // The map of the whole run: each page by URL, what it answered, what it
-    // cost, and how many findings it contributed — including the one that
-    // failed, which is stated rather than dropped.
-    expect(html).toContain("Pages scanned");
-    expect(html).toContain("3 of 3");
-    expect(html).toContain("https://example.com/pricing");
-    expect(html).toContain("HTTP 200 · 0.41s");
-    expect(html).toContain("1 finding");
-    expect(html).toContain("The page could not be analysed.");
-    expect(html).toContain(`href="/r/${TOKEN}/screenshot?page=page-2"`);
+    // One tab per page: each names the page and badges its own finding
+    // count, and the first tab's panel is the one rendered. The failed page
+    // gets a tab too — stated, not dropped — but its panel only appears
+    // once its tab is selected, so it is asserted through the tab.
+    expect(html).toContain('role="tablist"');
+    expect(html).toContain("Pricing");
+    expect(html).toContain("https://example.com/");
+    expect(html).toContain("Findings on this page");
+    expect(html).toContain("1 issue");
+    expect(html).toContain(`src="/r/${TOKEN}/screenshot?page=page-1"`);
+    // The failed page is a tab (its panel renders on selection), so the
+    // static markup carries its tab with a "not analysed" marker.
+    expect(html).toContain('aria-controls="page-panel-page-3"');
+    expect(html).toContain("not analysed");
   });
 
-  it("keeps the single-page report free of the crawl section", () => {
+  it("keeps the single-page report free of the tab bar", () => {
     const html = render();
 
-    // One page is not a map, and a section listing it would only repeat the
-    // summary above.
-    expect(html).not.toContain("Pages scanned");
+    // One page is not a choice, and a tab bar with a single tab would only
+    // repeat the panel below it.
+    expect(html).not.toContain('role="tablist"');
+    expect(html).toContain("Findings on this page");
   });
 });

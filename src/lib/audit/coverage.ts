@@ -15,7 +15,12 @@
  * Pure and dependency-free: no Prisma, no filesystem, no browser.
  */
 
-import type { RenderModeId, ScanCoverageDto, UnmeasurableReasonId } from "./types";
+import type {
+  AiDiscoveryCoverage,
+  RenderModeId,
+  ScanCoverageDto,
+  UnmeasurableReasonId,
+} from "./types";
 
 type Metadata = Record<string, unknown>;
 
@@ -37,6 +42,19 @@ function readString(metadata: unknown, key: string): string | null {
 
 function readBoolean(metadata: unknown, key: string): boolean {
   return asMetadata(metadata)[key] === true;
+}
+
+function readDiscoveryState(metadata: unknown, key: string): AiDiscoveryCoverage["robots"] | null {
+  const value = asMetadata(metadata)[key];
+  return value === "present" || value === "absent" || value === "unavailable" ? value : null;
+}
+
+function readStringArray(metadata: unknown, key: string): string[] {
+  const value = asMetadata(metadata)[key];
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter((entry): entry is string => typeof entry === "string" && entry.length > 0)
+    .slice(0, 20);
 }
 
 function readRenderMode(metadata: unknown): RenderModeId | null {
@@ -78,5 +96,18 @@ export function buildScanCoverage(metadata: unknown, fallbackRuleCount: number):
     linksFound: readNumber(metadata, "linksFound"),
     linksExternal: readNumber(metadata, "linksExternal"),
     blockedRequests: readNumber(metadata, "blockedRequestCount") ?? 0,
+    aiDiscovery: readAiDiscovery(metadata),
   };
+}
+
+/**
+ * Host-level AI facts, recorded from the seed page. Both states must be
+ * known: a scan that recorded only one side predates the section and reads
+ * as "not measured" rather than half a claim.
+ */
+function readAiDiscovery(metadata: unknown): AiDiscoveryCoverage | null {
+  const robots = readDiscoveryState(metadata, "aiRobots");
+  const llms = readDiscoveryState(metadata, "aiLlms");
+  if (!robots || !llms) return null;
+  return { robots, llms, blockedBots: readStringArray(metadata, "aiBlockedBots") };
 }

@@ -482,6 +482,11 @@ model AuditSchedule {
   lastRunAt         DateTime?
   lastScanId        String?
   failureCount      Int           @default(0)
+  // Emailed scheduled reports (Pro): JSON array of up to 3 recipient emails.
+  // Empty array means no email — the watch still re-scans, and the timeline
+  // still compares. Stored as text so the hand-managed production database
+  // needs no special type for it.
+  emailRecipients   String        @default("[]") @db.Text
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
   @@index([active, nextRunAt])

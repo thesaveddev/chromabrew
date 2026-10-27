@@ -153,7 +153,7 @@ export default function PricingPage() {
             },
             {
               q: "What do I get with Pro?",
-              a: "Unlimited project saving and palette history, every export adapter (Figma, Flutter, iOS, Android, MUI, Ant Design, Chakra), version history, team sharing, and AI features as they ship — on top of everything free.",
+              a: "Unlimited project saving and palette history, every export adapter (Figma, Flutter, iOS, Android, MUI, Ant Design, Chakra), version history, team sharing, emailed site reports for watched sites, and AI features as they ship — on top of everything free.",
             },
             {
               q: "How does team sharing work?",

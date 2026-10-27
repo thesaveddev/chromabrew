@@ -112,6 +112,10 @@ const MIGRATIONS = [
     name: "20261027000000_project_members",
     tables: ["ProjectMember"],
   },
+  {
+    name: "20261027000001_schedule_emails",
+    columns: [{ table: "AuditSchedule", column: "emailRecipients" }],
+  },
 ];
 
 /**
@@ -155,6 +159,9 @@ const REQUIRED = {
     { table: "Scan", column: "sharedAt" },
     { table: "ScannedPage", column: "screenshotData" },
     { table: "Project", column: "listedInGallery" },
+    // Emailed scheduled reports: recipient list per watch. A deploy missing
+    // it turns every report send into an error instead of an email.
+    { table: "AuditSchedule", column: "emailRecipients" },
     // The heartbeat's clean-shutdown mark. A table that exists without it
     // answers "is any worker still beating" by throwing, which is worse than
     // not having the table: the form reports an internal error for a feature

@@ -13,12 +13,12 @@ export const metadata: Metadata = {
   // Counted from the registry rather than typed in, so adding a tool cannot
   // leave this page understating what it links to.
   description:
-    `${TOOLS.length} free color tools: palette generator, brand palettes, image color extractor, WCAG contrast checker, color blindness simulator, CSS gradient generator.`,
+    `${TOOLS.length} free tools: palette generator, brand palettes, image color extractor, WCAG contrast checker, llms.txt generator, CSS gradient generator.`,
   alternates: { canonical: "/tools" },
   openGraph: {
     title: "Free Color Tools — Palette & Contrast Checker",
     description:
-      `${TOOLS.length} free color tools: palette generator, brand palettes, image color extractor, WCAG contrast checker, color blindness simulator, CSS gradient generator.`,
+      `${TOOLS.length} free tools: palette generator, brand palettes, image color extractor, WCAG contrast checker, llms.txt generator, CSS gradient generator.`,
     url: "/tools",
     type: "website",
     images: [defaultOgImage],
@@ -27,12 +27,12 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Free Color Tools — Palette & Contrast Checker",
     description:
-      `${TOOLS.length} free color tools: color palette generator, WCAG contrast checker, color blindness simulator, image color extractor, CSS gradient generator and more.`,
+      `${TOOLS.length} free tools: color palette generator, WCAG contrast checker, llms.txt generator, image color extractor, CSS gradient generator and more.`,
     images: [defaultOgImage.url],
   },
 };
 
-const ORDER: ToolCategory[] = ["color", "converter", "css", "image"];
+const ORDER: ToolCategory[] = ["color", "converter", "css", "image", "ai"];
 
 export default function ToolsIndexPage() {
   const groups = ORDER.map((category) => ({

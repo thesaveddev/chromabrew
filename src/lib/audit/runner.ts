@@ -13,12 +13,14 @@
 
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import { AI_READINESS_RULE_COUNT } from "./ai-readiness";
 import { FetchError, AUDIT_RULE_COUNT, SCANNER_USER_AGENT } from "./analyzer";
 // The renderer errors can only reach this layer from a renderer's own
 // availability probe — `analyzePage` converts everything else into a labelled
 // fallback — and they still deserve their own terminal status.
 import { RendererError, RendererUnavailableError } from "./browser";
 import { planNextPages } from "./crawl";
+import { sendScheduleReportsForScan } from "./schedule-reports";
 import { analyzePage, type AnalysisOutcome, type AnalysisOptions } from "./pipeline";
 import { readScreenshot, saveScreenshot } from "./screenshot-store";
 import { normalizeUrl, UrlValidationError, validateScanUrl } from "./url-validator";
@@ -307,6 +309,9 @@ async function persistScannedPage(
         // Measured boxes for the report's screenshot markers. Capped at
         // capture time; validated again on the way out in queries.ts.
         elementRects: (outcome.elementRects ?? []) as unknown as Prisma.InputJsonValue,
+        // Colour frequencies for the brand-fit section; validated again on
+        // the way out in queries.ts.
+        colorHistogram: (outcome.colorHistogram ?? []) as unknown as Prisma.InputJsonValue,
         // The deduplicated link inventory the crawler plans the next pages
         // from; capped by the renderer, and the render meta records whether
         // the cap was hit.
@@ -540,13 +545,30 @@ export async function runClaimedScan(scanId: string, options: RunOptions = {}): 
           failingSamples: outcome.renderMeta.failingSamples ?? null,
           linksFound: outcome.renderMeta.linksFound ?? null,
           linksExternal: outcome.renderMeta.linksExternal ?? null,
-          ruleCount: AUDIT_RULE_COUNT,
+          // Host-level AI-readiness facts from the seed page. robots.txt and
+          // llms.txt describe the host, not the page, so the seed's answer
+          // stands for the scan; per-page AI findings ride in `findings`.
+          ...(outcome.aiReadiness
+            ? {
+                aiRobots: outcome.aiReadiness.robots,
+                aiLlms: outcome.aiReadiness.llms,
+                aiBlockedBots: outcome.aiReadiness.blockedBots,
+              }
+            : {}),
+          ruleCount:
+            AUDIT_RULE_COUNT + (outcome.aiReadiness ? AI_READINESS_RULE_COUNT : 0),
           findingCount: outcome.findings.length,
           duplicatesGrouped: outcome.duplicatesGrouped,
           durationMs,
         } as Prisma.InputJsonValue,
       },
     });
+
+    // Emailed scheduled reports fan out from here: every watch that recorded
+    // this scan as its last run mails its recipients. Fire-and-forget into a
+    // function that never throws, so mail can neither slow the worker loop
+    // nor fail a scan that already finished.
+    void sendScheduleReportsForScan(scanId);
   } catch (error) {
     if (error instanceof UrlValidationError) {
       await failScan(scanId, error.code, error.message, startedAt);

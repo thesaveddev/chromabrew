@@ -25,6 +25,7 @@ function render(coverage: Partial<ScanCoverageDto> = {}): string {
     linksFound: 138,
     linksExternal: 65,
     blockedRequests: 0,
+    aiDiscovery: null,
     ...coverage,
   };
   return renderToStaticMarkup(createElement(CoveragePanel, { coverage: full }));
@@ -85,6 +86,19 @@ describe("CoveragePanel", () => {
     expect(html).toContain("105 text elements could not be measured");
     expect(html).toContain("74 sit on an image or gradient");
     expect(html).toContain("31 have a filter or blend mode applied");
+  });
+
+  it("states the AI-discovery facts when the scan recorded them", () => {
+    // Older scans recorded nothing: the row is omitted, never zeroed.
+    expect(render().includes("AI discovery")).toBe(false);
+
+    const html = render({
+      aiDiscovery: { robots: "present", llms: "absent", blockedBots: ["GPTBot", "CCBot"] },
+    });
+    expect(html).toContain("robots.txt present");
+    expect(html).toContain("blocks GPTBot, CCBot");
+    expect(html).toContain("llms.txt absent");
+    expect(html).toContain("/tools/llms-txt-generator");
   });
 
   it("reports refused requests only when there were any", () => {

@@ -144,13 +144,6 @@ export function AiPaletteTool() {
         </ul>
       )}
 
-      {suggestions.length === 0 && !loading && !error && (
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          Five suggestions appear here — each opens directly in the design
-          system generator, where the strategy is pre-selected and every
-          token, theme and export derives from that color.
-        </p>
-      )}
     </div>
   );
 }

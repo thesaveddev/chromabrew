@@ -27,6 +27,78 @@ interface ScheduleSummary {
   lastRunAt: string | null;
   lastScanId: string | null;
   failureCount: number;
+  emailRecipients: string[];
+}
+
+/**
+ * Per-watch emailed-report recipients (Pro). An empty list means the watch
+ * re-scans silently; up to three addresses get the finished report in their
+ * inbox on every run. The server validates and gates; this only collects.
+ */
+function ScheduleRecipients({
+  schedule,
+  disabled,
+  onSaved,
+}: {
+  schedule: ScheduleSummary;
+  disabled: boolean;
+  onSaved: () => Promise<void>;
+}) {
+  const [value, setValue] = useState(schedule.emailRecipients.join(", "));
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  const save = async () => {
+    const emails = value
+      .split(",")
+      .map((entry) => entry.trim())
+      .filter((entry) => entry.length > 0);
+    setSaving(true);
+    setError("");
+    try {
+      const res = await fetch(`/api/audit/schedules/${schedule.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ emailRecipients: emails }),
+      });
+      if (!res.ok) {
+        const body = (await res.json().catch(() => null)) as { error?: string } | null;
+        setError(body?.error ?? "The recipients could not be saved.");
+        return;
+      }
+      await onSaved();
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="w-full">
+      <label htmlFor={`recipients-${schedule.id}`} className="text-zinc-500 dark:text-zinc-500">
+        Email the report on every run (up to 3):
+      </label>
+      <div className="mt-1 flex flex-wrap items-center gap-2">
+        <input
+          id={`recipients-${schedule.id}`}
+          type="text"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          disabled={disabled || saving}
+          placeholder="you@team.test, lead@team.test"
+          className="min-w-0 flex-1 rounded-lg border border-zinc-300 bg-white px-2.5 py-1 text-xs text-zinc-900 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+        />
+        <button
+          type="button"
+          disabled={disabled || saving}
+          onClick={() => void save()}
+          className="font-medium underline underline-offset-4 disabled:opacity-50"
+        >
+          {saving ? "Saving…" : "Save"}
+        </button>
+      </div>
+      {error && <p className="mt-1 text-xs text-red-600 dark:text-red-400">{error}</p>}
+    </div>
+  );
 }
 
 /**
@@ -308,6 +380,9 @@ export function ScanTimeline({ scanId, siteUrl }: { scanId: string; siteUrl: str
                     {schedule.failureCount} missed run{schedule.failureCount === 1 ? "" : "s"}
                   </span>
                 )}
+                {isPro && (
+                  <ScheduleRecipients schedule={schedule} disabled={busy} onSaved={refresh} />
+                )}
                 <span className="ml-auto flex gap-2">
                   <button
                     type="button"
@@ -363,7 +438,7 @@ export function ScanTimeline({ scanId, siteUrl }: { scanId: string; siteUrl: str
           </button>
           {!isPro && (
             <span className="text-[11px] text-zinc-400 dark:text-zinc-500">
-              Weekly on Free — <Link href="/pricing" className="underline underline-offset-4">Pro unlocks daily</Link>.
+              Weekly on Free — <Link href="/pricing" className="underline underline-offset-4">Pro unlocks daily + emailed reports</Link>.
             </span>
           )}
         </div>

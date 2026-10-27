@@ -23,7 +23,13 @@
  * measures, which is what makes the decision above testable offline.
  */
 
-import { analyzePageFacts, analyzeUrl, extractPageFacts, type PageFacts } from "./analyzer";
+import {
+  analyzeAiReadiness,
+  extractAiTrustSignals,
+  type AiReadinessFacts,
+  type DiscoveryDoc,
+} from "./ai-readiness";
+import { analyzePageFacts, analyzeUrl, extractPageFacts, fetchPageSafely, type PageFacts } from "./analyzer";
 import { detectBotChallenge } from "./challenge";
 import { AXE_RUN_TAGS, mapAxeViolations } from "./axe";
 import {
@@ -38,10 +44,13 @@ import { buildContrastFindings, measureContrast } from "./contrast-rules";
 import { dedupeFindings } from "./dedupe";
 import { applyProposedFixes } from "./fixes";
 import type { HostResolver } from "./url-validator";
-import type { ElementRect, FindingDraft, JsonObject, LinkInventory, RenderModeId, ScanStageId } from "./types";
+import type { ColorCount, ElementRect, FindingDraft, JsonObject, LinkInventory, RenderModeId, ScanStageId, TextSample } from "./types";
 
 /** How many refused request URLs to keep as evidence. */
 const MAX_RECORDED_BLOCKED_REQUESTS = 10;
+
+/** Discovery documents are kilobytes; cap the fetch well below page size. */
+const DISCOVERY_MAX_BYTES = 65536;
 
 export interface AnalysisOutcome {
   renderMode: RenderModeId;
@@ -60,8 +69,21 @@ export interface AnalysisOutcome {
   links: LinkInventory | null;
   /** Measured boxes for finding selectors, or null when nothing rendered. */
   elementRects: ElementRect[] | null;
+  /**
+   * Aggregated colour measurements for the brand-fit section, most used
+   * first — or null when nothing rendered. The raw samples are too many to
+   * persist per page; the histogram keeps what the report needs.
+   */
+  colorHistogram: ColorCount[] | null;
   /** Deduplicated: findings that lost to a better-sourced twin are in `duplicates`. */
   findings: FindingDraft[];
+  /**
+   * Host-level AI-readiness facts from /robots.txt and /llms.txt, or null
+   * when the page was an error document (no verdicts are drawn from those)
+   * or a bot challenge (nothing of the site was measured). The AI findings
+   * themselves ride along in `findings`, appended after deduplication.
+   */
+  aiReadiness: AiReadinessFacts | null;
   duplicates: { finding: FindingDraft; groupId: string; keptRuleId: string }[];
   duplicatesGrouped: number;
   screenshot: Uint8Array | null;
@@ -99,6 +121,58 @@ export interface AnalysisOptions {
   onStage?: (stage: ScanStageId) => void | Promise<void>;
 }
 
+/**
+ * Fetch one AI discovery document with the scanner's guard rails: same
+ * SSRF revalidation, timeouts and size caps as the page itself. A failed
+ * fetch resolves to null (unavailable) rather than rejecting, so one
+ * unreachable file can never fail the page it describes.
+ */
+async function fetchDiscoveryDoc(
+  origin: URL,
+  path: "/robots.txt" | "/llms.txt",
+  options: AnalysisOptions,
+): Promise<DiscoveryDoc | null> {
+  try {
+    const page = await fetchPageSafely(new URL(path, origin), {
+      resolve: options.resolve,
+      fetchImpl: options.fetchImpl,
+      maxBytes: DISCOVERY_MAX_BYTES,
+      maxRedirects: 2,
+    });
+    return { status: page.statusCode, contentType: page.contentType, body: page.html };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Append the AI-readiness section to a finished outcome. Runs in both
+ * pipelines so fetch-only scans get it too, and after deduplication so the
+ * host-level findings never disturb engine-overlap counts. The findings ride
+ * along in `findings`; the host facts go in `aiReadiness` for the scan
+ * metadata. Error documents are skipped outright: findings drawn from an
+ * error page would audit the wrong thing. Deliberately silent on stages —
+ * discovery is part of "analyzing", not a stage of its own.
+ */
+async function appendAiReadiness(
+  origin: URL,
+  outcome: AnalysisOutcome,
+  html: string,
+  options: AnalysisOptions,
+): Promise<AnalysisOutcome> {
+  if (outcome.statusCode >= 400) return outcome;
+  const [robots, llms] = await Promise.all([
+    fetchDiscoveryDoc(origin, "/robots.txt", options),
+    fetchDiscoveryDoc(origin, "/llms.txt", options),
+  ]);
+  const { findings, facts } = analyzeAiReadiness({
+    robots,
+    llms,
+    ...extractAiTrustSignals(html),
+  });
+  return { ...outcome, aiReadiness: facts, findings: [...outcome.findings, ...findings] };
+}
+
 async function analyzeWithFetch(
   url: URL,
   options: AnalysisOptions,
@@ -110,7 +184,7 @@ async function analyzeWithFetch(
     onStage,
   });
   const deduped = dedupeFindings(outcome.findings);
-  return {
+  const base: AnalysisOutcome = {
     renderMode: "fetch",
     renderFallbackReason: null,
     finalUrl: outcome.page.finalUrl,
@@ -125,9 +199,11 @@ async function analyzeWithFetch(
     // Link discovery needs a DOM: a fetch sees only the served HTML.
     links: null,
     elementRects: null,
+    colorHistogram: null,
     // Fixes are generated once, here, for both pipelines: the metadata rules run
     // on the served HTML too, so a fetch-only scan still gets them.
     findings: applyProposedFixes(deduped.kept),
+    aiReadiness: null,
     duplicates: deduped.duplicates,
     duplicatesGrouped: deduped.duplicates.length,
     screenshot: null,
@@ -136,6 +212,7 @@ async function analyzeWithFetch(
     // empty" are different statements and the report must be able to tell.
     renderMeta: { nativeFindingCount: outcome.findings.length },
   };
+  return appendAiReadiness(new URL(outcome.page.finalUrl), base, outcome.page.html, options);
 }
 
 async function analyzeWithBrowser(
@@ -188,10 +265,12 @@ async function analyzeWithBrowser(
       truncated: rendered.textSamplesTruncated,
       redirects: [],
       facts,
-      // The interstitial's links belong to the provider, not the site.
-      links: null,
-      elementRects: rendered.elementRects,
+    // The interstitial's links belong to the provider, not the site.
+    links: null,
+    elementRects: rendered.elementRects,
+    colorHistogram: null,
       findings: applyProposedFixes(analyzePageFacts(facts, context)),
+      aiReadiness: null,
       duplicates: [],
       duplicatesGrouped: 0,
       // Kept: the interstitial is the evidence that the scan was blocked.
@@ -216,7 +295,7 @@ async function analyzeWithBrowser(
   const deduped = dedupeFindings([...nativeFindings, ...axeFindings]);
   const fixed = applyProposedFixes(deduped.kept);
 
-  return {
+  const base: AnalysisOutcome = {
     renderMode: "browser",
     renderFallbackReason: null,
     finalUrl: rendered.finalUrl,
@@ -230,7 +309,9 @@ async function analyzeWithBrowser(
     facts,
     links: rendered.links,
     elementRects: rendered.elementRects,
+    colorHistogram: buildColorHistogram(rendered.textSamples),
     findings: fixed,
+    aiReadiness: null,
     duplicates: deduped.duplicates,
     duplicatesGrouped: deduped.duplicates.length,
     screenshot: rendered.screenshot,
@@ -258,6 +339,26 @@ async function analyzeWithBrowser(
       externalLinkHosts: rendered.links.externalHosts,
     },
   };
+  return appendAiReadiness(new URL(rendered.finalUrl), base, rendered.html, options);
+}
+
+/** Colours the page actually used, aggregated across text and backgrounds. */
+const MAX_HISTOGRAM_ENTRIES = 40;
+
+function buildColorHistogram(samples: readonly TextSample[]): ColorCount[] {
+  const totals = new Map<string, number>();
+  for (const sample of samples) {
+    for (const hex of [sample.color, sample.background]) {
+      if (typeof hex !== "string") continue;
+      const key = hex.toLowerCase();
+      if (!/^#[0-9a-f]{6}$/.test(key)) continue;
+      totals.set(key, (totals.get(key) ?? 0) + 1);
+    }
+  }
+  return [...totals.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, MAX_HISTOGRAM_ENTRIES)
+    .map(([hex, count]) => ({ hex, count }));
 }
 
 /** Analyse one validated URL, degrading from the browser to a fetch if needed. */

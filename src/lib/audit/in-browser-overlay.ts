@@ -227,6 +227,7 @@ export function renderOverlayResult(result: InBrowserAuditResult): void {
   const engines = [
     "structure",
     "contrast",
+    result.coverage.aiReadiness ? "AI discovery" : null,
     result.coverage.engines.axe ? "axe-core" : null,
   ].filter(Boolean);
   coverage.textContent =

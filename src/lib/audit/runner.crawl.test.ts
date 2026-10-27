@@ -18,6 +18,7 @@ import type { TextSample } from "./types";
 
 const db = vi.hoisted(() => ({
   scan: { findUnique: vi.fn(), update: vi.fn() },
+  auditSchedule: { findMany: vi.fn() },
   scannedPage: { create: vi.fn(), update: vi.fn(), findMany: vi.fn() },
   finding: { createMany: vi.fn() },
 }));
@@ -39,6 +40,29 @@ const HTML = (title: string) => `<!doctype html>
 
 /** DNS stub: every host resolves publicly, so no lookup happens. */
 const resolve = async () => ["93.184.216.34"];
+
+/**
+ * Discovery-file stub: the AI-readiness rules fetch /robots.txt and /llms.txt
+ * per page, and the crawl loop must not touch the network to do it. An
+ * allow-all robots file and a present llms.txt keep the fixtures' finding
+ * counts exactly where they were.
+ */
+const fetchImpl = (async (input: string | URL | Request) => {
+  const path = new URL(String(input)).pathname;
+  if (path === "/robots.txt") {
+    return new Response("User-agent: *\nDisallow:\n", {
+      status: 200,
+      headers: { "content-type": "text/plain; charset=utf-8" },
+    });
+  }
+  if (path === "/llms.txt") {
+    return new Response("# Fixture\n\nA fixture site.\n", {
+      status: 200,
+      headers: { "content-type": "text/markdown; charset=utf-8" },
+    });
+  }
+  return new Response("not found", { status: 404 });
+}) as unknown as typeof fetch;
 
 let pageCounter = 0;
 
@@ -119,6 +143,8 @@ describe("runClaimedScan crawl loop", () => {
     db.scannedPage.update.mockResolvedValue({});
     db.finding.createMany.mockResolvedValue({ count: 0 });
     db.scan.update.mockResolvedValue({});
+    // No watches point at fixture scans, so no report email is attempted.
+    db.auditSchedule.findMany.mockResolvedValue([]);
     // The worker-local file exists by default; the disk-failure test overrides.
     screenshotStore.saveScreenshot.mockResolvedValue("scan-1/page-1.png");
     screenshotStore.readScreenshot.mockResolvedValue(null);
@@ -129,6 +155,7 @@ describe("runClaimedScan crawl loop", () => {
 
     await runClaimedScan("scan-1", {
       resolve,
+      fetchImpl,
       renderer: renderer({
         "https://example.com/": {
           title: "Home",
@@ -163,6 +190,7 @@ describe("runClaimedScan crawl loop", () => {
 
     await runClaimedScan("scan-1", {
       resolve,
+      fetchImpl,
       renderer: renderer({
         "https://example.com/": {
           title: "Home",
@@ -195,6 +223,7 @@ describe("runClaimedScan crawl loop", () => {
 
     await runClaimedScan("scan-1", {
       resolve,
+      fetchImpl,
       renderer: renderer({
         "https://example.com/": {
           title: "Home",
@@ -234,6 +263,7 @@ describe("runClaimedScan crawl loop", () => {
 
     await runClaimedScan("scan-1", {
       resolve,
+      fetchImpl,
       renderer: renderer({
         "https://example.com/": {
           title: "Home",
@@ -256,6 +286,7 @@ describe("runClaimedScan crawl loop", () => {
 
     await runClaimedScan("scan-1", {
       resolve,
+      fetchImpl,
       renderer: renderer({
         // The 404 page's links are the error document's links, not the
         // site's — following them would audit the wrong thing.
@@ -278,6 +309,7 @@ describe("runClaimedScan crawl loop", () => {
 
     await runClaimedScan("scan-1", {
       resolve,
+      fetchImpl,
       renderer: renderer({ "https://example.com/": { title: "Home", links: [] } }),
     });
 

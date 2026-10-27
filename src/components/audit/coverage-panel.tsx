@@ -98,6 +98,27 @@ export function CoveragePanel({ coverage }: { coverage: ScanCoverageDto }) {
           )}
         </Fact>
 
+        {coverage.aiDiscovery ? (
+          <Fact term="AI discovery">
+            robots.txt {coverage.aiDiscovery.robots}
+            {coverage.aiDiscovery.blockedBots.length > 0
+              ? ` · blocks ${coverage.aiDiscovery.blockedBots.join(", ")}`
+              : ""}
+            {` · llms.txt ${coverage.aiDiscovery.llms}`}
+            {coverage.aiDiscovery.llms === "absent" ? (
+              <>
+                {" — "}
+                <a
+                  href="/tools/llms-txt-generator"
+                  className="underline decoration-zinc-300 underline-offset-2 hover:text-zinc-900 dark:decoration-zinc-700 dark:hover:text-zinc-100"
+                >
+                  generate one
+                </a>
+              </>
+            ) : null}
+          </Fact>
+        ) : null}
+
         <Fact term="Links">
           {linksKnown ? (
             <>

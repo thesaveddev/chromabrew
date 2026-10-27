@@ -90,6 +90,34 @@ describe("buildScanCoverage", () => {
     expect(malformed.rulesRun).toBe(FALLBACK_RULE_COUNT);
   });
 
+  it("reads the AI-discovery facts only when both states were recorded", () => {
+    expect(
+      buildScanCoverage(
+        { aiRobots: "present", aiLlms: "absent", aiBlockedBots: ["GPTBot"] },
+        FALLBACK_RULE_COUNT,
+      ).aiDiscovery,
+    ).toEqual({ robots: "present", llms: "absent", blockedBots: ["GPTBot"] });
+
+    // A scan that predates the section reads as not measured, not as absent.
+    expect(buildScanCoverage({}, FALLBACK_RULE_COUNT).aiDiscovery).toBeNull();
+    expect(
+      buildScanCoverage({ aiRobots: "present" }, FALLBACK_RULE_COUNT).aiDiscovery,
+    ).toBeNull();
+    // Malformed states and bot lists are dropped, never trusted.
+    expect(
+      buildScanCoverage(
+        { aiRobots: "here", aiLlms: "absent", aiBlockedBots: ["GPTBot", 42, ""] },
+        FALLBACK_RULE_COUNT,
+      ).aiDiscovery,
+    ).toBeNull();
+    expect(
+      buildScanCoverage(
+        { aiRobots: "present", aiLlms: "present", aiBlockedBots: "GPTBot" },
+        FALLBACK_RULE_COUNT,
+      ).aiDiscovery,
+    ).toEqual({ robots: "present", llms: "present", blockedBots: [] });
+  });
+
   it("drops unknown reasons and ignores zero counts", () => {
     const coverage = buildScanCoverage(
       { unmeasurableReasons: { background_image: 0, altered_rendering: 3, made_up: 99 } },

@@ -58,6 +58,8 @@ export interface ScheduleDto {
   lastRunAt: string | null;
   lastScanId: string | null;
   failureCount: number;
+  /** Emailed-report recipients (Pro). Empty means re-scan silently. */
+  emailRecipients: string[];
   createdAt: string;
 }
 
@@ -73,6 +75,7 @@ type ScheduleRow = {
   lastRunAt: Date | null;
   lastScanId: string | null;
   failureCount: number;
+  emailRecipients: string;
   createdAt: Date;
 };
 
@@ -87,10 +90,11 @@ function toDto(schedule: ScheduleRow): ScheduleDto {
     active: schedule.active,
     nextRunAt: schedule.nextRunAt.toISOString(),
     lastRunAt: schedule.lastRunAt?.toISOString() ?? null,
-    lastScanId: schedule.lastScanId,
-    failureCount: schedule.failureCount,
-    createdAt: schedule.createdAt.toISOString(),
-  };
+  lastScanId: schedule.lastScanId,
+  failureCount: schedule.failureCount,
+  emailRecipients: readRecipients(schedule.emailRecipients),
+  createdAt: schedule.createdAt.toISOString(),
+};
 }
 
 const scheduleSelect = {
@@ -105,6 +109,7 @@ const scheduleSelect = {
   lastRunAt: true,
   lastScanId: true,
   failureCount: true,
+  emailRecipients: true,
   createdAt: true,
 } as const;
 
@@ -114,6 +119,58 @@ export function allowedIntervals(isPro: boolean): number[] {
 
 export function maxSchedules(isPro: boolean): number {
   return isPro ? PRO_MAX_SCHEDULES : FREE_MAX_SCHEDULES;
+}
+
+/** Emailed scheduled reports go to at most three addresses per watch. */
+export const MAX_REPORT_RECIPIENTS = 3;
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/** Stored recipients are a JSON text array; a corrupt value reads as none. */
+function readRecipients(raw: unknown): string[] {
+  if (typeof raw !== "string") return [];
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((entry): entry is string => typeof entry === "string");
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Parse and validate recipient emails. Throws ScheduleError with a
+ * displayable message when the list is not an array of up to three valid
+ * addresses. Normalises case and drops blanks and duplicates, so
+ * "Me@X.test" and "me@x.test " count as one recipient.
+ */
+export function parseReportRecipients(input: unknown): string[] {
+  if (!Array.isArray(input)) {
+    throw new ScheduleError(
+      "recipients_invalid",
+      "Send up to three recipient email addresses.",
+    );
+  }
+  const unique = [
+    ...new Set(
+      input
+        .filter((entry): entry is string => typeof entry === "string")
+        .map((entry) => entry.trim().toLowerCase())
+        .filter((entry) => entry.length > 0),
+    ),
+  ];
+  if (unique.length > MAX_REPORT_RECIPIENTS) {
+    throw new ScheduleError(
+      "recipients_invalid",
+      `Emailed reports go to at most ${MAX_REPORT_RECIPIENTS} addresses per watch.`,
+    );
+  }
+  for (const email of unique) {
+    if (email.length > 254 || !EMAIL_PATTERN.test(email)) {
+      throw new ScheduleError("recipients_invalid", `"${email}" is not a valid email address.`);
+    }
+  }
+  return unique;
 }
 
 /**
@@ -128,6 +185,7 @@ export async function createSchedule(input: {
   viewportId?: string;
   intervalDays: number;
   isPro: boolean;
+  emailRecipients?: unknown;
   now?: number;
 }): Promise<ScheduleDto> {
   const now = input.now ?? Date.now();
@@ -139,6 +197,15 @@ export async function createSchedule(input: {
       input.isPro
         ? "Choose a daily or weekly re-scan."
         : "Scheduled re-scans are weekly on the free plan — upgrade to Pro for daily.",
+    );
+  }
+
+  const emailRecipients =
+    input.emailRecipients === undefined ? [] : parseReportRecipients(input.emailRecipients);
+  if (emailRecipients.length > 0 && !input.isPro) {
+    throw new ScheduleError(
+      "recipients_pro_only",
+      "Emailed reports are a Pro feature — upgrade to have every re-scan land in the inbox.",
     );
   }
 
@@ -186,6 +253,7 @@ export async function createSchedule(input: {
       viewportId: input.viewportId ?? "desktop",
       intervalDays: input.intervalDays,
       nextRunAt: new Date(now + input.intervalDays * DAY_MS),
+      emailRecipients: JSON.stringify(emailRecipients),
     },
     select: scheduleSelect,
   });
@@ -235,6 +303,40 @@ export async function setScheduleActive(
     data: active
       ? { active: true, nextRunAt: new Date(now + schedule.intervalDays * DAY_MS), failureCount: 0 }
       : { active: false },
+    select: scheduleSelect,
+  });
+  return toDto(updated);
+}
+
+/**
+ * Set a watch's emailed-report recipients. An empty list disables the email
+ * while the watch keeps re-scanning; a non-empty list is Pro-only, like the
+ * bundle the email points at. Throws ScheduleError with a displayable
+ * message for unknown watches, bad addresses and free-plan callers.
+ */
+export async function setScheduleRecipients(input: {
+  userId: string;
+  id: string;
+  emailRecipients: unknown;
+  isPro: boolean;
+}): Promise<ScheduleDto> {
+  const recipients = parseReportRecipients(input.emailRecipients);
+  if (recipients.length > 0 && !input.isPro) {
+    throw new ScheduleError(
+      "recipients_pro_only",
+      "Emailed reports are a Pro feature — upgrade to have every re-scan land in the inbox.",
+    );
+  }
+  const schedule = await prisma.auditSchedule.findFirst({
+    where: { id: input.id, userId: input.userId },
+    select: { id: true },
+  });
+  if (!schedule) {
+    throw new ScheduleError("not_found", "That schedule does not exist.");
+  }
+  const updated = await prisma.auditSchedule.update({
+    where: { id: input.id },
+    data: { emailRecipients: JSON.stringify(recipients) },
     select: scheduleSelect,
   });
   return toDto(updated);

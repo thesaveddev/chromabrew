@@ -1,6 +1,5 @@
-import { AnnotatedScreenshot } from "@/components/audit/annotated-screenshot";
 import { CoveragePanel } from "@/components/audit/coverage-panel";
-import { FindingsList, SeveritySummary } from "@/components/audit/findings-list";
+import { PageTabs } from "@/components/audit/page-tabs";
 import { ScorePanel } from "@/components/audit/score-panel";
 import {
   RENDER_MODE_LABELS,
@@ -64,16 +63,6 @@ function ResultSummary({ scan }: { scan: ScanStatusDto }) {
 
 export function ScanReport({ results }: { results: ScanResultsDto }) {
   const page = results.pages[0];
-  const multiPage = results.pages.length > 1;
-
-  // Findings carry the page they were measured on, so each page's count is a
-  // fact from the report itself rather than a second query.
-  const findingsByPageUrl = new Map<string, number>();
-  for (const finding of results.findings) {
-    if (finding.pageUrl) {
-      findingsByPageUrl.set(finding.pageUrl, (findingsByPageUrl.get(finding.pageUrl) ?? 0) + 1);
-    }
-  }
 
   return (
     <section className="space-y-6">
@@ -118,96 +107,24 @@ export function ScanReport({ results }: { results: ScanResultsDto }) {
 
       <ScorePanel results={results} />
 
-      {page && !page.screenshotUrl ? (
-        <p className="rounded-xl border border-dashed border-zinc-300 bg-zinc-50 px-4 py-3 text-xs leading-5 text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800/40 dark:text-zinc-400">
-          No screenshot was captured for this scan — usually because the page
-          blocked rendering or the capture failed. The findings below stand on
-          their own measurements.
+      {/* One tab per audited page: its screenshot, its status and its own
+          findings. The score above stays global; everything below is scoped
+          to the selected page, so a five-page scan reads as five short
+          reports instead of one long wall. */}
+      <PageTabs
+        pages={results.pages}
+        findings={results.findings}
+        viewportWidth={results.scan.viewportWidth}
+        viewportHeight={results.scan.viewportHeight}
+      />
+
+      {results.duplicatesGrouped > 0 ? (
+        <p className="text-xs text-zinc-500 dark:text-zinc-400">
+          {results.duplicatesGrouped} duplicate{" "}
+          {results.duplicatesGrouped === 1 ? "report" : "reports"} grouped —
+          repeated instances of the same problem are counted once above.
         </p>
       ) : null}
-
-      {page?.screenshotUrl ? (
-        <AnnotatedScreenshot
-          page={page}
-          findings={results.findings.filter((finding) => finding.pageUrl === page.url)}
-          viewportWidth={results.scan.viewportWidth}
-          viewportHeight={results.scan.viewportHeight}
-        />
-      ) : null}
-
-      {/* Every page the crawl visited, with what it cost and what it found.
-          The hero screenshot above stays the first page; this is the map of
-          the whole run, and each row links its own screenshot. */}
-      {multiPage ? (
-        <section className="overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-          <h2 className="border-b border-zinc-200 px-5 py-3 text-sm font-semibold text-zinc-900 dark:border-zinc-800 dark:text-zinc-100">
-            Pages scanned
-            <span className="ml-2 text-sm font-normal text-zinc-500">
-              {results.scan.pagesScanned} of {results.scan.pagesTotal}
-              {results.scan.pagesFailed > 0 ? ` · ${results.scan.pagesFailed} failed` : ""}
-            </span>
-          </h2>
-          <ul className="divide-y divide-zinc-100 dark:divide-zinc-800">
-            {results.pages.map((scanned) => {
-              const findingCount = findingsByPageUrl.get(scanned.url) ?? 0;
-              return (
-                <li
-                  key={scanned.id}
-                  className="flex flex-wrap items-center gap-x-4 gap-y-1 px-5 py-3 text-sm"
-                >
-                  <span className="min-w-0 flex-1 truncate">
-                    <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                      {scanned.title ?? scanned.url}
-                    </span>
-                    <span className="mt-0.5 block truncate font-mono text-xs text-zinc-500 dark:text-zinc-400">
-                      {scanned.url}
-                    </span>
-                  </span>
-                  <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                    {scanned.statusCode === null
-                      ? scanned.errorMessage ?? "not analysed"
-                      : `HTTP ${scanned.statusCode}`}
-                    {scanned.loadTimeMs !== null
-                      ? ` · ${(scanned.loadTimeMs / 1000).toFixed(2)}s`
-                      : ""}
-                  </span>
-                  <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                    {findingCount === 0 ? "no findings" : `${findingCount} finding${findingCount === 1 ? "" : "s"}`}
-                  </span>
-                  {scanned.screenshotUrl ? (
-                    <a
-                      href={scanned.screenshotUrl}
-                      className="text-xs font-medium text-zinc-900 underline underline-offset-4 dark:text-zinc-100"
-                    >
-                      Screenshot
-                    </a>
-                  ) : null}
-                </li>
-              );
-            })}
-          </ul>
-        </section>
-      ) : null}
-
-      <div className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
-        <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
-          Findings
-          <span className="ml-2 text-sm font-normal text-zinc-500 dark:text-zinc-400">
-            {results.counts.total} {results.counts.total === 1 ? "issue" : "issues"}
-          </span>
-          {results.duplicatesGrouped > 0 ? (
-            <span className="ml-2 text-xs font-normal text-zinc-500 dark:text-zinc-400">
-              · {results.duplicatesGrouped} duplicate{" "}
-              {results.duplicatesGrouped === 1 ? "report" : "reports"} grouped
-            </span>
-          ) : null}
-        </h2>
-        <div className="mt-4">
-          <SeveritySummary counts={results.counts} />
-        </div>
-      </div>
-
-      <FindingsList findings={results.findings} />
 
       <CoveragePanel coverage={results.coverage} />
 
