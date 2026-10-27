@@ -1,14 +1,18 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { track } from "@/lib/analytics";
+import { generatePalette } from "@/lib/design-system/palette/generate";
+import type { PaletteStrategyId } from "@/lib/design-system/types";
 
 type Suggestion = {
   name: string;
   description: string;
   primary: string;
   strategy: string;
+  rationale: string;
+  matchedKeywords: string[];
 };
 
 const STRATEGY_LABELS: Record<string, string> = {
@@ -25,6 +29,72 @@ function generatorHref(suggestion: Suggestion): string {
     strategy: suggestion.strategy,
   });
   return `/design-system?${params.toString()}`;
+}
+
+function SuggestionCard({ suggestion: s }: { suggestion: Suggestion }) {
+  const palette = useMemo(
+    () => generatePalette(s.primary, s.strategy as PaletteStrategyId),
+    [s.primary, s.strategy],
+  );
+  return (
+    <li className="overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+      {/* Full derived palette, not just the seed: the exact swatches the
+          generator will build from this primary + strategy. */}
+      <div className="flex h-24" aria-label={`${s.name} palette preview`}>
+        {palette.map((swatch) => (
+          <div
+            key={swatch.index}
+            className="flex min-w-0 flex-1 items-end justify-center p-1.5"
+            style={{ backgroundColor: swatch.hex }}
+            title={`${swatch.role}: ${swatch.hex}`}
+          >
+            <span className="truncate rounded-md bg-black/30 px-1.5 py-0.5 font-mono text-[10px] uppercase text-white">
+              {swatch.hex}
+            </span>
+          </div>
+        ))}
+      </div>
+      <div className="p-4">
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            {s.name}
+          </p>
+          <span className="shrink-0 rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+            {STRATEGY_LABELS[s.strategy] ?? s.strategy}
+          </span>
+        </div>
+        <p className="mt-1 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+          {s.description}
+        </p>
+        <div className="mt-3 rounded-lg bg-zinc-50 p-3 dark:bg-zinc-800/60">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+            Why this works
+          </p>
+          <p className="mt-1 text-xs leading-5 text-zinc-600 dark:text-zinc-300">
+            {s.rationale}
+          </p>
+          {s.matchedKeywords.length > 0 && (
+            <p className="mt-2 flex flex-wrap gap-1.5">
+              {s.matchedKeywords.map((keyword) => (
+                <span
+                  key={keyword}
+                  className="rounded-full border border-zinc-200 bg-white px-2 py-0.5 font-mono text-[11px] text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                >
+                  “{keyword}”
+                </span>
+              ))}
+            </p>
+          )}
+        </div>
+        <Link
+          href={generatorHref(s)}
+          className="mt-3 inline-block rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+        >
+          Preview in generator
+        </Link>
+      </div>
+    </li>
+  );
 }
 
 export function AiPaletteTool() {
@@ -110,36 +180,7 @@ export function AiPaletteTool() {
       {suggestions.length > 0 && (
         <ul className="grid gap-4 sm:grid-cols-2">
           {suggestions.map((s) => (
-            <li
-              key={s.name}
-              className="overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900"
-            >
-              <div
-                className="flex h-24 items-end justify-between p-3"
-                style={{ backgroundColor: s.primary }}
-              >
-                <span className="rounded-md bg-black/30 px-2 py-0.5 font-mono text-xs uppercase text-white">
-                  {s.primary}
-                </span>
-                <span className="rounded-full bg-black/30 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-white">
-                  {STRATEGY_LABELS[s.strategy] ?? s.strategy}
-                </span>
-              </div>
-              <div className="p-4">
-                <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                  {s.name}
-                </p>
-                <p className="mt-1 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                  {s.description}
-                </p>
-                <Link
-                  href={generatorHref(s)}
-                  className="mt-3 inline-block rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
-                >
-                  Preview in generator
-                </Link>
-              </div>
-            </li>
+            <SuggestionCard key={s.name} suggestion={s} />
           ))}
         </ul>
       )}
