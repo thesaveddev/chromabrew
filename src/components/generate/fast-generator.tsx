@@ -158,15 +158,24 @@ function cmykString(hex: string): string {
   }
 }
 
-/** Five tints/shades of a colour across the OKLCH lightness axis. */
+/** Twelve tints/shades of a colour across the OKLCH lightness axis. */
 function shadesOf(hex: string): string[] {
   try {
     const { c, h } = rgbToOklch(hexToRgb(hex));
-    return [0.22, 0.38, 0.55, 0.72, 0.88].map((l) =>
-      oklchToHex({ l, c: Math.min(c, 0.28), h }),
+    return Array.from({ length: 12 }, (_, k) =>
+      oklchToHex({ l: 0.1 + ((0.95 - 0.1) * k) / 11, c: Math.min(c, 0.28), h }),
     );
   } catch {
     return [hex];
+  }
+}
+
+function oklchString(hex: string): string {
+  try {
+    const { l, c, h } = rgbToOklch(hexToRgb(hex));
+    return `${l.toFixed(3)} ${c.toFixed(3)} ${h.toFixed(1)}°`;
+  } catch {
+    return "";
   }
 }
 
@@ -225,7 +234,8 @@ function ContrastIcon({ className = "h-5 w-5" }: { className?: string }) {
 function PencilIcon({ className = "h-5 w-5" }: { className?: string }) {
   return (
     <svg viewBox="0 0 20 20" className={className} fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="m13.5 3.5 3 3L7 16l-4 1 1-4z" />
+      <path d="M4 16.5 4.6 13l9.5-9.5a1.8 1.8 0 0 1 2.6 0l.3.3a1.8 1.8 0 0 1 0 2.6L7.5 16z" />
+      <path d="M12.5 5.5c.8-.8 1.7-1.5 2.8-2M5 19h14" />
     </svg>
   );
 }
@@ -235,6 +245,34 @@ function PipetteIcon({ className = "h-5 w-5" }: { className?: string }) {
     <svg viewBox="0 0 20 20" className={className} fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
       <path d="m2.5 17.5 1-4L13 4l3.5 3.5L7 17z" />
       <path d="M14 3.5l2.5 2.5" />
+    </svg>
+  );
+}
+
+/** Keyboard — type a hex value (distinct from the pipette picker). */
+function TypeHexIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 20 20" className={className} fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <rect x="2" y="5.5" width="16" height="10" rx="2.5" />
+      <path d="M5.2 8.6h1.6M8.4 8.6h1.6M11.6 8.6h1.6M14.4 8.6h.4M5.2 11.4h1.6M8.4 11.4h4.4M14.4 11.4h.4M7 13.4h6" strokeWidth={1.4} />
+    </svg>
+  );
+}
+
+function InfoIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 20 20" className={className} fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" aria-hidden>
+      <circle cx="10" cy="10" r="7.5" />
+      <path d="M10 9.3V14" />
+      <circle cx="10" cy="6.8" r="0.4" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+function BookmarkIcon({ className = "h-5 w-5", filled = false }: { className?: string; filled?: boolean }) {
+  return (
+    <svg viewBox="0 0 20 20" className={className} fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M5.5 3h9a1 1 0 0 1 1 1v12.5L10 13.5l-5.5 3V4a1 1 0 0 1 1-1z" />
     </svg>
   );
 }
@@ -291,7 +329,16 @@ export function FastGenerator() {
   const [imgLabels, setImgLabels] = useState(true);
   const [valueFormat, setValueFormat] = useState<ValueFormat>("rgb");
   const [savedOpen, setSavedOpen] = useState(false);
-  const [savedList, setSavedList] = useState<{ id: string; name: string; colors: string[]; createdAt: string }[]>([]);
+  interface SavedEntry {
+    id: string;
+    name: string;
+    kind: "palette" | "color";
+    colors: string[];
+    color?: string;
+    createdAt: string;
+  }
+  const [savedList, setSavedList] = useState<SavedEntry[]>([]);
+  const [infoFor, setInfoFor] = useState<number | null>(null);
 
   // Per-column popovers.
   const [shadesFor, setShadesFor] = useState<number | null>(null);
@@ -317,6 +364,7 @@ export function FastGenerator() {
     setContrastFor(null);
     setEditingHex(null);
     setSavedOpen(false);
+    setInfoFor(null);
   }, []);
 
   // What the user sees: tuning applied deterministically, keepers untouched.
@@ -518,7 +566,7 @@ export function FastGenerator() {
     }
   }, []);
 
-  const persistSaved = (next: { id: string; name: string; colors: string[]; createdAt: string }[]) => {
+  const persistSaved = (next: SavedEntry[]) => {
     setSavedList(next);
     try {
       localStorage.setItem("chromabrew-saved-palettes", JSON.stringify(next));
@@ -528,17 +576,44 @@ export function FastGenerator() {
   };
 
   const saveCurrent = () => {
-    const entry = {
+    const entry: SavedEntry = {
       id: `${Date.now()}`,
       name: colors.length > 1 ? `${displayNames[0]} +${colors.length - 1}` : displayNames[0],
+      kind: "palette",
       colors: [...colors],
       createdAt: new Date().toISOString().slice(0, 10),
     };
-    persistSaved([entry, ...savedList].slice(0, 24));
+    persistSaved([entry, ...savedList].slice(0, 48));
     flashCopied("saved");
   };
 
-  const applySaved = (entry: { colors: string[] }) => {
+  const isColorSaved = (hex: string) =>
+    savedList.some((e) => e.kind === "color" && e.color?.toLowerCase() === hex.toLowerCase());
+
+  const toggleSaveColor = (index: number) => {
+    const hex = colors[index].toLowerCase();
+    if (isColorSaved(hex)) {
+      persistSaved(savedList.filter((e) => !(e.kind === "color" && e.color?.toLowerCase() === hex)));
+    } else {
+      const entry: SavedEntry = {
+        id: `${Date.now()}`,
+        name: displayNames[index],
+        kind: "color",
+        colors: [],
+        color: hex,
+        createdAt: new Date().toISOString().slice(0, 10),
+      };
+      persistSaved([entry, ...savedList].slice(0, 48));
+      flashCopied("saved");
+    }
+  };
+
+  const applySaved = (entry: SavedEntry) => {
+    if (entry.kind === "color" && entry.color) {
+      copyColor(entry.color);
+      setSavedOpen(false);
+      return;
+    }
     setBase([...entry.colors]);
     setLocked(entry.colors.map(() => false));
     setSavedOpen(false);
@@ -663,7 +738,7 @@ export function FastGenerator() {
   }, [colors]);
 
   const tuningActive = !settingsAreDefault(settings);
-  const anyOverlay = tuneOpen || viewOpen || exportOpen || savedOpen || shadesFor !== null || contrastFor !== null;
+  const anyOverlay = tuneOpen || viewOpen || exportOpen || savedOpen || shadesFor !== null || contrastFor !== null || infoFor !== null;
   const tuningLabel = [
     strategy === "random" ? null : STRATEGY_OPTIONS.find((o) => o.id === strategy)?.label,
     tuningActive ? "tuned" : null,
@@ -762,15 +837,32 @@ export function FastGenerator() {
                     <ul className="max-h-64 overflow-y-auto border-t border-zinc-200 dark:border-zinc-700">
                       {savedList.map((entry) => (
                         <li key={entry.id} className="flex items-center gap-2 px-3 py-2 hover:bg-zinc-50 dark:hover:bg-zinc-800">
-                          <button type="button" onClick={() => applySaved(entry)} title={`Open ${entry.name}`} className="min-w-0 flex-1 text-left">
-                            <span className="flex h-7 overflow-hidden rounded-md ring-1 ring-black/10" aria-hidden>
-                              {entry.colors.map((c) => (
-                                <span key={c} className="h-full flex-1" style={{ backgroundColor: c }} />
-                              ))}
-                            </span>
-                            <span className="mt-1 block truncate text-xs font-medium text-zinc-700 dark:text-zinc-300">
-                              {entry.name} <span className="font-normal text-zinc-400">· {entry.createdAt}</span>
-                            </span>
+                          <button
+                            type="button"
+                            onClick={() => applySaved(entry)}
+                            title={entry.kind === "color" ? `Copy ${entry.color?.toUpperCase()}` : `Open ${entry.name}`}
+                            className="min-w-0 flex-1 text-left"
+                          >
+                            {entry.kind === "color" && entry.color ? (
+                              <span className="flex items-center gap-2">
+                                <span className="h-7 w-7 shrink-0 rounded-md ring-1 ring-black/10" style={{ backgroundColor: entry.color }} aria-hidden />
+                                <span className="min-w-0">
+                                  <span className="block truncate text-xs font-medium text-zinc-700 dark:text-zinc-300">{entry.name}</span>
+                                  <span className="block font-mono text-[11px] uppercase text-zinc-400">{entry.color.toUpperCase()} · {entry.createdAt}</span>
+                                </span>
+                              </span>
+                            ) : (
+                              <>
+                                <span className="flex h-7 overflow-hidden rounded-md ring-1 ring-black/10" aria-hidden>
+                                  {entry.colors.map((c) => (
+                                    <span key={c} className="h-full flex-1" style={{ backgroundColor: c }} />
+                                  ))}
+                                </span>
+                                <span className="mt-1 block truncate text-xs font-medium text-zinc-700 dark:text-zinc-300">
+                                  {entry.name} <span className="font-normal text-zinc-400">· {entry.createdAt}</span>
+                                </span>
+                              </>
+                            )}
                           </button>
                           <button
                             type="button"
@@ -824,6 +916,17 @@ export function FastGenerator() {
           const ink = inkOn(hex);
           const named = names[i];
           const shades = shadesFor === i ? shadesOf(hex) : null;
+          const shadeTargetL = shades ? (() => { try { return rgbToOklch(hexToRgb(hex)).l; } catch { return 0.5; } })() : 0.5;
+          const nearestShade = shades
+            ? shades.reduce((best, s, k) => {
+                try {
+                  const l = rgbToOklch(hexToRgb(s)).l;
+                  const bl = rgbToOklch(hexToRgb(shades[best])).l;
+                  return Math.abs(l - shadeTargetL) < Math.abs(bl - shadeTargetL) ? k : best;
+                } catch { return best; }
+              }, 0)
+            : -1;
+          const colorSaved = isColorSaved(hex);
           const showContrast = contrastFor === i;
           const ratioWhite = contrastRatio(hex, "#ffffff");
           const ratioBlack = contrastRatio(hex, "#000000");
@@ -901,7 +1004,7 @@ export function FastGenerator() {
                 title="Type a hex value"
                 className="rounded-full p-2 hover:bg-black/10 dark:hover:bg-white/20"
               >
-                <PencilIcon />
+                <TypeHexIcon />
               </button>
               <label
                 title="Pick a custom color"
@@ -917,6 +1020,30 @@ export function FastGenerator() {
                   aria-label={`Pick color ${i + 1}`}
                 />
               </label>
+              <button
+                type="button"
+                onClick={() => {
+                  setInfoFor(infoFor === i ? null : i);
+                  setShadesFor(null);
+                  setContrastFor(null);
+                }}
+                aria-label={infoFor === i ? `Hide color info for color ${i + 1}` : `Show color info for color ${i + 1}`}
+                aria-pressed={infoFor === i}
+                title="Color info — values, name, best text"
+                className={`rounded-full p-2 hover:bg-black/10 dark:hover:bg-white/20 ${infoFor === i ? "bg-black/15 dark:bg-white/25" : ""}`}
+              >
+                <InfoIcon />
+              </button>
+              <button
+                type="button"
+                onClick={() => toggleSaveColor(i)}
+                aria-label={colorSaved ? `Remove color ${i + 1} from saved` : `Save color ${i + 1}`}
+                aria-pressed={colorSaved}
+                title={colorSaved ? "Saved — click to remove" : "Save this color"}
+                className="rounded-full p-2 hover:bg-black/10 dark:hover:bg-white/20"
+              >
+                <BookmarkIcon filled={colorSaved} />
+              </button>
               <button
                 type="button"
                 onClick={() => removeAt(i)}
@@ -951,25 +1078,41 @@ export function FastGenerator() {
                 />
                 <div className="absolute inset-x-3 top-12 z-40 overflow-hidden rounded-xl bg-white shadow-xl ring-1 ring-black/10 sm:top-14 dark:bg-zinc-900 dark:ring-white/15">
                   <p className="px-3 pb-1 pt-2.5 text-left text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-500 dark:text-zinc-400">
-                    Shades of {displayNames[i]}
+                    Shades of {displayNames[i]} · <span className="normal-case tracking-normal">◆ marks current</span>
                   </p>
-                  <div className="flex">
-                    {shades.map((shade) => (
-                      <button
-                        key={shade}
-                        type="button"
-                        onClick={() => {
-                          setColorAt(i, shade);
-                          setShadesFor(null);
-                        }}
-                        title={`Use ${shade.toUpperCase()}`}
-                        className="h-14 flex-1 transition-transform hover:scale-y-110"
-                        style={{ backgroundColor: shade }}
-                      />
-                    ))}
+                  <div className="flex px-3 pb-1">
+                    {shades.map((shade, k) => {
+                      let light = 0;
+                      try { light = Math.round(rgbToOklch(hexToRgb(shade)).l * 100); } catch { /* keep 0 */ }
+                      const current = k === nearestShade;
+                      return (
+                        <button
+                          key={`${shade}-${k}`}
+                          type="button"
+                          onClick={() => {
+                            setColorAt(i, shade);
+                            setShadesFor(null);
+                          }}
+                          title={`${shade.toUpperCase()} · lightness ${light}% — click to use`}
+                          className="group/sh flex-1"
+                        >
+                          <span
+                            className={`block h-12 transition-transform group-hover/sh:scale-y-110 ${current ? "ring-2 ring-inset ring-white/90 dark:ring-black/60" : ""}`}
+                            style={{ backgroundColor: shade }}
+                          >
+                            {current ? (
+                              <span className="flex h-full items-center justify-center text-[10px]" style={{ color: inkOn(shade).color }} aria-hidden>◆</span>
+                            ) : null}
+                          </span>
+                          <span className={`block py-1 text-center font-mono text-[9px] tabular-nums ${current ? "font-bold text-zinc-900 dark:text-zinc-100" : "text-zinc-400 dark:text-zinc-500"}`}>
+                            {light}
+                          </span>
+                        </button>
+                      );
+                    })}
                   </div>
-                  <p className="px-3 py-2 text-left font-mono text-[11px] text-zinc-500 dark:text-zinc-400">
-                    Click a shade to use it
+                  <p className="border-t border-zinc-100 px-3 py-2 text-left font-mono text-[11px] text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
+                    12 steps · click a shade to use it
                   </p>
                 </div>
               </>
@@ -1031,6 +1174,82 @@ export function FastGenerator() {
               </>
             ) : null}
 
+            {/* Color info modal */}
+            {infoFor === i ? (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label={`Color info for ${displayNames[i]}`}>
+                <button type="button" aria-label="Close color info" className="absolute inset-0 cursor-default bg-black/50" onClick={() => setInfoFor(null)} />
+                <div className="relative w-full max-w-xs overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-zinc-900">
+                  <div className="flex items-center gap-3 p-4" style={{ backgroundColor: hex }}>
+                    <span className="h-12 w-12 shrink-0 rounded-xl ring-2 ring-white/60" style={{ backgroundColor: hex }} aria-hidden />
+                    <span className="min-w-0 flex-1 text-left">
+                      <span className="block truncate text-base font-bold" style={{ color: ink.color }}>{displayNames[i]}</span>
+                      <span className="block font-mono text-sm uppercase opacity-80" style={{ color: ink.color }}>{hex.toUpperCase()}</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setInfoFor(null)}
+                      aria-label="Close color info"
+                      className="rounded-full p-1.5 hover:bg-black/10 dark:hover:bg-white/20"
+                      style={{ color: ink.color }}
+                    >
+                      <CloseIcon className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <dl className="space-y-1 px-4 py-3 text-sm">
+                    {["HEX", "RGB", "HSL", "CMYK", "OKLCH"].map((fmt) => {
+                      const value =
+                        fmt === "HEX" ? hex.toUpperCase()
+                        : fmt === "RGB" ? rgbString(hex)
+                        : fmt === "HSL" ? hslString(hex)
+                        : fmt === "CMYK" ? cmykString(hex)
+                        : oklchString(hex);
+                      return (
+                        <div key={fmt} className="flex items-center justify-between gap-2">
+                          <dt className="w-14 shrink-0 text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-500 dark:text-zinc-400">{fmt}</dt>
+                          <dd className="min-w-0 flex-1 truncate font-mono text-[13px] text-zinc-800 dark:text-zinc-200">{value}</dd>
+                          <button
+                            type="button"
+                            onClick={() => copyText(value, `info-${i}-${fmt}`)}
+                            aria-label={`Copy ${fmt} value`}
+                            title={`Copy ${fmt}`}
+                            className="rounded-md p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+                          >
+                            {copied === `info-${i}-${fmt}` ? <span className="text-[11px] font-bold">✓</span> : <CopyIcon className="h-4 w-4" />}
+                          </button>
+                        </div>
+                      );
+                    })}
+                    <div className="flex items-center justify-between gap-2 border-t border-zinc-100 pt-2 dark:border-zinc-800">
+                      <dt className="text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-500 dark:text-zinc-400">Best text</dt>
+                      <dd>
+                        <button
+                          type="button"
+                          className="rounded px-2 py-0.5 font-mono text-[13px] font-semibold"
+                          style={{ backgroundColor: hex, color: bestOn }}
+                          onClick={() => copyText(bestOn.toUpperCase(), `info-${i}-text`)}
+                          title="Copy best text color"
+                        >
+                          {copied === `info-${i}-text` ? "Copied!" : bestOn.toUpperCase()}
+                        </button>
+                      </dd>
+                    </div>
+                  </dl>
+                  <div className="flex gap-2 border-t border-zinc-100 p-3 dark:border-zinc-800">
+                    <Button type="button" variant="primary" className="flex-1 px-3 py-2 text-sm" onClick={() => toggleSaveColor(i)}>
+                      {colorSaved ? "Remove from saved" : "Save this color"}
+                    </Button>
+                    <button
+                      type="button"
+                      onClick={() => copyColor(hex)}
+                      className="rounded-lg border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 hover:border-zinc-500 dark:border-zinc-700 dark:text-zinc-300"
+                    >
+                      {copied === hex ? "Copied!" : "Copy hex"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : null}
+
             <button
               type="button"
               onClick={() => copyText(displayNames[i], `name-${i}`)}
@@ -1083,7 +1302,7 @@ export function FastGenerator() {
                 className="rounded-md px-2 py-1 font-mono text-xl font-semibold uppercase tracking-wider transition-colors hover:bg-black/10 sm:text-2xl dark:hover:bg-white/20"
                 style={{ color: ink.color, textShadow: ink.shadow }}
                 aria-label={`Copy ${hex}`}
-                title="Click to copy · double-click (or pencil icon) to type a hex"
+                title="Click to copy · double-click (or keyboard icon) to type a hex"
               >
                 {copied === hex ? "Copied!" : hex.replace("#", "")}
               </button>
