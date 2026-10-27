@@ -1,36 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AuditSection } from "@/components/home/audit-section";
-import { HeroColourForm } from "@/components/home/hero-form";
-import { HeroPalettes } from "@/components/home/hero-palettes";
-import { PaletteRibbon } from "@/components/home/palette-ribbon";
-import { ThemeMosaic } from "@/components/home/theme-mosaic";
-import { GALLERY_PALETTES, PALETTE_THEMES } from "@/lib/palettes";
-import { buildDesignSystem } from "@/lib/design-system";
-import { DEFAULT_CONFIG } from "@/lib/design-system/share";
-import { PreviewFrame } from "@/components/generator/previews/preview-frame";
-import { SaasPreview } from "@/components/generator/previews/saas-preview";
 import { LinkButton } from "@/components/ui/primitives";
-import { TOOLS, categoryLabel } from "@/lib/tools";
+import { PLANS } from "@/lib/entitlements";
 import { siteUrl } from "@/lib/site-url";
 import { JsonLd } from "@/components/site/json-ld";
 import { defaultOgImage } from "@/lib/og";
-import { ProductHuntBadge } from "@/components/site/product-hunt-badge";
-import { ScrollReveal } from "@/components/site/scroll-reveal";
 
-/**
- * The home page positions the whole toolkit, not just the one-color pipeline.
- *
- * Chromabrew is a color toolkit — palette generation, contrast checking, image
- * color extraction, design tokens and CSS exports. Describing it only as a
- * single-color-to-design-system generator hid every tool that does not sit on
- * that one path, so the title, description and h1 now name the breadth and the
- * pipeline reads as the example rather than the whole product.
- */
 export const metadata: Metadata = {
   title: "Free Color Palette Generator, Design Tools & Website Audit",
-  // Head terms name both product paths: the generator toolkit and the free
-  // website audit. The H1 carries the same two journeys in prose.
   description:
     "Build better design systems and improve the websites you already have: free color palette generator, WCAG contrast checks, design tokens and dark mode — plus a free website audit. No sign-up.",
   alternates: { canonical: "/" },
@@ -51,53 +29,39 @@ export const metadata: Metadata = {
   },
 };
 
-const PIPELINE = [
-  ["One color", "HEX, RGB, HSL or a picked swatch"],
-  ["Color scale", "Perceptual 50–950 in OKLCH"],
-  ["Semantic tokens", "background → primary → status roles"],
-  ["Light + dark", "Independent accessible themes"],
-  ["WCAG checks", "AA / AAA measured, never assumed"],
-  ["Production code", "CSS, Tailwind v4, shadcn/ui, JSON"],
+const CALM_PALETTE = ["#264653", "#2A9D8F", "#E9C46A", "#F4A261", "#E76F51"];
+
+const WHAT_YOU_CAN_DO = [
+  {
+    title: "Generate palettes",
+    body: "Press space for fresh five-color schemes. Lock what you love, copy any hex.",
+    href: "/generate",
+    link: "Open the generator",
+  },
+  {
+    title: "Build a design system",
+    body: "Turn one color into scales, tokens, light and dark themes — WCAG checked.",
+    href: "/design-system",
+    link: "Open the design system generator",
+  },
+  {
+    title: "Audit a live website",
+    body: "Paste a URL. Get contrast and accessibility findings with fixes you can ship.",
+    href: "/audit",
+    link: "Run a free audit",
+  },
 ] as const;
 
-const FEATURES = [
-  {
-    title: "Perceptual color engine",
-    body: "Scales are generated in OKLCH so every step is evenly spaced to the eye — not arbitrary white/black mixes. Your brand hue survives end to end.",
-  },
-  {
-    title: "Semantic design tokens",
-    body: "Stop shipping raw hex values. Get background, surface, primary, border and status roles that map directly onto real component decisions.",
-  },
-  {
-    title: "Accessibility built in",
-    body: "Every key pairing is measured against WCAG 2.x thresholds for normal and large text. Failing pairs offer a nearest-accessible fix in one click.",
-  },
-  {
-    title: "Thoughtful dark mode",
-    body: "Dark themes are constructed independently — lighter primaries, tinted neutrals, verified foregrounds — never a mechanical inversion.",
-  },
-  {
-    title: "Live interface previews",
-    body: "Judge colors where they matter: a SaaS dashboard, marketing page, storefront and mobile app all render with your tokens instantly.",
-  },
-  {
-    title: "Exports developers can ship",
-    body: "Copy CSS variables, DTCG-style JSON, Tailwind CSS v4 theme output or current-convention shadcn/ui variables straight into your codebase.",
-  },
-];
-
-const TOOL_GROUPS = {
-  color: TOOLS.filter((tool) => tool.category === "color"),
-  converter: TOOLS.filter((tool) => tool.category === "converter"),
-  css: TOOLS.filter((tool) => tool.category === "css"),
-  image: TOOLS.filter((tool) => tool.category === "image"),
-  ai: TOOLS.filter((tool) => tool.category === "ai"),
-} as const;
+const POPULAR_TOOLS = [
+  { title: "Contrast checker", href: "/tools/contrast-checker" },
+  { title: "Palette generator", href: "/tools/color-palette-generator" },
+  { title: "Image color extractor", href: "/tools/image-color-extractor" },
+  { title: "Tailwind generator", href: "/tools/tailwind-color-generator" },
+  { title: "Dark mode generator", href: "/tools/dark-mode-generator" },
+  { title: "Shade generator", href: "/tools/shade-generator" },
+] as const;
 
 export default function HomePage() {
-  const demoSystem = buildDesignSystem(DEFAULT_CONFIG);
-
   return (
     <>
       <JsonLd
@@ -114,412 +78,180 @@ export default function HomePage() {
         }}
       />
 
-      {/* Hero — both journeys above the fold: make something new, or fix what
-          already shipped. Split layout, preview on the right, compact height
-          so the ribbon and workflows read without scrolling far. */}
-      <section className="border-b border-zinc-200 dark:border-zinc-800">
-        <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-14 sm:px-6 sm:py-20 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:px-8">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
-              Free browser-based color toolkit
-            </p>
-            <h1 className="mt-3 text-4xl font-bold leading-[1.1] tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-5xl">
-              Build better design systems. Improve the websites you already have.
-            </h1>
-            <p className="mt-4 text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-              Generate accessible palettes, tokens, dark mode and
-              production-ready code — or run a free audit on a live page and
-              see what needs improving.
-            </p>
-            <p className="mt-3 text-sm font-medium text-zinc-500 dark:text-zinc-400">
-              {GALLERY_PALETTES.length} palettes · {PALETTE_THEMES.length} themes · {TOOLS.length} free tools — no sign-up.
-            </p>
-            <div className="mt-6 flex flex-wrap gap-2.5">
-              <LinkButton href="/generate" variant="primary">
-                Generate my palette
-              </LinkButton>
-              <LinkButton href="/audit" variant="secondary">
-                Run a free audit
-              </LinkButton>
-            </div>
-            <div className="mt-8">
-              <HeroColourForm />
-          </div>
-          <p className="mt-4 text-sm text-zinc-500 dark:text-zinc-400">
-            No account. No upload. Everything runs in your browser —{" "}
-            <Link href="/tools" className="font-medium text-zinc-700 dark:text-zinc-300 underline decoration-zinc-300 underline-offset-4 hover:text-zinc-900 dark:hover:text-zinc-100">
-              or explore the individual tools
-            </Link>
-            . Already have a site?{" "}
-            <Link href="/audit" className="font-medium text-zinc-700 dark:text-zinc-300 underline decoration-zinc-300 underline-offset-4 hover:text-zinc-900 dark:hover:text-zinc-100">
-              audit it for accessibility problems
-            </Link>
-            .
-          </p>
-          <div className="mt-6">
-            <ProductHuntBadge />
-          </div>
-          </div>
-          <HeroPalettes palettes={GALLERY_PALETTES} />
-        </div>
-      </section>
-
-      <PaletteRibbon />
-
-      {/* Two workflows — the two doors into the product, stated once and
-          pointed at the right routes. Create builds from one color; Audit
-          reads a page already shipped. */}
-      <section aria-labelledby="workflows-heading" className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 lg:px-8">
-        <h2 id="workflows-heading" className="sr-only">
-          Two ways to use ChromaBrew
-        </h2>
-        <div className="grid gap-4 md:grid-cols-2">
-          <article className="flex flex-col rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
-              Create
-            </p>
-            <h3 className="mt-2 text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
-              From one colour to a system you can ship.
-            </h3>
-            <p className="mt-2 flex-1 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-              Generate accessible colour scales, palettes, design tokens and
-              reusable UI foundations from a single colour — with WCAG checks
-              and dark mode built in.
-            </p>
-            <div className="mt-5">
-              <LinkButton href="/design-system" variant="secondary">
-                Explore the generator
-              </LinkButton>
-            </div>
-          </article>
-          <article className="flex flex-col rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
-              Audit
-            </p>
-            <h3 className="mt-2 text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
-              See what is failing on a page you already shipped.
-            </h3>
-            <p className="mt-2 flex-1 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-              Audit a live website, identify design inconsistencies and
-              accessibility issues, preview improvements and get actionable
-              guidance. Free, no account needed to run it.
-            </p>
-            <div className="mt-5">
-              <LinkButton href="/audit" variant="secondary">
-                Explore website audit
-              </LinkButton>
-            </div>
-          </article>
-        </div>
-      </section>
-
-      {/* Tools — every color job, one click away, grouped so each category
-          has a job instead of one long undifferentiated grid. */}
-      <section aria-labelledby="tools-heading" className="border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/60 py-16">
-        <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
-          <h2 id="tools-heading" className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
-            Free color tools for every step
-          </h2>
-          <p className="mt-1 max-w-2xl text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-            The same engines behind the{" "}
-            <Link href="/design-system" className="font-medium text-zinc-900 underline underline-offset-4 dark:text-zinc-100">
-              design system generator
-            </Link>
-            {" "}as focused single-purpose tools — plus a{" "}
-            <Link href="/audit" className="font-medium text-zinc-900 underline underline-offset-4 dark:text-zinc-100">
-              free website audit
-            </Link>
-            {" "}for pages already shipped. All free, no sign-up required.
-          </p>
-          {(Object.keys(TOOL_GROUPS) as (keyof typeof TOOL_GROUPS)[]).map((category) => (
-            <div key={category} className="mt-8 first:mt-6">
-              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                {categoryLabel(category)}
-              </h3>
-              <ul className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {TOOL_GROUPS[category].map((tool) => (
-                  <li key={tool.href}>
-                    <Link
-                      href={tool.href}
-                      className="group block h-full rounded-xl border border-zinc-200 bg-white p-4 transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-600 dark:focus-visible:outline-zinc-100"
-                    >
-                      <span className="block text-sm font-medium text-zinc-900 dark:text-zinc-100 group-hover:underline group-hover:underline-offset-4">
-                        {tool.title}
-                      </span>
-                      <span className="mt-1 block text-xs leading-5 text-zinc-500 dark:text-zinc-400">
-                        {tool.blurb}
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-          <p className="mt-6 text-sm text-zinc-500 dark:text-zinc-400">
-            Not sure which tool you need?{" "}
-            <Link href="/color-tools" className="font-medium text-zinc-700 underline decoration-zinc-300 underline-offset-4 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-zinc-100">
-              Find your color tool
-            </Link>
-            {" "}or{" "}
-            <Link href="/tools" className="font-medium text-zinc-700 underline decoration-zinc-300 underline-offset-4 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-zinc-100">
-              browse all {TOOLS.length} free tools
-            </Link>
-            .
-          </p>
-        </div>
-      </section>
-
-      {/* Theme mosaic — browsing starts by feeling, not by reading. */}
-      <section aria-labelledby="themes-heading" className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 lg:px-8">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
-              Palette gallery
-            </p>              <h2 id="themes-heading" className="mt-2 text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-3xl">
-                Browse {GALLERY_PALETTES.length} color palettes by mood.
-              </h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-              Every palette is hand-picked — five stops that work together —
-              and every one opens directly in the design system generator.
-              Pick the feeling; the hex codes follow.
-            </p>
-          </div>
-          <LinkButton href="/palettes" variant="secondary">
-            Search all palettes
+      {/* Hero — one idea, two doors. Centered like Coolors: headline,
+          one supporting line, two calm actions, one quiet palette. */}
+      <section className="mx-auto w-full max-w-3xl px-4 pb-10 pt-16 text-center sm:px-6 sm:pt-24">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">
+          Free color toolkit · No sign-up
+        </p>
+        <h1 className="mt-4 text-4xl font-bold leading-[1.08] tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-6xl">
+          Colors that work. Sites that pass.
+        </h1>
+        <p className="mx-auto mt-5 max-w-xl text-lg leading-8 text-zinc-600 dark:text-zinc-400">
+          Generate accessible palettes and design tokens — or audit a live
+          website for contrast and accessibility issues. Free in your browser.
+        </p>
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <LinkButton href="/generate" variant="primary" className="px-6 py-3 text-base">
+            Start generating — it&apos;s free
+          </LinkButton>
+          <LinkButton href="/audit" variant="secondary" className="px-6 py-3 text-base">
+            Run a free audit
           </LinkButton>
         </div>
-        <ThemeMosaic />
+
+        {/* One calm palette strip. Static, no motion, links into the real generator. */}
+        <Link
+          href="/generate"
+          aria-label="Open the palette generator"
+          className="group mt-12 block overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800"
+        >
+          <span className="flex h-28 sm:h-36" aria-hidden>
+            {CALM_PALETTE.map((hex) => (
+              <span key={hex} className="flex-1" style={{ backgroundColor: hex }} />
+            ))}
+          </span>
+          <span className="flex items-center justify-between bg-white px-4 py-3 dark:bg-zinc-900">
+            <span className="font-mono text-xs tracking-wide text-zinc-500 dark:text-zinc-400">
+              #264653 · #2A9D8F · #E9C46A · #F4A261 · #E76F51
+            </span>
+            <span className="text-sm font-medium text-zinc-900 group-hover:underline dark:text-zinc-100">
+              Open in generator →
+            </span>
+          </span>
+        </Link>
       </section>
 
-      {/* Instant generator band — the fastest door into making. */}
-      <section aria-labelledby="generate-heading" className="bg-zinc-950 py-20 sm:py-24 dark:bg-black">
-        <div className="mx-auto grid w-full max-w-6xl items-center gap-10 px-4 sm:px-6 lg:grid-cols-[1fr_minmax(0,1.15fr)] lg:gap-14 lg:px-8">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-400">
-              Instant palettes
-            </p>
-            <h2 id="generate-heading" className="mt-3 text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl">
-              Press space. Keep the good ones.
-            </h2>
-            <p className="mt-4 max-w-xl text-base leading-7 text-zinc-400">
-              Every press of the spacebar deals a fresh set of colors. Lock the
-              keepers, nudge brightness and vibrance, then copy any hex or
-              share the whole palette as a link — nothing to sign up for.
-            </p>
-            <LinkButton href="/generate" variant="primary" className="mt-7">
-              Start shuffling
-            </LinkButton>
-          </div>
-
-          {/* Static mock of the generator's own surface — the real one lives at /generate. */}
-          <div
-            aria-hidden
-            className="overflow-hidden rounded-2xl border border-zinc-700/60 bg-zinc-900 shadow-2xl ring-1 ring-black/20"
-          >
-            <div className="flex items-center gap-3 border-b border-zinc-800 px-4 py-3">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
-                Instant palettes
-              </span>
-              <span className="ml-auto rounded-lg bg-zinc-100 px-3 py-1.5 text-xs font-medium text-zinc-900">
-                Shuffle 
-                <kbd className="rounded bg-zinc-900/10 px-1.5 py-0.5 font-sans">space</kbd>
-              </span>
-              <span className="rounded-lg border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300">
-                Copy link
-              </span>
-            </div>
-            <div className="flex h-44 sm:h-56">
-              {["#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#e76f51"].map(
-                (hex, i) => (
-                  <div
-                    key={hex}
-                    className="relative flex-1"
-                    style={{ backgroundColor: hex }}
-                  >
-                    {i === 1 ? (
-                      <span className="absolute left-2 top-2 rounded-full bg-black/30 px-2 py-0.5 text-[10px] font-medium text-white">
-                        Locked
-                      </span>
-                    ) : null}
-                    <span className="absolute inset-x-0 bottom-0 bg-black/25 px-1 py-1.5 text-center font-mono text-[10px] text-white sm:text-[11px]">
-                      {hex}
-                    </span>
-                  </div>
-                ),
-              )}
-            </div>
-            <div className="flex flex-wrap items-center gap-x-5 gap-y-1 border-t border-zinc-800 px-4 py-3 text-[11px] text-zinc-400">
-              <span className="tabular-nums">5 colors</span>
-              <span>Brightness 0%</span>
-              <span>Vibrance 100%</span>
-              <span className="ml-auto flex items-center gap-1.5 text-zinc-500">
-                <kbd className="rounded border border-zinc-700 px-1.5 py-0.5 font-sans">space</kbd>
-                to shuffle
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Pipeline — steps are list items, not headings: the section already
-          has an accessible name, and six H2s here broke the outline. */}
-      <section aria-label="How it works" className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 lg:px-8">
-        <ol className="grid gap-x-6 gap-y-6 sm:grid-cols-2 lg:grid-cols-6">
-          {PIPELINE.map(([title, body], i) => (
-            <ScrollReveal key={title} as="li" delay={(i % 6) * 70} className="relative">
-              {/* zinc-400 on white measures 2.62:1 at 11px — below AA for body text. */}
-              <span className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                Step {i + 1}
-              </span>
-              <p className="mt-1 text-sm font-semibold text-zinc-900 dark:text-zinc-100">{title}</p>
-              <p className="mt-1 text-xs leading-5 text-zinc-600 dark:text-zinc-400">{body}</p>
-            </ScrollReveal>
-          ))}
-        </ol>
-      </section>
-
-      {/* Live demo */}
-      <section aria-labelledby="demo-heading" className="bg-zinc-50 dark:bg-zinc-900/60 py-16">
-        <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <h2 id="demo-heading" className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
-                Real interfaces, not swatches
-              </h2>
-              <p className="mt-1 max-w-xl text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                This dashboard is rendered live from the example color
-                #47003A. Open the generator to change it and watch every
-                surface, badge and button follow.
-              </p>
-            </div>
-            <LinkButton href="/design-system?primary=47003A" variant="secondary">
-              Open in generator
-            </LinkButton>
-          </div>
-          <PreviewFrame system={demoSystem} mode="light" className="shadow-md">
-            <SaasPreview system={demoSystem} />
-          </PreviewFrame>
-        </div>
-      </section>
-
-      {/* Design-system capabilities — what the generator itself guarantees.
-          Kept technical and terse so the use cases below can stay task-led
-          without repeating these sentences. */}
-      <section aria-labelledby="capabilities-heading" className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
-        <h2 id="capabilities-heading" className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
-          Design-system capabilities, built in
+      {/* What you can do — three quiet cards, nothing more. */}
+      <section
+        aria-labelledby="do-heading"
+        className="mx-auto w-full max-w-5xl px-4 py-14 sm:px-6"
+      >
+        <h2
+          id="do-heading"
+          className="text-center text-sm font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400"
+        >
+          What you can do
         </h2>
-        <p className="mt-1 max-w-2xl text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-          What the{" "}
-          <Link href="/design-system" className="font-medium text-zinc-900 underline underline-offset-4 dark:text-zinc-100">
-            design system generator
-          </Link>
-          {" "}produces from your color — measured, themed and export-ready.
-        </p>
-        <div className="mt-6 grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
-          {FEATURES.map((feature, i) => (
-            <ScrollReveal key={feature.title} as="article" delay={(i % 3) * 80}>
-              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{feature.title}</h3>
-              <p className="mt-1.5 text-sm leading-6 text-zinc-600 dark:text-zinc-400">{feature.body}</p>
-            </ScrollReveal>
+        <div className="mt-8 grid gap-4 md:grid-cols-3">
+          {WHAT_YOU_CAN_DO.map((item) => (
+            <article
+              key={item.title}
+              className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900"
+            >
+              <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
+                {item.title}
+              </h3>
+              <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+                {item.body}
+              </p>
+              <Link
+                href={item.href}
+                className="mt-4 inline-block text-sm font-medium text-zinc-900 underline underline-offset-4 dark:text-zinc-100"
+              >
+                {item.link}
+              </Link>
+            </article>
           ))}
         </div>
       </section>
 
-      {/* The website audit is the one capability that looks at work already
-          shipped. Its section lives in its own component so its claims and
-          links are asserted in a test. */}
       <AuditSection />
 
-      {/* Use cases — task-led, not a reprint of the capabilities grid above.
-          Each card names the job and points at one tool. */}
-      <section aria-labelledby="use-cases-heading" className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
-        <h2 id="use-cases-heading" className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
-          What you can do with ChromaBrew
-        </h2>
-        <p className="mt-1 max-w-2xl text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-          Start from a photo, a brand color, or a page that already ships —
-          each path ends in the same checked, exportable system.
+      {/* Pro — Free vs Pro, plainly. Full comparison lives on /pricing. */}
+      <section
+        aria-labelledby="pro-heading"
+        className="mx-auto w-full max-w-4xl px-4 py-16 text-center sm:px-6"
+      >
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">
+          Pro
         </p>
-        <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          <ScrollReveal delay={0} className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
-            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Generate a color palette from one color</h3>
-            <p className="mt-1.5 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-              Pick a starting HEX and explore six harmony strategies side by
-              side, then open the winner in the generator.
+        <h2
+          id="pro-heading"
+          className="mt-3 text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-3xl"
+        >
+          Free forever. Pro when you need it.
+        </h2>
+        <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+          Everything that generates, checks, and exports is free. Pro adds
+          saving, every export adapter, and AI.
+        </p>
+        <div className="mt-8 grid gap-4 text-left sm:grid-cols-2">
+          <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+            <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
+              {PLANS.free.name} · {PLANS.free.price}
+            </h3>
+            <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+              {PLANS.free.description}
             </p>
-            <Link href="/tools/color-palette-generator" className="mt-3 inline-block text-xs font-medium text-zinc-900 dark:text-zinc-100 underline underline-offset-4">
-              Try the color palette generator
-            </Link>
-          </ScrollReveal>
-          <ScrollReveal delay={80} className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
-            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Extract colors from an image</h3>
-            <p className="mt-1.5 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-              Upload a photo and get its dominant colors as a clean palette —
-              match a design to photography or a reference brand.
+            <ul className="mt-4 space-y-2 text-sm text-zinc-700 dark:text-zinc-300">
+              <li>Full generator + WCAG checks</li>
+              <li>CSS, JSON, Tailwind, shadcn exports</li>
+              <li>10 standalone color tools</li>
+            </ul>
+            <LinkButton href="/design-system" variant="secondary" className="mt-6 w-full">
+              Get started
+            </LinkButton>
+          </div>
+          <div className="rounded-2xl border-2 border-zinc-900 bg-white p-6 dark:border-zinc-100 dark:bg-zinc-900">
+            <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
+              {PLANS.pro.name} · {PLANS.pro.price}/{PLANS.pro.period}
+            </h3>
+            <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+              {PLANS.pro.description}
             </p>
-            <Link href="/tools/image-color-extractor" className="mt-3 inline-block text-xs font-medium text-zinc-900 dark:text-zinc-100 underline underline-offset-4">
-              Try the image color extractor
-            </Link>
-          </ScrollReveal>
-          <ScrollReveal delay={160} className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
-            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Check color contrast for accessibility</h3>
-            <p className="mt-1.5 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-              Grade one text/background pair or a whole palette at once, then
-              apply the offered fix that already clears the ratio.
-            </p>
-            <Link href="/tools/contrast-checker" className="mt-3 inline-block text-xs font-medium text-zinc-900 dark:text-zinc-100 underline underline-offset-4">
-              Try the contrast checker
-            </Link>
-          </ScrollReveal>
-          <ScrollReveal delay={0} className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
-            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Build Tailwind CSS color themes</h3>
-            <p className="mt-1.5 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-              Export your scale as Tailwind v4 @theme variables, ready to paste
-              — no hand-translation from swatches to code.
-            </p>
-            <Link href="/tools/tailwind-color-generator" className="mt-3 inline-block text-xs font-medium text-zinc-900 dark:text-zinc-100 underline underline-offset-4">
-              Try the Tailwind color generator
-            </Link>
-          </ScrollReveal>
-          <ScrollReveal delay={80} className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
-            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Create accessible dark themes</h3>
-            <p className="mt-1.5 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-              Turn a brand color into a dark theme with checked text pairs —
-              or audit the dark mode you already ship.
-            </p>
-            <Link href="/tools/dark-mode-generator" className="mt-3 inline-block text-xs font-medium text-zinc-900 dark:text-zinc-100 underline underline-offset-4">
-              Try the dark mode generator
-            </Link>
-          </ScrollReveal>
-          <ScrollReveal delay={160} className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
-            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Simulate color blindness</h3>
-            <p className="mt-1.5 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-              Preview your palette under four types of color vision deficiency
-              before your users have to.
-            </p>
-            <Link href="/tools/color-blindness-simulator" className="mt-3 inline-block text-xs font-medium text-zinc-900 dark:text-zinc-100 underline underline-offset-4">
-              Try the color blindness simulator
-            </Link>
-          </ScrollReveal>
+            <ul className="mt-4 space-y-2 text-sm text-zinc-700 dark:text-zinc-300">
+              <li>Everything in Free</li>
+              <li>Unlimited saving + version history</li>
+              <li>All export adapters + AI features</li>
+            </ul>
+            <LinkButton href="/pricing" variant="primary" className="mt-6 w-full">
+              See Pro plans
+            </LinkButton>
+          </div>
         </div>
       </section>
 
-      {/* FAQ — the landing page answers head-term questions for search. */}
-      <section aria-labelledby="faq-heading" className="border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/60 py-16">
+      {/* Popular tools — one quiet line of links, full directory on /tools. */}
+      <section
+        aria-labelledby="tools-heading"
+        className="mx-auto w-full max-w-5xl px-4 pb-16 text-center sm:px-6"
+      >
+        <h2
+          id="tools-heading"
+          className="text-sm font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400"
+        >
+          Popular tools
+        </h2>
+        <p className="mt-4 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm">
+          {POPULAR_TOOLS.map((tool) => (
+            <Link
+              key={tool.href}
+              href={tool.href}
+              className="font-medium text-zinc-700 underline decoration-zinc-300 underline-offset-4 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-zinc-100"
+            >
+              {tool.title}
+            </Link>
+          ))}
+          <Link
+            href="/tools"
+            className="font-medium text-zinc-900 underline underline-offset-4 dark:text-zinc-100"
+          >
+            All tools →
+          </Link>
+        </p>
+      </section>
+
+      {/* FAQ — kept for search, trimmed to four. */}
+      <section
+        aria-labelledby="faq-heading"
+        className="border-t border-zinc-200 py-14 dark:border-zinc-800"
+      >
         <JsonLd
           data={{
             "@context": "https://schema.org",
             "@type": "FAQPage",
             mainEntity: [
-              {
-                "@type": "Question",
-                name: "What is a color palette generator?",
-                acceptedAnswer: {
-                  "@type": "Answer",
-                  text: "A tool that builds harmonious color combinations in one click. ChromaBrew deals a fresh five-color scheme on every spacebar press; lock the keepers and copy any hex.",
-                },
-              },
               {
                 "@type": "Question",
                 name: "Is ChromaBrew really free?",
@@ -530,18 +262,18 @@ export default function HomePage() {
               },
               {
                 "@type": "Question",
-                name: "Can I use these palettes in Tailwind or CSS?",
+                name: "What is Pro?",
                 acceptedAnswer: {
                   "@type": "Answer",
-                  text: "Yes. Open any palette in the design system generator and export CSS variables, Tailwind v4 themes, shadcn/ui variables, or JSON tokens.",
+                  text: "Pro adds unlimited project saving, version history, all export adapters and AI features. The generator, checks and core exports stay free forever.",
                 },
               },
               {
                 "@type": "Question",
-                name: "How do I know my palette is accessible?",
+                name: "Can I use these palettes in Tailwind or CSS?",
                 acceptedAnswer: {
                   "@type": "Answer",
-                  text: "Run it through the contrast checker for WCAG AA/AAA grades, and the color blindness simulator to confirm every color stays distinguishable for all viewers.",
+                  text: "Yes. Open any palette in the design system generator and export CSS variables, Tailwind v4 themes, shadcn/ui variables, or JSON tokens.",
                 },
               },
               {
@@ -555,82 +287,68 @@ export default function HomePage() {
             ],
           }}
         />
-        <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
-            FAQ
-          </p>
-          <h2 id="faq-heading" className="mt-2 text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-3xl">
-            Color palette questions, answered.
+        <div className="mx-auto grid w-full max-w-5xl gap-x-10 gap-y-8 px-4 sm:grid-cols-2 sm:px-6">
+          <h2
+            id="faq-heading"
+            className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 sm:col-span-2"
+          >
+            Questions, answered.
           </h2>
-          <dl className="mt-8 grid gap-x-10 gap-y-8 sm:grid-cols-2">
-            <div>
-              <dt className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">What is a color palette generator?</dt>
-              <dd className="mt-1.5 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                A tool that builds harmonious color combinations in one click. Hit space in the{" "}
-                <Link href="/generate" className="font-medium text-zinc-900 underline underline-offset-4 dark:text-zinc-100">palette generator</Link>{" "}
-                to deal a fresh five-color scheme, lock the keepers, and copy any hex.
-              </dd>
-            </div>
-            <div>
-              <dt className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Is ChromaBrew really free?</dt>
-              <dd className="mt-1.5 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                Yes — every generator, checker, and export runs in your browser with no account and no upload. An account is only needed to save projects and revisit them later.
-              </dd>
-            </div>
-            <div>
-              <dt className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Can I use these palettes in Tailwind or CSS?</dt>
-              <dd className="mt-1.5 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                Yes. Open any palette in the{" "}
-                <Link href="/design-system" className="font-medium text-zinc-900 underline underline-offset-4 dark:text-zinc-100">design system generator</Link>{" "}
-                and export CSS variables, Tailwind v4 themes, shadcn/ui variables, or JSON tokens.
-              </dd>
-            </div>
-            <div>
-              <dt className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">How do I know my palette is accessible?</dt>
-              <dd className="mt-1.5 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                Run it through the{" "}
-                <Link href="/tools/contrast-checker" className="font-medium text-zinc-900 underline underline-offset-4 dark:text-zinc-100">contrast checker</Link>{" "}
-                for WCAG AA/AAA grades, and the{" "}
-                <Link href="/tools/color-blindness-simulator" className="font-medium text-zinc-900 underline underline-offset-4 dark:text-zinc-100">color blindness simulator</Link>{" "}
-                to confirm every color stays distinguishable for all viewers.
-              </dd>
-            </div>
-            <div>
-              <dt className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Can ChromaBrew audit a website I already shipped?</dt>
-              <dd className="mt-1.5 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                Yes — the{" "}
-                <Link href="/audit" className="font-medium text-zinc-900 underline underline-offset-4 dark:text-zinc-100">free website audit</Link>{" "}
-                renders the live page, measures contrast from computed styles,
-                and proposes re-measured fixes. Nothing is changed on your site.
-              </dd>
-            </div>
-          </dl>
-        </div>
-      </section>
-
-      {/* Closing CTA — both journeys once more, matching the hero. */}
-      <section className="mx-auto w-full max-w-6xl px-4 py-20 sm:px-6 lg:px-8">
-        <div className="rounded-2xl bg-zinc-900 px-6 py-12 text-center sm:px-12">
-          <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
-            Start with one color — or fix the site you already shipped.
-          </h2>
-          <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-zinc-300">
-            Generate a palette, tokens, light and dark themes, and
-            production-ready CSS from a single HEX — or run a free audit on a
-            live URL. Free, no account required.
-          </p>
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5">
-            <LinkButton href="/generate" variant="primary">
-              Generate my palette
-            </LinkButton>
-            <LinkButton href="/audit" variant="secondary" className="border-zinc-700 bg-transparent text-zinc-100 hover:bg-zinc-800 hover:text-white dark:border-zinc-700 dark:bg-transparent dark:text-zinc-100 dark:hover:bg-zinc-800">
-              Run a free audit
-            </LinkButton>
+          <div>
+            <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              Is ChromaBrew really free?
+            </p>
+            <p className="mt-1.5 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+              Yes — generators, checkers, and core exports run free with no
+              account. Saving projects is what asks for one.
+            </p>
           </div>
-          <div className="mt-6 flex justify-center">
-            {/* The card is bg-zinc-900 in both themes, so the form needs its
-                dark-surface text colours here rather than the hero's. */}
-            <HeroColourForm idPrefix="cta" tone="dark" />
+          <div>
+            <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              What is Pro?
+            </p>
+            <p className="mt-1.5 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+              Unlimited saving, version history, every export adapter, and AI
+              features.{" "}
+              <Link
+                href="/pricing"
+                className="font-medium text-zinc-900 underline underline-offset-4 dark:text-zinc-100"
+              >
+                See pricing
+              </Link>
+              .
+            </p>
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              Can I use these palettes in Tailwind or CSS?
+            </p>
+            <p className="mt-1.5 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+              Yes — open any palette in the{" "}
+              <Link
+                href="/design-system"
+                className="font-medium text-zinc-900 underline underline-offset-4 dark:text-zinc-100"
+              >
+                design system generator
+              </Link>{" "}
+              and export CSS, Tailwind v4, shadcn/ui, or JSON.
+            </p>
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              Can it audit a site I already shipped?
+            </p>
+            <p className="mt-1.5 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+              Yes — the{" "}
+              <Link
+                href="/audit"
+                className="font-medium text-zinc-900 underline underline-offset-4 dark:text-zinc-100"
+              >
+                free website audit
+              </Link>{" "}
+              renders the live page and proposes fixes. Nothing changes on
+              your site.
+            </p>
           </div>
         </div>
       </section>
