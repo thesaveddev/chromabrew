@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/primitives";
 import { ExportPanel } from "./panels/export-panel";
 import type { DesignSystem } from "@/lib/design-system/types";
@@ -18,6 +19,12 @@ export function ExportModalButton({
   projectName?: string;
 }) {
   const [open, setOpen] = useState(false);
+  // Portals need document.body, which does not exist during prerender.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -42,18 +49,21 @@ export function ExportModalButton({
       >
         Export
       </Button>
-      {open && (
-        // The overlay itself scrolls and the panel flows normally inside
-        // it (mx-auto + my-*), instead of flex-centering a fixed box.
-        // Flex-centering clips the panel's top above the viewport in some
-        // browser/sticky-header combinations with no way to scroll it
-        // back — the format picker then sits unreachable above the fold.
-        <div
-          className="fixed inset-0 z-50 overflow-y-auto"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Export design system"
-        >
+      {open &&
+        mounted &&
+        createPortal(
+          // The dialog portals to document.body so no sticky/overflow
+          // ancestor can trap it, and the overlay itself scrolls with the
+          // panel flowing normally inside it (mx-auto + my-*). An earlier
+          // version flex-centered a fixed box nested in the toolbar: in
+          // some browsers the overlay collapsed and the header plus format
+          // picker rendered above the fold with no way to reach them.
+          <div
+            className="fixed inset-0 z-50 overflow-y-auto"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Export design system"
+          >
           <div
             className="fixed inset-0 bg-black/60"
             onClick={() => setOpen(false)}
@@ -81,8 +91,9 @@ export function ExportModalButton({
             </div>
             <ExportPanel system={system} projectName={projectName} />
           </div>
-        </div>
-      )}
+          </div>,
+          document.body,
+        )}
     </>
   );
 }
