@@ -18,7 +18,7 @@ describe("AuditSection", () => {
 
   it("names the audit and says what it measures", () => {
     expect(html).toContain('id="audit-heading"');
-    expect(html).toContain("Audit a live page and see what is actually failing");
+    expect(html).toContain("Audit a live website. Find what needs improving.");
     expect(html).toContain("Free website audit");
     expect(html).toContain("axe-core 4.13 plus ten structural rules");
     expect(html).toContain("Contrast measured from computed styles");

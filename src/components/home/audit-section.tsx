@@ -36,15 +36,37 @@ export function AuditSection() {
             id="audit-heading"
             className="mt-3 text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-3xl"
           >
-            Audit a live page and see what is actually failing
+            Audit a live website. Find what needs improving.
           </h2>
           <p className="mt-4 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-            Everything above decides a colour before you ship it. The audit reads the page you
-            already shipped: paste a URL and it renders that page in a real browser, measures the
-            text against the colours behind it, runs axe-core and ten structural rules, and shows its
-            evidence — with a replacement that has been re-measured before it is offered.
+            Discover inconsistent colours, accessibility issues and
+            design-system gaps on your existing website. Get actionable
+            findings and practical guidance to help improve it.
           </p>
         </div>
+
+        <ol className="mt-8 grid gap-x-8 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
+          {[
+            ["Enter a public website URL", "Paste any public page — no account, nothing to install."],
+            ["Scan and inspect the rendered website", "The page loads in headless Chromium at desktop (1280×720) or mobile (390×844), screenshot included."],
+            ["Identify evidence-backed problems", "Contrast measured from computed styles, axe-core 4.13 plus ten structural rules — every finding carries its selector and values."],
+            ["Preview proposed improvements", "Where a fix exists, it is shown next to the failing values it replaces."],
+            ["Get practical guidance", "CSS or design-token direction you can apply in your own codebase — nothing is changed on your site."],
+            ["Verify your fix", "Re-run the audit on the updated page to confirm the finding clears."],
+          ].map(([title, body], i) => (
+            <li key={title}>
+              <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                Step {i + 1}
+              </p>
+              <p className="mt-1 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                {title}
+              </p>
+              <p className="mt-1 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+                {body}
+              </p>
+            </li>
+          ))}
+        </ol>
 
         <figure className="mt-10">
           <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800">
