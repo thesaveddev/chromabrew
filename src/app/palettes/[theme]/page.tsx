@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: `${theme.name} Color Palettes`,
     // Composed from data, so clamp rather than trust the tagline's length.
     description: clampDescription(
-      `${theme.tagline} ${palettesForTheme(slug).length} hand-picked palettes — copy hex or open in the generator.`,
+      `${theme.tagline} ${palettesForTheme(slug).length} ready-to-use palettes — copy hex or open in the generator.`,
     ),
     alternates: { canonical: `/palettes/${slug}` },
     openGraph: {
@@ -53,7 +53,7 @@ export default async function ThemePage({ params }: Props) {
   const others = PALETTE_THEMES.filter((t) => t.slug !== slug);
 
   return (
-    <div className="w-full max-w-none px-4 py-12 sm:px-8 lg:px-12">
+    <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
       <JsonLd
         data={{
           "@context": "https://schema.org",

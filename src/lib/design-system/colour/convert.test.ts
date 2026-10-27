@@ -12,6 +12,8 @@ import {
   rgbToCmyk,
   rgbToHex,
   rgbToHsl,
+  rgbToHsv,
+  rgbToLab,
   rgbToOklch,
   toColourValue,
 } from "./convert";
@@ -22,6 +24,32 @@ describe("hex handling", () => {
     expect(normalizeHex("#47003a")).toBe("#47003a");
     expect(normalizeHex("nope")).toBeNull();
     expect(normalizeHex("#12345")).toBeNull();
+  });
+});
+
+describe("hsv and lab conversions", () => {
+  it("converts pure red to HSB(0, 100, 100)", () => {
+    expect(rgbToHsv({ r: 255, g: 0, b: 0 })).toEqual({ h: 0, s: 100, v: 100 });
+  });
+
+  it("maps greys to zero saturation with value tracking lightness", () => {
+    expect(rgbToHsv({ r: 0, g: 0, b: 0 })).toEqual({ h: 0, s: 0, v: 0 });
+    expect(rgbToHsv({ r: 255, g: 255, b: 255 })).toEqual({ h: 0, s: 0, v: 100 });
+  });
+
+  it("matches the published LAB breakdown of #B57F50", () => {
+    const lab = rgbToLab({ r: 181, g: 127, b: 80 });
+    expect(lab.l).toBeCloseTo(58, 0);
+    expect(lab.a).toBeCloseTo(16, 0);
+    expect(lab.b).toBeCloseTo(34, 0);
+  });
+
+  it("anchors LAB at black and white", () => {
+    expect(rgbToLab({ r: 0, g: 0, b: 0 }).l).toBeCloseTo(0, 1);
+    const white = rgbToLab({ r: 255, g: 255, b: 255 });
+    expect(white.l).toBeCloseTo(100, 1);
+    expect(Math.abs(white.a)).toBeLessThan(0.01);
+    expect(Math.abs(white.b)).toBeLessThan(0.01);
   });
 });
 

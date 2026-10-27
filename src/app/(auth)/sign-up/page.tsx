@@ -5,6 +5,8 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
+import { track } from "@/lib/analytics";
+
 export default function SignUpPage() {
   const router = useRouter();
   const [name, setName] = useState("");
@@ -31,6 +33,10 @@ export default function SignUpPage() {
         setError(data.error ?? "Something went wrong");
         return;
       }
+
+      // The funnel's signup step: the account row exists at this point, so
+      // the conversion counts even if the auto sign-in below fails.
+      track("signup_completed");
 
       // Auto sign-in after registration
       const signInResult = await signIn("credentials", {

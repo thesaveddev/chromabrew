@@ -17,6 +17,43 @@ import { CopyButton } from "@/components/ui/primitives";
 export function ColorBlindnessSimulator({ initial = "#47003a" }: { initial?: string }) {
   const [raw, setRaw] = useState(initial);
   const [color, setColor] = useState(initial);
+  const [sharedPalette, setSharedPalette] = useState<string[] | null>(null);
+
+  // Adopt a linked palette/color (?palette=aabbcc,... or ?color=aabbcc) so the
+  // generate page can hand over exactly what is on screen — nothing uploaded.
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const paletteParam = params.get("palette");
+      if (paletteParam) {
+        const parts = paletteParam
+          .split(/[,,\s]+/)
+          .map((p) => p.trim().replace(/^#/, ""))
+          .filter(Boolean);
+        const hexes = parts
+          .map((p) => parseColour(p.startsWith("#") ? p : `#${p}`))
+          .filter((h): h is string => !!h);
+        if (hexes.length >= 2) {
+          setSharedPalette(hexes.slice(0, 8));
+          setColor(hexes[0]);
+          setRaw(hexes[0]);
+          return;
+        }
+      }
+      const colorParam = params.get("color");
+      if (colorParam) {
+        const resolved = parseColour(
+          colorParam.startsWith("#") ? colorParam : `#${colorParam}`,
+        );
+        if (resolved) {
+          setColor(resolved);
+          setRaw(resolved);
+        }
+      }
+    } catch {
+      /* malformed query — fall back to the default color */
+    }
+  }, []);
 
   const value = useMemo(() => {
     const v = parseColour(color);
@@ -49,6 +86,44 @@ export function ColorBlindnessSimulator({ initial = "#47003a" }: { initial?: str
         }}
         onSubmit={(hex) => hex && setColor(hex)}
       />
+
+      {sharedPalette && sharedPalette.length >= 2 ? (
+        <section aria-label="Shared palette simulation" className="space-y-3 rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
+          <div>
+            <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Shared palette</p>
+            <p className="mt-0.5 text-xs text-zinc-500">Linked from the generator — click a swatch to simulate it below.</p>
+          </div>
+          <div className="flex h-14 overflow-hidden rounded-xl ring-1 ring-black/10">
+            {sharedPalette.map((hex) => (
+              <button
+                key={hex}
+                type="button"
+                onClick={() => {
+                  setColor(hex);
+                  setRaw(hex);
+                }}
+                title={`Simulate ${hex.toUpperCase()}`}
+                aria-label={`Simulate ${hex.toUpperCase()}`}
+                className="h-full flex-1 transition-transform hover:scale-y-105"
+                style={{ backgroundColor: hex }}
+              />
+            ))}
+          </div>
+          {CVD_TYPES.map((t) => (
+            <div key={t.id}>
+              <div className="mb-1 flex items-baseline justify-between gap-2">
+                <p className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">{t.label}</p>
+                <p className="text-[10px] text-zinc-500">{t.desc}</p>
+              </div>
+              <div className="flex h-10 overflow-hidden rounded-lg ring-1 ring-black/10">
+                {sharedPalette.map((hex) => (
+                  <span key={`${t.id}-${hex}`} className="h-full flex-1" style={{ backgroundColor: simulateCvd(hex, t.id) }} />
+                ))}
+              </div>
+            </div>
+          ))}
+        </section>
+      ) : null}
 
       {value && (
         <dl className="grid grid-cols-2 gap-3 text-xs sm:grid-cols-4">

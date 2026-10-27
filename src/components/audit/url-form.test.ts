@@ -151,6 +151,21 @@ describe("UrlFormView with no scanner", () => {
   });
 });
 
+describe("UrlFormView example audit", () => {
+  it("offers a one-click example instead of an empty field to think about", () => {
+    const html = render({ exampleUrl: "https://chromabrew.com/design-system" });
+
+    expect(html).toContain("No URL handy?");
+    expect(html).toContain("Audit our own generator page as an example");
+  });
+
+  it("stays out of the way where no example is wanted", () => {
+    const html = render();
+
+    expect(html).not.toContain("No URL handy?");
+  });
+});
+
 describe("UrlFormView while submitting", () => {
   it("does not invite a second submit", () => {
     const html = render({ loading: true, url: "example.com" });

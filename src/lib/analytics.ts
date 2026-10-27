@@ -39,6 +39,8 @@ export type AnalyticsEvent =
   | "dark_theme_copied"
   | "tokens_copied"
   | "audit_started"
+  | "audit_completed"
+  | "signup_completed"
   | "ai_files_downloaded";
 
 type Sink = (event: AnalyticsEvent, properties?: Record<string, string | number>) => void;

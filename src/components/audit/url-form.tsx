@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { track } from "@/lib/analytics";
+import { siteUrl } from "@/lib/site-url";
 import {
   ANONYMOUS_SCANS_PER_IP_PER_DAY,
   ANONYMOUS_SCANS_PER_IP_PER_HOUR,
@@ -49,6 +50,12 @@ export interface UrlFormViewProps {
   lastSeenAt: string | null;
   /** The live clock. 0 means it has not ticked yet (see `useQueueClock`). */
   now: number;
+  /**
+   * A known URL the reader can audit without thinking of one: first paint
+   * should offer the payoff, not demand input. Absent in tests and embeds
+   * that do not want it.
+   */
+  exampleUrl?: string;
 }
 
 const fieldStyles =
@@ -67,6 +74,7 @@ export function UrlFormView({
   offline,
   lastSeenAt,
   now,
+  exampleUrl,
 }: UrlFormViewProps) {
   const seenAt = lastSeenAt === null ? NaN : Date.parse(lastSeenAt);
 
@@ -101,6 +109,22 @@ export function UrlFormView({
           className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-base text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/10 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-500"
           required
         />
+        {/* The bounce lever: a reader with no URL at hand gets one click to a
+            real audit instead of an empty field to think about. Filling, not
+            submitting, so the scope and viewport choices stay theirs. */}
+        {exampleUrl ? (
+          <p className="mt-2 text-xs leading-5 text-zinc-500 dark:text-zinc-500">
+            No URL handy?{" "}
+            <button
+              type="button"
+              disabled={loading}
+              onClick={() => onUrlChange(exampleUrl)}
+              className="font-medium text-zinc-900 underline underline-offset-4 hover:text-zinc-700 disabled:opacity-50 dark:text-zinc-100 dark:hover:text-zinc-300"
+            >
+              Audit our own generator page as an example
+            </button>
+          </p>
+        ) : null}
       </div>
 
       {/* Scope and viewport sit with the URL because they change what the
@@ -300,6 +324,11 @@ export function UrlForm() {
     }
   };
 
+  // A stable, known-content demo: our own generator page, which the product's
+  // own scanner has opinions about. The canonical origin, not the current one,
+  // so staging and previews demo the same audit.
+  const exampleUrl = `${siteUrl}/design-system`;
+
   return (
     <UrlFormView
       url={url}
@@ -314,6 +343,7 @@ export function UrlForm() {
       offline={offline}
       lastSeenAt={availability?.lastSeenAt ?? null}
       now={now}
+      exampleUrl={exampleUrl}
     />
   );
 }

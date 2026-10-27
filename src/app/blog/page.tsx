@@ -29,7 +29,7 @@ export const metadata: Metadata = {
 export default function BlogIndexPage() {
   const groups = postsByCategory();
   return (
-    <div className="w-full max-w-none px-4 py-12 sm:px-8 lg:px-12">
+    <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
       <nav aria-label="Breadcrumb" className="text-xs text-zinc-500">
         <Link href="/" className="hover:text-zinc-800 dark:hover:text-zinc-200 dark:text-zinc-200">
           Home

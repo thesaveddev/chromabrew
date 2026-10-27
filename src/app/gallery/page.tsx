@@ -50,7 +50,7 @@ export default async function GalleryPage() {
   });
 
   return (
-    <div className="w-full max-w-none px-4 py-12 sm:px-8 lg:px-12">
+    <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
       <div className="max-w-2xl">
         <p className="text-xs font-semibold uppercase tracking-widest text-zinc-400">
           Community

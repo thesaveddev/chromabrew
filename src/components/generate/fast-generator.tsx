@@ -14,11 +14,16 @@ import {
 } from "@/lib/quick-palette";
 import { PALETTE_STRATEGIES } from "@/lib/design-system/palette/generate";
 import { closestNamedColour } from "@/lib/css-colors";
+import { extractDominantColours } from "@/lib/design-system/image-palette";
 import { contrastRatio } from "@/lib/design-system/colour/contrast";
+import { CVD_TYPES, simulateCvd } from "@/lib/design-system/colour/cvd";
 import {
   hexToRgb,
+  hslToHex,
   rgbToCmyk,
   rgbToHsl,
+  rgbToHsv,
+  rgbToLab,
   rgbToOklch,
   oklchToHex,
   normalizeHex,
@@ -149,6 +154,24 @@ function hslString(hex: string): string {
   }
 }
 
+function hsbString(hex: string): string {
+  try {
+    const { h, s, v } = rgbToHsv(hexToRgb(hex));
+    return `${Math.round(h)}, ${Math.round(s)}, ${Math.round(v)}`;
+  } catch {
+    return "";
+  }
+}
+
+function labString(hex: string): string {
+  try {
+    const { l, a, b } = rgbToLab(hexToRgb(hex));
+    return `${Math.round(l)}, ${Math.round(a)}, ${Math.round(b)}`;
+  } catch {
+    return "";
+  }
+}
+
 function cmykString(hex: string): string {
   try {
     const { c, m, y, k } = rgbToCmyk(hexToRgb(hex));
@@ -177,6 +200,53 @@ function oklchString(hex: string): string {
   } catch {
     return "";
   }
+}
+
+/**
+ * One or two lines of practical guidance for a colour: what role it plays
+ * best (base, neutral structure, or high-energy accent) plus the mood its
+ * hue family carries, so the info modal reads like advice, not just data.
+ */
+function colorUsage(hex: string): string {
+  let h = 0;
+  let s = 0;
+  let l = 50;
+  let c = 0;
+  try {
+    const hsl = rgbToHsl(hexToRgb(hex));
+    const oklch = rgbToOklch(hexToRgb(hex));
+    h = ((hsl.h % 360) + 360) % 360;
+    s = hsl.s;
+    l = hsl.l;
+    c = oklch.c;
+  } catch {
+    return "A versatile mid-tone — sections, illustrations, secondary buttons.";
+  }
+  const role =
+    l >= 92
+      ? "Near-white: page backgrounds, cards, and breathing room — always pair with dark text."
+      : l <= 12
+        ? "Near-black: dark-theme bases and body text on light surfaces."
+        : c < 0.04
+          ? "A true neutral: backgrounds, borders, and body text — the quiet structure other colours sit on."
+          : c >= 0.12 || s > 75
+            ? "High energy: CTAs, key accents, and highlights — use sparingly so it keeps its punch."
+            : "A versatile mid-tone: section backgrounds, illustrations, and secondary buttons.";
+  const mood =
+    h < 20 || h >= 340
+      ? "Reds carry appetite, urgency, and warmth — food, sales, and action."
+      : h < 45
+        ? "Oranges read as friendly and adventurous — great for playful, active brands."
+        : h < 75
+          ? "Yellows signal optimism and attention — highlights, warnings, and youthful brands."
+          : h < 170
+            ? "Greens feel calm, natural, and healthy — growth, wellness, and sustainability."
+            : h < 260
+              ? "Blues mean trust, calm, and clarity — tech, finance, and healthcare."
+              : h < 300
+                ? "Purples suggest creativity and luxury — beauty, entertainment, and premium brands."
+                : "Pinks feel playful and modern — beauty, lifestyle, and bold statements.";
+  return `${role} ${mood}`;
 }
 
 function downloadFile(filename: string, content: string, mime: string) {
@@ -277,6 +347,326 @@ function BookmarkIcon({ className = "h-5 w-5", filled = false }: { className?: s
   );
 }
 
+/* ------------------------------------------------------------------ */
+/* Custom color picker (replaces the native system swatch)             */
+/* ------------------------------------------------------------------ */
+
+function ColorPicker({
+  hex,
+  name,
+  swatches,
+  onChange,
+}: {
+  hex: string;
+  name: string;
+  swatches: string[];
+  onChange: (hex: string) => void;
+}) {
+  const { h, s, l } = useMemo(() => {
+    try {
+      const hsl = rgbToHsl(hexToRgb(hex));
+      return { h: Math.round(hsl.h), s: Math.round(hsl.s), l: Math.round(hsl.l) };
+    } catch {
+      return { h: 0, s: 0, l: 50 };
+    }
+  }, [hex]);
+  const [draft, setDraft] = useState(hex.replace("#", ""));
+  const [error, setError] = useState(false);
+  const draftRef = useRef<HTMLInputElement>(null);
+  const squareRef = useRef<HTMLDivElement>(null);
+  const hueRef = useRef<HTMLDivElement>(null);
+
+  // Follow external changes (shuffle, sliders) unless the user is typing.
+  useEffect(() => {
+    if (document.activeElement !== draftRef.current) {
+      setDraft(hex.replace("#", ""));
+      setError(false);
+    }
+  }, [hex]);
+
+  const commitDraft = () => {
+    const norm = normalizeHex(draft);
+    if (norm) {
+      onChange(norm);
+      setDraft(norm.replace("#", ""));
+      setError(false);
+    } else {
+      setError(true);
+    }
+  };
+
+  const setFromSquare = (clientX: number, clientY: number) => {
+    const el = squareRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const ns = Math.min(100, Math.max(0, ((clientX - r.left) / r.width) * 100));
+    const nl = Math.min(100, Math.max(0, (1 - (clientY - r.top) / r.height) * 100));
+    onChange(hslToHex(h, ns, nl));
+  };
+
+  const setFromHue = (clientX: number) => {
+    const el = hueRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const nh = Math.min(359, Math.max(0, ((clientX - r.left) / r.width) * 360));
+    onChange(hslToHex(nh, s, l));
+  };
+
+  return (
+    <div className="text-left">
+      <div className="flex items-center gap-2">
+        <span
+          className="h-10 w-10 shrink-0 rounded-lg ring-1 ring-black/15 dark:ring-white/20"
+          style={{ backgroundColor: hex }}
+          aria-hidden
+        />
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">{name}</p>
+          <p className="font-mono text-xs uppercase text-zinc-500 dark:text-zinc-400">{hex.toUpperCase()}</p>
+        </div>
+        <form
+          className="flex items-center"
+          onSubmit={(e) => {
+            e.preventDefault();
+            commitDraft();
+            draftRef.current?.blur();
+          }}
+        >
+          <span className="font-mono text-sm text-zinc-400">#</span>
+          <input
+            ref={draftRef}
+            value={draft}
+            onChange={(e) => {
+              setDraft(e.target.value.replace(/#/g, ""));
+              setError(false);
+            }}
+            onBlur={commitDraft}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") {
+                setDraft(hex.replace("#", ""));
+                setError(false);
+                draftRef.current?.blur();
+              }
+            }}
+            maxLength={6}
+            spellCheck={false}
+            autoComplete="off"
+            aria-label="Hex value"
+            className={`w-20 rounded-md border bg-transparent px-1.5 py-1 text-center font-mono text-sm uppercase outline-none ${error ? "border-red-500" : "border-zinc-300 dark:border-zinc-700"}`}
+          />
+        </form>
+      </div>
+
+      {/* Saturation / lightness square */}
+      <div
+        ref={squareRef}
+        role="slider"
+        tabIndex={0}
+        aria-label="Saturation and lightness"
+        aria-valuetext={`Saturation ${Math.round(s)} percent, lightness ${Math.round(l)} percent`}
+        onPointerDown={(e) => {
+          e.currentTarget.setPointerCapture(e.pointerId);
+          setFromSquare(e.clientX, e.clientY);
+        }}
+        onPointerMove={(e) => {
+          if (e.buttons & 1) setFromSquare(e.clientX, e.clientY);
+        }}
+        onKeyDown={(e) => {
+          const step = e.shiftKey ? 10 : 2;
+          if (e.key === "ArrowLeft") {
+            e.preventDefault();
+            onChange(hslToHex(h, s - step, l));
+          } else if (e.key === "ArrowRight") {
+            e.preventDefault();
+            onChange(hslToHex(h, s + step, l));
+          } else if (e.key === "ArrowUp") {
+            e.preventDefault();
+            onChange(hslToHex(h, s, l + step));
+          } else if (e.key === "ArrowDown") {
+            e.preventDefault();
+            onChange(hslToHex(h, s, l - step));
+          }
+        }}
+        className="relative mt-3 h-44 cursor-crosshair touch-none overflow-hidden rounded-lg outline-none ring-1 ring-black/15 focus-visible:ring-2 focus-visible:ring-zinc-900 dark:ring-white/20 dark:focus-visible:ring-white"
+        style={{ backgroundColor: `hsl(${h}, 100%, 50%)` }}
+      >
+        <div className="absolute inset-0" style={{ background: "linear-gradient(to right, #808080, rgba(128,128,128,0))" }} aria-hidden />
+        <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, #fff 0%, rgba(255,255,255,0) 50%, rgba(0,0,0,0) 50%, #000 100%)" }} aria-hidden />
+        <div
+          className="absolute h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-md"
+          style={{ left: `${s}%`, top: `${100 - l}%`, backgroundColor: hex }}
+          aria-hidden
+        />
+      </div>
+
+      {/* Hue slider */}
+      <div
+        ref={hueRef}
+        role="slider"
+        tabIndex={0}
+        aria-label="Hue"
+        aria-valuemin={0}
+        aria-valuemax={360}
+        aria-valuenow={Math.round(h)}
+        aria-valuetext={`${Math.round(h)} degrees`}
+        onPointerDown={(e) => {
+          e.currentTarget.setPointerCapture(e.pointerId);
+          setFromHue(e.clientX);
+        }}
+        onPointerMove={(e) => {
+          if (e.buttons & 1) setFromHue(e.clientX);
+        }}
+        onKeyDown={(e) => {
+          const step = e.shiftKey ? 15 : 3;
+          if (e.key === "ArrowLeft" || e.key === "ArrowDown") {
+            e.preventDefault();
+            onChange(hslToHex((h - step + 360) % 360, s, l));
+          } else if (e.key === "ArrowRight" || e.key === "ArrowUp") {
+            e.preventDefault();
+            onChange(hslToHex((h + step) % 360, s, l));
+          }
+        }}
+        className="relative mt-2 h-3 cursor-pointer touch-none rounded-full outline-none ring-1 ring-black/15 focus-visible:ring-2 focus-visible:ring-zinc-900 dark:ring-white/20 dark:focus-visible:ring-white"
+        style={{ background: "linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%)" }}
+      >
+        <div
+          className="absolute top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-md"
+          style={{ left: `${(h / 360) * 100}%`, backgroundColor: `hsl(${h}, 100%, 50%)` }}
+          aria-hidden
+        />
+      </div>
+
+      {/* Jump to a palette color */}
+      <div className="mt-3 flex items-center gap-1.5">
+        <span className="mr-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-500 dark:text-zinc-400">
+          Palette
+        </span>
+        {swatches.map((c, k) => {
+          const active = c.toLowerCase() === hex.toLowerCase();
+          return (
+            <button
+              key={`${c}-${k}`}
+              type="button"
+              onClick={() => onChange(c)}
+              title={`Use ${c.toUpperCase()}`}
+              aria-label={`Use palette color ${c.toUpperCase()}`}
+              className={`h-6 w-6 rounded-full transition-transform hover:scale-110 ${active ? "ring-2 ring-zinc-900 ring-offset-2 dark:ring-white dark:ring-offset-zinc-900" : "ring-1 ring-black/15 dark:ring-white/20"}`}
+              style={{ backgroundColor: c }}
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Pro-style toolbar icons (match the 20px / 2px rail icon language)    */
+/* ------------------------------------------------------------------ */
+
+function DotsIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 20 20" className={className} fill="currentColor" aria-hidden>
+      <circle cx="4" cy="10" r="1.8" />
+      <circle cx="10" cy="10" r="1.8" />
+      <circle cx="16" cy="10" r="1.8" />
+    </svg>
+  );
+}
+
+function UndoIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 20 20" className={className} fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M7 4.5 3.5 8 7 11.5" />
+      <path d="M3.5 8H12a6 6 0 0 1 0 12h-2.5" />
+    </svg>
+  );
+}
+
+function RedoIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 20 20" className={className} fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="m13 4.5 3.5 3.5L13 11.5" />
+      <path d="M16.5 8H8a6 6 0 0 0 0 12h2.5" />
+    </svg>
+  );
+}
+
+function CameraIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 20 20" className={className} fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <rect x="2.5" y="6.5" width="15" height="11" rx="2.5" />
+      <circle cx="10" cy="12" r="3.2" />
+      <path d="M7 6.5 8.2 4h3.6L13 6.5" />
+    </svg>
+  );
+}
+
+function LayoutGridIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 20 20" className={className} fill="none" stroke="currentColor" strokeWidth={2} aria-hidden>
+      <rect x="3" y="3" width="6" height="6" rx="1.5" />
+      <rect x="11" y="3" width="6" height="6" rx="1.5" />
+      <rect x="3" y="11" width="6" height="6" rx="1.5" />
+      <rect x="11" y="11" width="6" height="6" rx="1.5" />
+    </svg>
+  );
+}
+
+function ShapesIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 20 20" className={className} fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M10 2.5 14.5 10.5h-9z" />
+      <circle cx="5" cy="14.5" r="2.5" />
+      <rect x="12" y="12.5" width="5" height="5" rx="1" />
+    </svg>
+  );
+}
+
+function GlassesIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 20 20" className={className} fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <circle cx="6" cy="13.5" r="3.2" />
+      <circle cx="14" cy="13.5" r="3.2" />
+      <path d="M9.2 13.5h1.6M2.8 12.5 2 9.5M17.2 12.5l.8-3" />
+    </svg>
+  );
+}
+
+/** One undo/redo step: the raw palette plus the tuning that shaped it. */
+interface HistState {
+  base: string[];
+  locked: boolean[];
+  settings: PaletteSettings;
+  strategy: StrategyChoice;
+}
+
+function sameHist(a: HistState, b: HistState): boolean {
+  return (
+    a.strategy === b.strategy &&
+    a.base.join(",") === b.base.join(",") &&
+    a.locked.join(",") === b.locked.join(",") &&
+    JSON.stringify(a.settings) === JSON.stringify(b.settings)
+  );
+}
+
+function ExportIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 20 20" className={className} fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M10 13V3M6.5 6.5 10 3l3.5 3.5" />
+      <path d="M4 12v4.5A1.5 1.5 0 0 0 5.5 18h9a1.5 1.5 0 0 0 1.5-1.5V12" />
+    </svg>
+  );
+}
+
+function ArrowUpRightIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 20 20" className={className} fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M7 17 17 7M8 7h9v9" />
+    </svg>
+  );
+}
+
 function PlusIcon({ className = "h-5 w-5" }: { className?: string }) {
   return (
     <svg viewBox="0 0 20 20" className={className} fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" aria-hidden>
@@ -321,7 +711,8 @@ export function FastGenerator() {
   // Overlays: only one open at a time.
   const [tuneOpen, setTuneOpen] = useState(false);
   const [viewOpen, setViewOpen] = useState(false);
-  const [viewTab, setViewTab] = useState<"gradient" | "list" | "contrast">("gradient");
+  const [viewTab, setViewTab] = useState<"quick" | "gradient" | "list" | "contrast" | "cvd">("quick");
+  const [quickViewIndex, setQuickViewIndex] = useState(0);
   const [exportOpen, setExportOpen] = useState(false);
   const [exportTab, setExportTab] = useState<"share" | "code" | "image">("share");
   const [codeFormat, setCodeFormat] = useState<"css" | "tailwind" | "json" | "hex" | "rgb" | "svg">("css");
@@ -343,10 +734,32 @@ export function FastGenerator() {
   // Per-column popovers.
   const [shadesFor, setShadesFor] = useState<number | null>(null);
   const [contrastFor, setContrastFor] = useState<number | null>(null);
+  const [pickerFor, setPickerFor] = useState<number | null>(null);
+
+  // Pro-style toolbar panels.
+  const [moreOpen, setMoreOpen] = useState(false);
+  const [extractOpen, setExtractOpen] = useState(false);
+  const [variationsOpen, setVariationsOpen] = useState(false);
+  const [extracting, setExtracting] = useState(false);
+  const [extractError, setExtractError] = useState<string | null>(null);
+
+  // Undo / redo stacks (capped) plus a ref mirror of the live state so a
+  // snapshot can be taken before any mutation, even inside functional updates.
+  const [past, setPast] = useState<HistState[]>([]);
+  const [future, setFuture] = useState<HistState[]>([]);
+  const stateRef = useRef<HistState>({
+    base: [],
+    locked: [],
+    settings: { ...DEFAULT_PALETTE_SETTINGS },
+    strategy: "random",
+  });
+  const histRef = useRef<{ past: HistState[]; future: HistState[] }>({ past: [], future: [] });
   const [editingHex, setEditingHex] = useState<number | null>(null);
   const [hexDraft, setHexDraft] = useState("");
   const [hexError, setHexError] = useState(false);
   const dragFrom = useRef<number | null>(null);
+  /** Tracks the active tune-slider gesture so one drag/keyboard session is one undo step. */
+  const tuneGestureRef = useRef<string | null>(null);
   /** Column under the pointer — the target for the hover + L lock shortcut. */
   const hoveredRef = useRef<number | null>(null);
   const colorsRef = useRef<string[]>([]);
@@ -354,6 +767,8 @@ export function FastGenerator() {
   useEffect(() => {
     colorsRef.current = colors;
     lockedRef.current = locked;
+    stateRef.current = { base, locked, settings, strategy };
+    histRef.current = { past, future };
   });
 
   const closeOverlays = useCallback(() => {
@@ -365,7 +780,69 @@ export function FastGenerator() {
     setEditingHex(null);
     setSavedOpen(false);
     setInfoFor(null);
+    setPickerFor(null);
+    setMoreOpen(false);
+    setExtractOpen(false);
+    setVariationsOpen(false);
   }, []);
+
+  const snapCurrent = useCallback((): HistState => {
+    const s = stateRef.current;
+    return {
+      base: [...s.base],
+      locked: [...s.locked],
+      settings: { ...s.settings },
+      strategy: s.strategy,
+    };
+  }, []);
+
+  /** Record the pre-mutation state. Consecutive duplicates collapse.
+   *  Updates the ref synchronously so rapid undo/redo clicks and
+   *  back-to-back mutations never read a stale stack. */
+  const pushHistory = useCallback(() => {
+    const cur = snapCurrent();
+    const prev = histRef.current.past;
+    const last = prev[prev.length - 1];
+    if (last && sameHist(last, cur)) return;
+    const next = [...prev.slice(-49), cur];
+    histRef.current.past = next;
+    histRef.current.future = [];
+    setPast(next);
+    setFuture([]);
+  }, [snapCurrent]);
+
+  const applyHist = useCallback((s: HistState) => {
+    setBase([...s.base]);
+    setLocked([...s.locked]);
+    setSettings({ ...s.settings });
+    setStrategy(s.strategy);
+  }, []);
+
+  const undo = useCallback(() => {
+    const prev = histRef.current.past;
+    if (!prev.length) return;
+    const s = prev[prev.length - 1];
+    const nextPast = prev.slice(0, -1);
+    const nextFuture = [...histRef.current.future.slice(-49), snapCurrent()];
+    histRef.current.past = nextPast;
+    histRef.current.future = nextFuture;
+    setPast(nextPast);
+    setFuture(nextFuture);
+    applyHist(s);
+  }, [applyHist, snapCurrent]);
+
+  const redo = useCallback(() => {
+    const next = histRef.current.future;
+    if (!next.length) return;
+    const s = next[next.length - 1];
+    const nextFuture = next.slice(0, -1);
+    const nextPast = [...histRef.current.past.slice(-49), snapCurrent()];
+    histRef.current.past = nextPast;
+    histRef.current.future = nextFuture;
+    setPast(nextPast);
+    setFuture(nextFuture);
+    applyHist(s);
+  }, [applyHist, snapCurrent]);
 
   // What the user sees: tuning applied deterministically, keepers untouched.
   const colors = useMemo(
@@ -415,6 +892,7 @@ export function FastGenerator() {
   const shuffle = useCallback(
     (forced?: StrategyChoice) => {
       const choice = forced ?? strategy;
+      pushHistory();
       setBase((prev) => {
         const keep: (string | null)[] = prev.map((c, i) =>
           locked[i] ? c : null,
@@ -423,16 +901,32 @@ export function FastGenerator() {
         return quickPalette(prev.length, keep, choice);
       });
     },
-    [locked, strategy],
+    [locked, strategy, pushHistory],
   );
 
   // Spacebar generates — the signature interaction. Ignored while typing or
   // while a slider (a native input) holds focus, where space is the control's.
   // Hover + L toggles the lock on the column under the pointer (same guards:
   // never while typing, and never with a dialog open).
+  // Undo/redo must still work when a range slider holds focus — only true
+  // text editing (text inputs, textareas, selects, contentEditable) blocks it.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
+      const inputType =
+        target?.tagName === "INPUT"
+          ? (target as HTMLInputElement).type.toLowerCase()
+          : null;
+      const textEditing =
+        target?.tagName === "TEXTAREA" ||
+        target?.tagName === "SELECT" ||
+        (target as HTMLElement | null)?.isContentEditable ||
+        (target?.tagName === "INPUT" &&
+          inputType !== "range" &&
+          inputType !== "checkbox" &&
+          inputType !== "radio" &&
+          inputType !== "button" &&
+          inputType !== "submit");
       const typing =
         target?.tagName === "INPUT" ||
         target?.tagName === "TEXTAREA" ||
@@ -440,6 +934,19 @@ export function FastGenerator() {
       if (e.code === "Space" && !typing) {
         e.preventDefault();
         shuffle();
+        return;
+      }
+      if ((e.ctrlKey || e.metaKey) && !textEditing && (e.key === "z" || e.key === "Z")) {
+        if (document.querySelector('[role="dialog"]')) return;
+        e.preventDefault();
+        if (e.shiftKey) redo();
+        else undo();
+        return;
+      }
+      if ((e.ctrlKey || e.metaKey) && !textEditing && (e.key === "y" || e.key === "Y")) {
+        if (document.querySelector('[role="dialog"]')) return;
+        e.preventDefault();
+        redo();
         return;
       }
       if (
@@ -461,7 +968,7 @@ export function FastGenerator() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [shuffle]);
+  }, [shuffle, undo, redo]);
 
   const chooseStrategy = (next: StrategyChoice) => {
     setStrategy(next);
@@ -474,6 +981,7 @@ export function FastGenerator() {
     setSettings((prev) => ({ ...prev, [key]: value }));
 
   const toggleLock = (index: number) => {
+    pushHistory();
     if (!locked[index]) {
       // Freeze the colour exactly as it appears right now, tuning included —
       // unlocking later resumes tuning from this baked value.
@@ -495,24 +1003,30 @@ export function FastGenerator() {
   };
 
   const commitHexDraft = (index: number) => {
-    if (setColorAt(index, hexDraft)) {
-      setEditingHex(null);
-      setHexError(false);
-    } else {
+    const norm = normalizeHex(hexDraft);
+    if (!norm) {
       setHexError(true);
+      return;
     }
+    pushHistory();
+    setBase((prev) => prev.map((c, i) => (i === index ? norm : c)));
+    setEditingHex(null);
+    setHexError(false);
   };
 
   const removeAt = (index: number) => {
     if (base.length <= 2) return;
+    pushHistory();
     setBase((prev) => prev.filter((_, i) => i !== index));
     setLocked((prev) => prev.filter((_, i) => i !== index));
     setShadesFor(null);
     setContrastFor(null);
+    setPickerFor(null);
   };
 
   const reorder = useCallback((from: number, to: number) => {
     if (from === to || to < 0) return;
+    pushHistory();
     setBase((prev) => {
       if (to >= prev.length) return prev;
       const next = [...prev];
@@ -527,7 +1041,7 @@ export function FastGenerator() {
       next.splice(to, 0, moved);
       return next;
     });
-  }, []);
+  }, [pushHistory]);
 
   const flashCopied = (key: string) => {
     setCopied(key);
@@ -543,11 +1057,13 @@ export function FastGenerator() {
   };
 
   const addColor = () => {
+    pushHistory();
     setBase((prev) => (prev.length >= 8 ? prev : [...prev, randomPleasantColour()]));
     setLocked((prev) => (prev.length >= 8 ? prev : [...prev, false]));
   };
   const insertAt = (index: number) => {
     if (base.length >= 8) return;
+    pushHistory();
     const color = randomPleasantColour();
     setBase((prev) => [...prev.slice(0, index), color, ...prev.slice(index)]);
     setLocked((prev) => [...prev.slice(0, index), false, ...prev.slice(index)]);
@@ -614,11 +1130,14 @@ export function FastGenerator() {
       setSavedOpen(false);
       return;
     }
+    pushHistory();
     setBase([...entry.colors]);
     setLocked(entry.colors.map(() => false));
     setSavedOpen(false);
   };
   const removeColor = () => {
+    if (base.length <= 2) return;
+    pushHistory();
     setBase((prev) => (prev.length <= 2 ? prev : prev.slice(0, -1)));
     setLocked((prev) => (prev.length <= 2 ? prev : prev.slice(0, -1)));
   };
@@ -631,6 +1150,53 @@ export function FastGenerator() {
     url.searchParams.set("c", serializeQuickPalette(colors));
     return url.toString();
   }, [colors]);
+
+  /* ---- palette variations (strategy + tonal re-rolls of the current base) */
+  const variations = useMemo(() => {
+    const unlocked = base.map(() => false);
+    const tweaked = (over: Partial<PaletteSettings>) =>
+      applyPaletteSettings(base, unlocked, { ...settings, ...over });
+    const reshuffled = [...base];
+    for (let k = reshuffled.length - 1; k > 0; k--) {
+      const j = Math.floor(Math.random() * (k + 1));
+      [reshuffled[k], reshuffled[j]] = [reshuffled[j], reshuffled[k]];
+    }
+    return [
+      { id: "reverse", label: "Reversed", colors: [...base].reverse() },
+      { id: "reorder", label: "Reshuffled", colors: reshuffled },
+      { id: "darker", label: "After dark", colors: tweaked({ brightness: settings.brightness - 18 }) },
+      { id: "lighter", label: "Daylight", colors: tweaked({ brightness: settings.brightness + 18 }) },
+      { id: "vivid", label: "Turned up", colors: tweaked({ vibrance: Math.min(200, settings.vibrance + 40) }) },
+      { id: "muted", label: "Muted", colors: tweaked({ vibrance: Math.max(0, settings.vibrance - 40) }) },
+    ];
+  }, [base, settings]);
+
+  const applyVariation = (next: string[]) => {
+    pushHistory();
+    setBase([...next]);
+    setLocked(next.map(() => false));
+    setVariationsOpen(false);
+  };
+
+  /* ---- extract a palette from an uploaded image (local-only) ---------- */
+  const onExtractFile = async (file: File) => {
+    setExtracting(true);
+    setExtractError(null);
+    try {
+      const found = await extractDominantColours(file);
+      const count = Math.max(2, Math.min(8, base.length));
+      const next = found.slice(0, count).map((c) => c.hex);
+      while (next.length < count) next.push(next[next.length - 1] ?? "#888888");
+      pushHistory();
+      setBase(next);
+      setLocked(next.map(() => false));
+      setExtractOpen(false);
+    } catch (err) {
+      setExtractError(err instanceof Error ? err.message : "Could not read that image. Try a different file.");
+    } finally {
+      setExtracting(false);
+    }
+  };
 
   const gradientCss = useMemo(
     () => `background: linear-gradient(135deg, ${colors.map((c) => c.toUpperCase()).join(", ")});`,
@@ -737,14 +1303,67 @@ export function FastGenerator() {
     return `/design-system?${params.toString()}`;
   }, [colors]);
 
+  // Deep-link to the full simulator with this exact palette preserved.
+  const simulatorHref = useMemo(() => {
+    const palette = colors.map((c) => c.replace("#", "")).join(",");
+    return `/tools/color-blindness-simulator?palette=${palette}`;
+  }, [colors]);
+
+  // Current palette simulated under each full color-vision condition.
+  const cvdRows = useMemo(
+    () =>
+      CVD_TYPES.map((t) => ({
+        ...t,
+        colors: colors.map((c) => {
+          try {
+            return simulateCvd(c, t.id);
+          } catch {
+            return c;
+          }
+        }),
+      })),
+    [colors],
+  );
+
   const tuningActive = !settingsAreDefault(settings);
-  const anyOverlay = tuneOpen || viewOpen || exportOpen || savedOpen || shadesFor !== null || contrastFor !== null || infoFor !== null;
+  const anyOverlay = tuneOpen || viewOpen || exportOpen || savedOpen || shadesFor !== null || contrastFor !== null || infoFor !== null || pickerFor !== null || moreOpen || extractOpen || variationsOpen;
   const tuningLabel = [
     strategy === "random" ? null : STRATEGY_OPTIONS.find((o) => o.id === strategy)?.label,
     tuningActive ? "tuned" : null,
   ]
     .filter(Boolean)
     .join(" · ");
+
+  const quickIdx = Math.min(quickViewIndex, colors.length - 1);
+  const quickHex = colors[quickIdx] ?? "#888888";
+  const quickRows: Array<[string, string]> = [
+    ["HEX", quickHex.toUpperCase()],
+    ["HSB", hsbString(quickHex)],
+    ["HSL", hslString(quickHex)],
+    ["RGB", rgbString(quickHex)],
+    ["CMYK", cmykString(quickHex)],
+    ["LAB", labString(quickHex)],
+  ];
+
+  /** Open the Quick view on the first unlocked column (falls back to 0). */
+  const openQuickView = () => {
+    const firstOpen = colors.findIndex((_, idx) => !locked[idx]);
+    setQuickViewIndex(firstOpen === -1 ? 0 : firstOpen);
+    setViewTab("quick");
+    setViewOpen(true);
+  };
+
+  /** Open the inline color-blindness simulation for the live palette. */
+  const openCvdView = () => {
+    setViewTab("cvd");
+    setViewOpen(true);
+    setExportOpen(false);
+    setTuneOpen(false);
+    setSavedOpen(false);
+    setMoreOpen(false);
+    setExtractOpen(false);
+    setVariationsOpen(false);
+  };
 
   const valueLine = (hex: string) =>
     valueFormat === "hsl" ? `hsl(${hslString(hex)})` : valueFormat === "cmyk" ? `cmyk(${cmykString(hex)})` : `rgb(${rgbString(hex)})`;
@@ -758,6 +1377,260 @@ export function FastGenerator() {
             Press space. <span className="font-medium text-zinc-500 dark:text-zinc-400">Keep the good ones.</span>
           </h1>
         </div>
+        <div className="flex items-center gap-1.5">
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => {
+                setMoreOpen((o) => !o);
+                setTuneOpen(false);
+                setViewOpen(false);
+                setExportOpen(false);
+                setSavedOpen(false);
+                setExtractOpen(false);
+                setVariationsOpen(false);
+              }}
+              aria-expanded={moreOpen}
+              aria-label="More actions"
+              title="More actions"
+              className={`rounded-lg border p-2 transition-colors dark:border-zinc-700 ${moreOpen ? "border-zinc-900 text-zinc-900 dark:border-zinc-100 dark:text-zinc-100" : "border-zinc-300 text-zinc-700 hover:border-zinc-500 dark:text-zinc-300"}`}
+            >
+              <DotsIcon />
+            </button>
+            {moreOpen ? (
+              <>
+                <button type="button" aria-label="Close menu" className="fixed inset-0 z-30 cursor-default" onClick={() => setMoreOpen(false)} />
+                <div className="absolute left-0 z-40 mt-2 w-64 overflow-hidden rounded-xl border border-zinc-200 bg-white py-1.5 shadow-xl dark:border-zinc-700 dark:bg-zinc-900">
+                  <p className="px-3.5 pb-1 pt-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-500 dark:text-zinc-400">
+                    Generate method
+                  </p>
+                  {STRATEGY_OPTIONS.map((o) => (
+                    <button
+                      key={o.id}
+                      type="button"
+                      onClick={() => {
+                        chooseStrategy(o.id);
+                        setMoreOpen(false);
+                      }}
+                      className="flex w-full items-center justify-between px-3.5 py-1.5 text-left text-sm text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                    >
+                      <span>{o.label}</span>
+                      {strategy === o.id ? <span aria-hidden>✓</span> : null}
+                    </button>
+                  ))}
+                  <div className="mx-3 my-1.5 border-t border-zinc-200 dark:border-zinc-700" />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMoreOpen(false);
+                      setTuneOpen(true);
+                      setViewOpen(false);
+                      setExportOpen(false);
+                      setSavedOpen(false);
+                    }}
+                    className="block w-full px-3.5 py-1.5 text-left text-sm text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                  >
+                    Tune settings
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMoreOpen(false);
+                      setSavedOpen(true);
+                      setViewOpen(false);
+                      setExportOpen(false);
+                      setTuneOpen(false);
+                    }}
+                    className="block w-full px-3.5 py-1.5 text-left text-sm text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                  >
+                    Saved palettes
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMoreOpen(false);
+                      setExportOpen(true);
+                      setExportTab("image");
+                      setViewOpen(false);
+                      setTuneOpen(false);
+                      setSavedOpen(false);
+                    }}
+                    className="block w-full px-3.5 py-1.5 text-left text-sm text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                  >
+                    Make a collage (PNG)
+                  </button>
+                  <a
+                    href="/blog/how-to-build-an-accessible-color-palette"
+                    className="block w-full px-3.5 py-1.5 text-left text-sm text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                  >
+                    Read tutorial
+                  </a>
+                </div>
+              </>
+            ) : null}
+          </div>
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => {
+                setExtractOpen((o) => !o);
+                setTuneOpen(false);
+                setViewOpen(false);
+                setExportOpen(false);
+                setSavedOpen(false);
+                setMoreOpen(false);
+                setVariationsOpen(false);
+              }}
+              aria-expanded={extractOpen}
+              aria-label="Extract palette from image"
+              title="Extract palette from image"
+              className={`rounded-lg border p-2 transition-colors dark:border-zinc-700 ${extractOpen ? "border-zinc-900 text-zinc-900 dark:border-zinc-100 dark:text-zinc-100" : "border-zinc-300 text-zinc-700 hover:border-zinc-500 dark:text-zinc-300"}`}
+            >
+              <CameraIcon />
+            </button>
+            {extractOpen ? (
+              <>
+                <button type="button" aria-label="Close image extract" className="fixed inset-0 z-30 cursor-default" onClick={() => setExtractOpen(false)} />
+                <div className="absolute left-0 z-40 mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-xl border border-zinc-200 bg-white p-4 shadow-xl dark:border-zinc-700 dark:bg-zinc-900">
+                  <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Extract from image</p>
+                  <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+                    Dominant colors become your palette. Processed in this browser — nothing is uploaded.
+                  </p>
+                  <label className="mt-3 flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-zinc-300 px-3 py-4 text-sm font-medium text-zinc-600 hover:border-zinc-500 hover:text-zinc-900 dark:border-zinc-700 dark:text-zinc-300 dark:hover:border-zinc-500 dark:hover:text-zinc-100">
+                    <CameraIcon className="h-5 w-5" />
+                    {extracting ? "Reading pixels…" : "Choose an image"}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="sr-only"
+                      disabled={extracting}
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        e.target.value = "";
+                        if (f) void onExtractFile(f);
+                      }}
+                    />
+                  </label>
+                  {extractError ? (
+                    <p role="alert" className="mt-2 text-xs text-red-600 dark:text-red-400">{extractError}</p>
+                  ) : null}
+                </div>
+              </>
+            ) : null}
+          </div>
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => {
+                setVariationsOpen((o) => !o);
+                setTuneOpen(false);
+                setViewOpen(false);
+                setExportOpen(false);
+                setSavedOpen(false);
+                setMoreOpen(false);
+                setExtractOpen(false);
+              }}
+              aria-expanded={variationsOpen}
+              aria-label="Palette variations"
+              title="Palette variations"
+              className={`rounded-lg border p-2 transition-colors dark:border-zinc-700 ${variationsOpen ? "border-zinc-900 text-zinc-900 dark:border-zinc-100 dark:text-zinc-100" : "border-zinc-300 text-zinc-700 hover:border-zinc-500 dark:text-zinc-300"}`}
+            >
+              <LayoutGridIcon />
+            </button>
+            {variationsOpen ? (
+              <>
+                <button type="button" aria-label="Close variations" className="fixed inset-0 z-30 cursor-default" onClick={() => setVariationsOpen(false)} />
+                <div className="absolute left-0 z-40 mt-2 w-[26rem] max-w-[calc(100vw-2rem)] rounded-xl border border-zinc-200 bg-white p-3 shadow-xl dark:border-zinc-700 dark:bg-zinc-900">
+                  <p className="px-1 text-sm font-semibold text-zinc-900 dark:text-zinc-100">Palette variations</p>
+                  <p className="px-1 text-xs text-zinc-500 dark:text-zinc-400">One click to try a direction.</p>
+                  <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                    {variations.map((v) => (
+                      <button
+                        key={v.id}
+                        type="button"
+                        onClick={() => applyVariation(v.colors)}
+                        title={`Use ${v.label}`}
+                        className="rounded-lg border border-zinc-200 p-1.5 text-left hover:border-zinc-500 dark:border-zinc-700 dark:hover:border-zinc-500"
+                      >
+                        <span className="flex h-10 overflow-hidden rounded-md" aria-hidden>
+                          {v.colors.map((c, k) => (
+                            <span key={`${c}-${k}`} className="h-full flex-1" style={{ backgroundColor: c }} />
+                          ))}
+                        </span>
+                        <span className="mt-1 block text-xs font-medium text-zinc-600 dark:text-zinc-300">{v.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
+            ) : null}
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              openQuickView();
+              setExportOpen(false);
+              setTuneOpen(false);
+              setSavedOpen(false);
+              setMoreOpen(false);
+              setExtractOpen(false);
+              setVariationsOpen(false);
+            }}
+            aria-label="Visualize colors"
+            title="Visualize colors"
+            className="rounded-lg border border-zinc-300 p-2 text-zinc-700 transition-colors hover:border-zinc-500 dark:border-zinc-700 dark:text-zinc-300"
+          >
+            <ShapesIcon />
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setViewTab("contrast");
+              setViewOpen(true);
+              setExportOpen(false);
+              setTuneOpen(false);
+              setSavedOpen(false);
+              setMoreOpen(false);
+              setExtractOpen(false);
+              setVariationsOpen(false);
+            }}
+            aria-label="Check palette contrast"
+            title="Check palette contrast"
+            className="rounded-lg border border-zinc-300 p-2 text-zinc-700 transition-colors hover:border-zinc-500 dark:border-zinc-700 dark:text-zinc-300"
+          >
+            <ContrastIcon />
+          </button>
+          <button
+            type="button"
+            onClick={openCvdView}
+            aria-label="Check color blindness"
+            title="Check color blindness"
+            className="rounded-lg border border-zinc-300 p-2 text-zinc-700 transition-colors hover:border-zinc-500 dark:border-zinc-700 dark:text-zinc-300"
+          >
+            <GlassesIcon />
+          </button>
+          <span aria-hidden className="mx-0.5 h-6 w-px bg-zinc-200 dark:bg-zinc-700" />
+          <button
+            type="button"
+            onClick={undo}
+            disabled={!past.length}
+            aria-label="Undo"
+            title="Undo (Ctrl+Z)"
+            className="rounded-lg border border-zinc-300 p-2 text-zinc-700 transition-colors hover:border-zinc-500 disabled:opacity-30 disabled:hover:border-zinc-300 dark:border-zinc-700 dark:text-zinc-300 dark:disabled:hover:border-zinc-700"
+          >
+            <UndoIcon />
+          </button>
+          <button
+            type="button"
+            onClick={redo}
+            disabled={!future.length}
+            aria-label="Redo"
+            title="Redo (Ctrl+Shift+Z)"
+            className="rounded-lg border border-zinc-300 p-2 text-zinc-700 transition-colors hover:border-zinc-500 disabled:opacity-30 disabled:hover:border-zinc-300 dark:border-zinc-700 dark:text-zinc-300 dark:disabled:hover:border-zinc-700"
+          >
+            <RedoIcon />
+          </button>
+        </div>
         <button
           type="button"
           onClick={() => shuffle()}
@@ -769,10 +1642,13 @@ export function FastGenerator() {
           <button
             type="button"
             onClick={() => {
-              setViewOpen(true);
+              openQuickView();
               setExportOpen(false);
               setTuneOpen(false);
               setSavedOpen(false);
+              setMoreOpen(false);
+              setExtractOpen(false);
+              setVariationsOpen(false);
             }}
             className="rounded-lg border border-zinc-300 px-3.5 py-2 text-sm font-medium text-zinc-700 transition-colors hover:border-zinc-500 dark:border-zinc-700 dark:text-zinc-300"
           >
@@ -785,6 +1661,9 @@ export function FastGenerator() {
               setViewOpen(false);
               setExportOpen(false);
               setSavedOpen(false);
+              setMoreOpen(false);
+              setExtractOpen(false);
+              setVariationsOpen(false);
             }}
             aria-expanded={tuneOpen}
             className={`rounded-lg border px-3.5 py-2 text-sm font-medium transition-colors dark:border-zinc-700 ${
@@ -802,6 +1681,9 @@ export function FastGenerator() {
               setViewOpen(false);
               setTuneOpen(false);
               setSavedOpen(false);
+              setMoreOpen(false);
+              setExtractOpen(false);
+              setVariationsOpen(false);
             }}
             className="rounded-lg border border-zinc-900 bg-zinc-900 px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700 dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
           >
@@ -815,6 +1697,9 @@ export function FastGenerator() {
                 setViewOpen(false);
                 setExportOpen(false);
                 setTuneOpen(false);
+                setMoreOpen(false);
+                setExtractOpen(false);
+                setVariationsOpen(false);
               }}
               aria-expanded={savedOpen}
               className="rounded-lg border border-zinc-300 px-3.5 py-2 text-sm font-medium text-zinc-700 transition-colors hover:border-zinc-500 dark:border-zinc-700 dark:text-zinc-300"
@@ -931,6 +1816,7 @@ export function FastGenerator() {
           const ratioWhite = contrastRatio(hex, "#ffffff");
           const ratioBlack = contrastRatio(hex, "#000000");
           const bestOn = ratioWhite >= ratioBlack ? "#ffffff" : "#000000";
+          const usage = colorUsage(hex);
           return (
           <div
             key={`${i}-${colors.length}`}
@@ -941,7 +1827,7 @@ export function FastGenerator() {
             onMouseLeave={() => {
               if (hoveredRef.current === i) hoveredRef.current = null;
             }}
-            draggable={shadesFor !== i && !showContrast}
+            draggable={shadesFor !== i && !showContrast && pickerFor !== i}
             onDragStart={() => {
               dragFrom.current = i;
             }}
@@ -972,6 +1858,7 @@ export function FastGenerator() {
                 onClick={() => {
                   setShadesFor(shadesFor === i ? null : i);
                   setContrastFor(null);
+                  setPickerFor(null);
                 }}
                 aria-label={shadesFor === i ? `Hide shades of color ${i + 1}` : `Show shades of color ${i + 1}`}
                 aria-pressed={shadesFor === i}
@@ -985,6 +1872,7 @@ export function FastGenerator() {
                 onClick={() => {
                   setContrastFor(showContrast ? null : i);
                   setShadesFor(null);
+                  setPickerFor(null);
                 }}
                 aria-label={showContrast ? `Hide contrast for color ${i + 1}` : `Check contrast for color ${i + 1}`}
                 aria-pressed={showContrast}
@@ -1006,26 +1894,29 @@ export function FastGenerator() {
               >
                 <TypeHexIcon />
               </button>
-              <label
+              <button
+                type="button"
+                onClick={() => {
+                  if (pickerFor !== i) pushHistory();
+                  setPickerFor(pickerFor === i ? null : i);
+                  setShadesFor(null);
+                  setContrastFor(null);
+                  setInfoFor(null);
+                }}
+                aria-label={pickerFor === i ? `Hide color picker for color ${i + 1}` : `Pick a custom color for color ${i + 1}`}
+                aria-pressed={pickerFor === i}
                 title="Pick a custom color"
-                className="relative hidden cursor-pointer overflow-hidden rounded-full p-2 hover:bg-black/10 sm:block dark:hover:bg-white/20"
+                className={`rounded-full p-2 hover:bg-black/10 dark:hover:bg-white/20 ${pickerFor === i ? "bg-black/15 dark:bg-white/25" : ""}`}
               >
                 <PipetteIcon />
-                <span className="sr-only">{`Pick color ${i + 1}`}</span>
-                <input
-                  type="color"
-                  value={hex}
-                  onChange={(e) => editColor(i, e.target.value)}
-                  className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-                  aria-label={`Pick color ${i + 1}`}
-                />
-              </label>
+              </button>
               <button
                 type="button"
                 onClick={() => {
                   setInfoFor(infoFor === i ? null : i);
                   setShadesFor(null);
                   setContrastFor(null);
+                  setPickerFor(null);
                 }}
                 aria-label={infoFor === i ? `Hide color info for color ${i + 1}` : `Show color info for color ${i + 1}`}
                 aria-pressed={infoFor === i}
@@ -1061,10 +1952,25 @@ export function FastGenerator() {
                 onClick={() => insertAt(i + 1)}
                 aria-label={`Insert a color after position ${i + 1}`}
                 title="Insert a color here"
-                className="absolute -right-3.5 top-1/2 z-10 hidden h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-white text-zinc-700 opacity-0 shadow-md ring-1 ring-black/10 transition-all hover:bg-zinc-900 hover:text-white group-hover:opacity-100 sm:flex dark:bg-zinc-900 dark:text-zinc-200 dark:ring-white/20 dark:hover:bg-zinc-100 dark:hover:text-zinc-900"
+                className="absolute -right-4 top-1/2 z-10 hidden h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white text-zinc-700 opacity-0 shadow-md ring-1 ring-black/10 transition-all hover:bg-zinc-900 hover:text-white group-hover:opacity-100 sm:flex dark:bg-zinc-900 dark:text-zinc-200 dark:ring-white/20 dark:hover:bg-zinc-100 dark:hover:text-zinc-900"
               >
-                <PlusIcon className="h-4 w-4" />
+                <PlusIcon className="h-5 w-5" />
               </button>
+            ) : null}
+
+            {/* Custom color picker popover */}
+            {pickerFor === i ? (
+              <>
+                <button
+                  type="button"
+                  aria-label="Close color picker"
+                  className="fixed inset-0 z-30 cursor-default"
+                  onClick={() => setPickerFor(null)}
+                />
+                <div className="absolute inset-x-3 top-12 z-40 rounded-xl bg-white p-3 shadow-xl ring-1 ring-black/10 sm:top-14 dark:bg-zinc-900 dark:ring-white/15">
+                  <ColorPicker hex={hex} name={displayNames[i]} swatches={colors} onChange={(next) => editColor(i, next)} />
+                </div>
+              </>
             ) : null}
 
             {/* Shades popover */}
@@ -1089,10 +1995,11 @@ export function FastGenerator() {
                         <button
                           key={`${shade}-${k}`}
                           type="button"
-                          onClick={() => {
-                            setColorAt(i, shade);
-                            setShadesFor(null);
-                          }}
+                        onClick={() => {
+                          pushHistory();
+                          setColorAt(i, shade);
+                          setShadesFor(null);
+                        }}
                           title={`${shade.toUpperCase()} · lightness ${light}% — click to use`}
                           className="group/sh flex-1"
                         >
@@ -1232,6 +2139,10 @@ export function FastGenerator() {
                           {copied === `info-${i}-text` ? "Copied!" : bestOn.toUpperCase()}
                         </button>
                       </dd>
+                    </div>
+                    <div className="border-t border-zinc-100 pt-2 dark:border-zinc-800">
+                      <dt className="text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-500 dark:text-zinc-400">Best for</dt>
+                      <dd className="mt-0.5 text-[13px] leading-5 text-zinc-600 dark:text-zinc-300">{usage}</dd>
                     </div>
                   </dl>
                   <div className="flex gap-2 border-t border-zinc-100 p-3 dark:border-zinc-800">
@@ -1385,7 +2296,7 @@ export function FastGenerator() {
               <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Tune this palette</p>
               <div className="flex items-center gap-2">
                 {tuningActive ? (
-                  <Button type="button" variant="secondary" className="px-2 py-1 text-xs" onClick={() => setSettings({ ...DEFAULT_PALETTE_SETTINGS })}>
+                  <Button type="button" variant="secondary" className="px-2 py-1 text-xs" onClick={() => { pushHistory(); setSettings({ ...DEFAULT_PALETTE_SETTINGS }); }}>
                     Reset sliders
                   </Button>
                 ) : null}
@@ -1424,7 +2335,17 @@ export function FastGenerator() {
                       max={max}
                       step={step}
                       value={value}
-                      onChange={(e) => setControl(key, Number(e.target.value))}
+                      onPointerDown={() => { tuneGestureRef.current = null; }}
+                      onFocus={() => { tuneGestureRef.current = null; }}
+                      onPointerUp={() => { tuneGestureRef.current = null; }}
+                      onBlur={() => { tuneGestureRef.current = null; }}
+                      onChange={(e) => {
+                        if (tuneGestureRef.current !== key) {
+                          tuneGestureRef.current = key;
+                          pushHistory();
+                        }
+                        setControl(key, Number(e.target.value));
+                      }}
                       className="w-full accent-zinc-900 dark:accent-zinc-100"
                     />
                   </div>
@@ -1461,7 +2382,7 @@ export function FastGenerator() {
               </button>
             </div>
             <div className="mt-3 flex gap-1.5">
-              {([["gradient", "Gradient"], ["list", "List"], ["contrast", "Contrast"]] as const).map(([id, label]) => (
+              {([["quick", "Quick view"], ["gradient", "Gradient"], ["list", "List"], ["contrast", "Contrast"], ["cvd", "Color-blind"]] as const).map(([id, label]) => (
                 <button
                   key={id}
                   type="button"
@@ -1473,6 +2394,146 @@ export function FastGenerator() {
                 </button>
               ))}
             </div>
+
+            {viewTab === "quick" ? (
+              <div className="mt-4 grid gap-5 sm:grid-cols-2">
+                <div>
+                  <div className="h-36 rounded-xl ring-1 ring-black/10" style={{ backgroundColor: quickHex }} />
+                  <p className="mt-2 truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">{displayNames[quickIdx]}</p>
+                  <dl className="mt-1 space-y-0.5">
+                    {quickRows.map(([fmt, value]) => (
+                      <div key={fmt} className="flex items-center gap-2 rounded-lg px-2 py-1 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                        <dt className="w-12 shrink-0 text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-500 dark:text-zinc-400">{fmt}</dt>
+                        <dd className="min-w-0 flex-1 truncate font-mono text-[13px] text-zinc-800 dark:text-zinc-200">{value}</dd>
+                        <button
+                          type="button"
+                          onClick={() => copyText(value, `qv-${fmt}`)}
+                          aria-label={`Copy ${fmt} value`}
+                          title={`Copy ${fmt}`}
+                          className="rounded-md p-1.5 text-zinc-400 hover:bg-zinc-200 hover:text-zinc-700 dark:hover:bg-zinc-700 dark:hover:text-zinc-200"
+                        >
+                          {copied === `qv-${fmt}` ? <span className="text-[11px] font-bold">✓</span> : <CopyIcon className="h-4 w-4" />}
+                        </button>
+                      </div>
+                    ))}
+                  </dl>
+                  <div className="mt-3 flex gap-1.5" role="group" aria-label="Choose a color to inspect">
+                    {colors.map((c, k) => (
+                      <button
+                        key={`${c}-${k}`}
+                        type="button"
+                        onClick={() => setQuickViewIndex(k)}
+                        title={`${displayNames[k]} ${c.toUpperCase()}`}
+                        aria-label={`Inspect ${displayNames[k]}`}
+                        aria-pressed={k === quickIdx}
+                        className={`relative h-9 flex-1 rounded-md transition-transform hover:scale-105 ${k === quickIdx ? "ring-2 ring-zinc-900 ring-offset-2 dark:ring-white dark:ring-offset-zinc-900" : "ring-1 ring-black/15 dark:ring-white/20"}`}
+                        style={{ backgroundColor: c }}
+                      >
+                        {k === quickIdx ? (
+                          <span aria-hidden className="absolute inset-0 flex items-center justify-center">
+                            <span className="h-1.5 w-1.5 rounded-full bg-white shadow" />
+                          </span>
+                        ) : null}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <ul className="space-y-0.5">
+                    <li>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setViewOpen(false);
+                          setShadesFor(null);
+                          setContrastFor(null);
+                          setPickerFor(null);
+                          setInfoFor(quickIdx);
+                        }}
+                        className="flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-left text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                      >
+                        <InfoIcon className="h-4 w-4 shrink-0 text-zinc-400" />
+                        View info
+                        <span className="ml-auto rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200">New</span>
+                      </button>
+                    </li>
+                    <li>
+                      <a
+                        href={generatorHref}
+                        className="flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-left text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                      >
+                        <ArrowUpRightIcon className="h-4 w-4 shrink-0 text-zinc-400" />
+                        Open in the generator
+                      </a>
+                    </li>
+                    <li>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setViewOpen(false);
+                          setExportOpen(true);
+                        }}
+                        className="flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-left text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                      >
+                        <ExportIcon className="h-4 w-4 shrink-0 text-zinc-400" />
+                        Export
+                      </button>
+                    </li>
+                  </ul>
+                  <div className="my-2 border-t border-zinc-200 dark:border-zinc-800" />
+                  <ul className="space-y-0.5">
+                    <li>
+                      <button
+                        type="button"
+                        onClick={() => setViewTab("contrast")}
+                        className="flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-left text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                      >
+                        <ContrastIcon className="h-4 w-4 shrink-0 text-zinc-400" />
+                        Check contrast
+                      </button>
+                    </li>
+                    <li>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setViewOpen(false);
+                          setTuneOpen(false);
+                          setExportOpen(false);
+                          setSavedOpen(false);
+                          setMoreOpen(false);
+                          setExtractOpen(false);
+                          setVariationsOpen(true);
+                        }}
+                        className="flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-left text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                      >
+                        <LayoutGridIcon className="h-4 w-4 shrink-0 text-zinc-400" />
+                        View variations
+                      </button>
+                    </li>
+                    <li>
+                      <button
+                        type="button"
+                        onClick={() => setViewTab("gradient")}
+                        className="flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-left text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                      >
+                        <ShapesIcon className="h-4 w-4 shrink-0 text-zinc-400" />
+                        Visualize colors
+                      </button>
+                    </li>
+                    <li>
+                      <button
+                        type="button"
+                        onClick={() => setViewTab("cvd")}
+                        className="flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-left text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                      >
+                        <GlassesIcon className="h-4 w-4 shrink-0 text-zinc-400" />
+                        Check color blindness
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            ) : null}
 
             {viewTab === "gradient" ? (
               <div className="mt-4">
@@ -1545,6 +2606,30 @@ export function FastGenerator() {
                 </table>
                 <a href="/tools/wcag-palette-checker" className="mt-3 inline-block text-sm font-medium text-zinc-900 underline underline-offset-4 dark:text-zinc-100">
                   Audit every pair in the WCAG palette checker →
+                </a>
+              </div>
+            ) : null}
+
+            {viewTab === "cvd" ? (
+              <div className="mt-4 space-y-4">
+                <p className="text-xs leading-5 text-zinc-500 dark:text-zinc-400">
+                  How this exact palette reads under each major form of color-vision deficiency (Machado et al. matrices). If two swatches collapse into one, separate them by lightness — hue alone won&apos;t survive.
+                </p>
+                {cvdRows.map((row) => (
+                  <div key={row.id}>
+                    <div className="mb-1.5 flex items-baseline justify-between gap-2">
+                      <p className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">{row.label}</p>
+                      <p className="text-[10px] text-zinc-500">{row.desc}</p>
+                    </div>
+                    <div className="flex h-14 overflow-hidden rounded-xl ring-1 ring-black/10" aria-label={`${row.label} simulation`}>
+                      {row.colors.map((c, k) => (
+                        <span key={`${row.id}-${k}`} className="h-full flex-1" style={{ backgroundColor: c }} title={`${displayNames[k]} → ${c.toUpperCase()}`} />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+                <a href={simulatorHref} className="inline-block text-sm font-medium text-zinc-900 underline underline-offset-4 dark:text-zinc-100">
+                  Simulate any single color or image in the full tool →
                 </a>
               </div>
             ) : null}

@@ -13,6 +13,7 @@ import {
   type ScanStageId,
   type ScanStatusId,
 } from "@/lib/audit/types";
+import { track } from "@/lib/analytics";
 import { useQueueClock } from "./use-queue-clock";
 
 export interface ScanProgressStatus {
@@ -289,6 +290,10 @@ export function ScanProgress({
   const [status, setStatus] = useState<ScanProgressStatus | null>(null);
   const [error, setError] = useState("");
   const refreshed = useRef(false);
+  // The funnel's "completed report" step: fired once, when the poll first
+  // sees a report-ready terminal status. Kept separate from `refreshed` so
+  // the event fires even where the page does not auto-refresh into the report.
+  const completed = useRef(false);
   const router = useRouter();
   const now = useQueueClock();
 
@@ -308,6 +313,10 @@ export function ScanProgress({
         if (isTerminalStatus(statusId)) {
           // Nothing left to poll for: a terminal scan never changes again.
           window.clearInterval(interval);
+          if (isReportReady(statusId) && !completed.current) {
+            completed.current = true;
+            track("audit_completed", { scanId });
+          }
           if (refreshOnFinish && isReportReady(statusId) && !refreshed.current) {
             refreshed.current = true;
             router.refresh();

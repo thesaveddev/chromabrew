@@ -1,4 +1,4 @@
-import type { Cmyk, ColourValue, Hsl, Oklch, Rgb } from "../types";
+import type { Cmyk, ColourValue, Hsl, Hsv, Lab, Oklch, Rgb } from "../types";
 
 const HEX_SHORT = /^#?([0-9a-f]{3})$/i;
 const HEX_LONG = /^#?([0-9a-f]{6})$/i;
@@ -123,6 +123,51 @@ export function hslToRgb({ h, s, l }: Hsl): Rgb {
     r: channel(hn + 1 / 3) * 255,
     g: channel(hn) * 255,
     b: channel(hn - 1 / 3) * 255,
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/* HSV (aka HSB: hue 0–360, saturation/value 0–100)                      */
+/* ------------------------------------------------------------------ */
+
+export function rgbToHsv({ r, g, b }: Rgb): Hsv {
+  const rn = r / 255;
+  const gn = g / 255;
+  const bn = b / 255;
+  const max = Math.max(rn, gn, bn);
+  const min = Math.min(rn, gn, bn);
+  const d = max - min;
+  let h = 0;
+  if (d !== 0) {
+    if (max === rn) h = ((gn - bn) / d + (gn < bn ? 6 : 0)) * 60;
+    else if (max === gn) h = ((bn - rn) / d + 2) * 60;
+    else h = ((rn - gn) / d + 4) * 60;
+  }
+  const s = max === 0 ? 0 : (d / max) * 100;
+  return { h: round(h, 1), s: round(s, 1), v: round(max * 100, 1) };
+}
+
+/* ------------------------------------------------------------------ */
+/* CIELAB (D65 illuminant; L 0–100)                                    */
+/* ------------------------------------------------------------------ */
+
+export function rgbToLab({ r, g, b }: Rgb): Lab {
+  const lin = (c: number): number => {
+    const v = c / 255;
+    return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+  };
+  const x = (0.4124564 * lin(r) + 0.3575761 * lin(g) + 0.1804375 * lin(b)) / 0.95047;
+  const y = (0.2126729 * lin(r) + 0.7151522 * lin(g) + 0.072175 * lin(b)) / 1.0;
+  const z = (0.0193339 * lin(r) + 0.119192 * lin(g) + 0.9503041 * lin(b)) / 1.08883;
+  const f = (t: number): number =>
+    t > 216 / 24389 ? Math.cbrt(t) : t / (3 * (6 / 29) ** 2) + 4 / 29;
+  const fx = f(x);
+  const fy = f(y);
+  const fz = f(z);
+  return {
+    l: round(116 * fy - 16, 2),
+    a: round(500 * (fx - fy), 2),
+    b: round(200 * (fy - fz), 2),
   };
 }
 

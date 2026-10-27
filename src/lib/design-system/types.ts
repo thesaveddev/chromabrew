@@ -73,6 +73,18 @@ export interface Hsl {
   l: number;
 }
 
+export interface Hsv {
+  h: number;
+  s: number;
+  v: number;
+}
+
+export interface Lab {
+  l: number;
+  a: number;
+  b: number;
+}
+
 export interface Oklch {
   l: number;
   c: number;
