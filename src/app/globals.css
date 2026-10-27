@@ -43,7 +43,7 @@ html {
 }
 
 .ribbon-track {
-  animation: ribbon-drift 120s linear infinite;
+  animation: ribbon-drift 200s linear infinite;
 }
 
 .ribbon-track:hover {
