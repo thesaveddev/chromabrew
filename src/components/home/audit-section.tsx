@@ -1,7 +1,10 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 
 import { LinkButton } from "@/components/ui/primitives";
+import { track } from "@/lib/analytics";
 
 const INLINE_LINK =
   "underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 dark:focus-visible:outline-zinc-100";
@@ -84,11 +87,7 @@ export function AuditSection() {
         <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
           <LinkButton
             href="/audit"
-            onClick={() => {
-              void import("@/lib/analytics").then(({ track }) =>
-                track("hero_audit_clicked", { location: "audit-section" }),
-              );
-            }}
+            onClick={() => track("hero_audit_clicked", { location: "audit-section" })}
           >
             Explore Website Audit
           </LinkButton>
