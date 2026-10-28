@@ -8,9 +8,14 @@ import { clientIpFromHeaders, hashIp } from "@/lib/audit/rate-limit";
 import { CommunityExplorer } from "@/components/gallery/community-explorer";
 
 export const metadata: Metadata = {
-  title: "Community gallery · ChromaBrew",
+  // Bare title: the root layout's template appends " · ChromaBrew" — the old
+  // value spelled the brand here too and rendered it twice.
+  title: "Community gallery",
   description:
     "Design systems shared by the ChromaBrew community. Browse public palettes — listing is opt-in and the gallery stays out of search results for now.",
+  // Without this the page inherits the layout's canonical ("/") and tells
+  // search engines it is a duplicate of the home page.
+  alternates: { canonical: "/gallery" },
   robots: { index: false, follow: true },
 };
 
