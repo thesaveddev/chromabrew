@@ -61,7 +61,7 @@ export interface PageFacts {
   hasDoctype: boolean;
 }
 
-function decodeEntities(value: string): string {
+export function decodeEntities(value: string): string {
   return value
     .replace(/&nbsp;/gi, " ")
     .replace(/&amp;/gi, "&")
@@ -94,6 +94,39 @@ export function parseAttributes(tag: string): Record<string, string> {
 function collectTags(html: string, tagName: string): string[] {
   const pattern = new RegExp(`<${tagName}\\b[^>]*>`, "gi");
   return html.match(pattern) ?? [];
+}
+
+export interface AnchorLink {
+  /** Raw href attribute, unresolved against the page. */
+  href: string;
+  /** Visible text with markup stripped, up to 120 characters. */
+  text: string;
+}
+
+/**
+ * Anchors with their visible text, for the selected-pages picker. Script,
+ * style, template and comment content is removed with the same expressions
+ * `extractPageFacts` uses, so inline templates never masquerade as links.
+ */
+export function collectAnchors(html: string): AnchorLink[] {
+  const markup = html
+    .replace(/<!--[\s\S]*?-->/g, " ")
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
+    .replace(/<template\b[^>]*>[\s\S]*?<\/template>/gi, " ");
+  const pattern = /<a\b([^>]*)>([\s\S]*?)<\/a>/gi;
+  const links: AnchorLink[] = [];
+  let match: RegExpExecArray | null;
+  while ((match = pattern.exec(markup)) !== null) {
+    const href = parseAttributes(`<a ${match[1]}>`).href;
+    if (!href) continue;
+    const text = decodeEntities(
+      match[2].replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim(),
+    ).slice(0, 120);
+    links.push({ href, text });
+    if (links.length >= 500) break;
+  }
+  return links;
 }
 
 function isSameSite(candidate: string, baseUrl: string | undefined): boolean {

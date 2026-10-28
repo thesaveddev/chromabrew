@@ -136,6 +136,52 @@ export const systemResolver: HostResolver = async (hostname: string): Promise<st
   return records.map((record) => record.address);
 };
 
+/**
+ * DNS over HTTPS, for runtimes without `node:dns` (edge workers, browsers).
+ * Asks a public resolver for A and AAAA records over plain HTTPS, so the
+ * only dependency is `fetch`. Any failure — network, shape, timeout — yields
+ * no addresses, which the caller refuses as `dns_failed`: a resolver that
+ * cannot answer must never become permission to fetch.
+ */
+export function createDohResolver(
+  fetchImpl: typeof fetch = fetch,
+  endpoint = "https://cloudflare-dns.com/dns-query",
+): HostResolver {
+  return async (hostname: string): Promise<string[]> => {
+    const answers: string[] = [];
+    for (const type of ["A", "AAAA"]) {
+      try {
+        const response = await fetchImpl(
+          `${endpoint}?name=${encodeURIComponent(hostname)}&type=${type}`,
+          { headers: { accept: "application/dns-json" } },
+        );
+        if (!response.ok) continue;
+        const data = (await response.json()) as {
+          Answer?: Array<{ data?: unknown }>;
+        };
+        for (const record of data?.Answer ?? []) {
+          // IP answers only: a CNAME in the chain is chasing instructions,
+          // not an address, and the gate judges every address downstream.
+          if (typeof record?.data === "string" && isInetLiteral(record.data)) {
+            answers.push(record.data);
+          }
+        }
+      } catch {
+        // One failed query must not poison the other; an empty answer set
+        // refuses the host downstream either way.
+      }
+    }
+    return answers;
+  };
+}
+
+export const dohResolver: HostResolver = createDohResolver();
+
+/** IP-shaped strings only; the gate classifies them properly downstream. */
+function isInetLiteral(value: string): boolean {
+  return /^\d{1,3}(\.\d{1,3}){3}$/.test(value) || value.includes(":");
+}
+
 /* ------------------------------------------------------------------ */
 /* Address classification                                              */
 /* ------------------------------------------------------------------ */

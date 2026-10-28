@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AuditSection } from "@/components/home/audit-section";
-import { HeroActions } from "@/components/home/hero-actions";
+import { HeroAuditLink } from "@/components/home/hero-audit-link";
 import { HeroColourForm } from "@/components/home/hero-form";
+import { HeroPlayground } from "@/components/home/hero-playground";
 import { LinkButton } from "@/components/ui/primitives";
 import { PLANS } from "@/lib/entitlements";
 import { siteUrl } from "@/lib/site-url";
@@ -102,34 +103,39 @@ export default function HomePage() {
         }}
       />
 
-      {/* Hero — first screen: value, two doors, quick start. No Go Pro
-          here on purpose; it owns the header. */}
-      <section className="mx-auto w-full max-w-3xl px-4 pb-12 pt-14 text-center sm:px-6 sm:pt-20">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">
-          Free color toolkit · No sign-up
-        </p>
-        <h1 className="mt-4 text-4xl font-bold leading-[1.08] tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-5xl">
-          Build better design systems. Find what&apos;s wrong with your website.
-        </h1>
-        <p className="mx-auto mt-5 max-w-xl text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-          Generate colour palettes and production-ready design tokens, or
-          audit a live website for contrast and accessibility issues. Start
-          free, right in your browser.
-        </p>
-        <HeroActions />
-        <div className="mt-8 flex justify-center">
-          <HeroColourForm />
+      {/* Hero — the product, working, above the fold. Text on the left
+          says what ChromaBrew does; the playground on the right proves it.
+          No Go Pro here on purpose; it owns the header. */}
+      <section className="mx-auto w-full max-w-6xl px-4 pb-12 pt-12 sm:px-6 lg:pt-16">
+        <div className="grid items-center gap-10 lg:grid-cols-[0.95fr_1.05fr]">
+          <div className="text-center lg:text-left">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">
+              Free color toolkit · No sign-up
+            </p>
+            <h1 className="mt-4 text-4xl font-bold leading-[1.06] tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-5xl">
+              Generate palettes. Build design systems. Fix your website.
+            </h1>
+            <p className="mx-auto mt-5 max-w-xl text-lg leading-8 text-zinc-600 dark:text-zinc-400 lg:mx-0">
+              Generate harmonious palettes, turn one color into a
+              WCAG-checked design system with production-ready tokens — or
+              audit a live website for contrast and accessibility issues.
+            </p>
+            <div className="mt-8 flex justify-center lg:justify-start">
+              <HeroColourForm />
+            </div>
+            <p className="mt-4 text-sm text-zinc-500 dark:text-zinc-400">
+              Free, no account — <HeroAuditLink />.{" "}
+              <Link
+                href="/projects"
+                className="font-medium text-zinc-700 underline decoration-zinc-300 underline-offset-4 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-zinc-100"
+              >
+                Save to My Projects
+              </Link>{" "}
+              only needs a sign-in.
+            </p>
+          </div>
+          <HeroPlayground />
         </div>
-        <p className="mt-4 text-sm text-zinc-500 dark:text-zinc-400">
-          Free, no account.{" "}
-          <Link
-            href="/projects"
-            className="font-medium text-zinc-700 underline decoration-zinc-300 underline-offset-4 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-zinc-100"
-          >
-            Save to My Projects
-          </Link>{" "}
-          when you sign in.
-        </p>
       </section>
 
       {/* Two workflows — pick your job, one click each. */}
@@ -145,7 +151,12 @@ export default function HomePage() {
         </h2>
         <div className="mt-8 grid gap-4 md:grid-cols-2">
           <article className="flex flex-col rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
+            <div className="flex h-12 overflow-hidden rounded-lg" aria-hidden>
+              {["#47003A", "#7C3AED", "#0EA5E9", "#10B981", "#EAB308"].map((hex) => (
+                <span key={hex} className="flex-1" style={{ backgroundColor: hex }} />
+              ))}
+            </div>
+            <p className="mt-4 text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
               Create
             </p>
             <h3 className="mt-2 text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
@@ -170,7 +181,15 @@ export default function HomePage() {
             </div>
           </article>
           <article className="flex flex-col rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
+            <div className="flex h-12 items-center gap-2 overflow-hidden rounded-lg bg-zinc-950 px-4" aria-hidden>
+              <span className="rounded bg-white/10 px-2 py-1 font-mono text-[11px] text-zinc-300">
+                #777 on #fff → 4.48:1
+              </span>
+              <span className="rounded bg-emerald-400/15 px-2 py-1 text-[11px] font-semibold text-emerald-300">
+                AA pass
+              </span>
+            </div>
+            <p className="mt-4 text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
               Audit
             </p>
             <h3 className="mt-2 text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">

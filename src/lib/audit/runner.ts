@@ -46,6 +46,8 @@ export interface EnqueueInput {
   viewportId: string;
   userId: string | null;
   ipHash: string | null;
+  /** Extra page URLs for the `selected_pages` scope; ignored otherwise. */
+  selectedPages?: unknown;
 }
 
 export class ScanRequestError extends Error {
@@ -68,8 +70,9 @@ export class ScanRequestError extends Error {
  * URL — with "the scanner is busy", and the UI showed a rate-limit message for
  * something the reader could simply fix.
  *
- * Throws `ScanRequestError` for an unimplemented scope and `UrlValidationError`
- * for a URL the scanner will not accept; both messages are written to be shown.
+ * Throws `ScanRequestError` for an unknown scope or an unusable page list,
+ * and `UrlValidationError` for a URL the scanner will not accept; all three
+ * messages are written to be shown.
  *
  * `normalizeUrl` both syntax-checks the URL (throwing for junk) and strips
  * tracking parameters, so the row stores the same canonical form the worker
@@ -77,22 +80,84 @@ export class ScanRequestError extends Error {
  * here wrote the literal string "[object Object]" into normalizedUrl, so every
  * scan enqueued this way failed validation in the worker.
  */
+/**
+ * Normalize an explicit page list for the `selected_pages` scope.
+ *
+ * Each entry goes through the shared syntax check, which throws
+ * `UrlValidationError` with a message written to be shown. The seed itself
+ * and repeats are dropped — the seed is always
+ * scanned first — and anything past the scope's page budget is refused rather
+ * than silently truncated, because a reader who listed eleven pages and got
+ * ten audited would never know which one was skipped.
+ */
+export function normalizeSelectedPages(input: {
+  seedNormalizedUrl: string;
+  selectedPages: unknown;
+  maxPages: number;
+}): string[] {
+  const raw = Array.isArray(input.selectedPages) ? input.selectedPages : [];
+  const seen = new Set<string>([input.seedNormalizedUrl]);
+  const pages: string[] = [];
+  for (const entry of raw) {
+    if (typeof entry !== "string") continue;
+    const trimmed = entry.trim();
+    if (!trimmed) continue;
+    const normalized = normalizeUrl(trimmed);
+    if (seen.has(normalized)) continue;
+    seen.add(normalized);
+    pages.push(normalized);
+  }
+  const extrasBudget = Math.max(0, input.maxPages - 1);
+  if (pages.length > extrasBudget) {
+    const overflow = pages.length - extrasBudget;
+    throw new ScanRequestError(
+      "too_many_pages",
+      `Selected-pages audits cover up to ${input.maxPages} pages. Remove ${overflow} URL${overflow === 1 ? "" : "s"} and try again.`,
+    );
+  }
+  if (pages.length === 0) {
+    throw new ScanRequestError(
+      "no_pages_selected",
+      "Add at least one more page URL, or switch to Single page for just this URL.",
+    );
+  }
+  return pages;
+}
+
 export function validateScanRequest(input: {
   url: string;
   scope: ScanScopeId;
   viewportId: string;
-}): { normalizedUrl: string; viewport: ViewportOption; scope: ScanScopeOption } {
+  selectedPages?: unknown;
+}): {
+  normalizedUrl: string;
+  viewport: ViewportOption;
+  scope: ScanScopeOption;
+  selectedPages: string[];
+} {
   if (!isScopeImplemented(input.scope)) {
     throw new ScanRequestError(
       "scope_not_implemented",
-      "That scope is not available yet — audits cover a single page or a whole site up to five pages.",
+      "Unknown audit scope — choose a single page, the whole site, or selected pages.",
     );
   }
 
+  const normalizedUrl = normalizeUrl(input.url);
+  const scope = scopeOption(input.scope);
+  const selectedPages =
+    input.scope === "selected_pages"
+      ? normalizeSelectedPages({
+          seedNormalizedUrl: normalizedUrl,
+          selectedPages: input.selectedPages,
+          maxPages: scope.maxPages,
+        })
+      : [];
+
   return {
-    normalizedUrl: normalizeUrl(input.url),
+    normalizedUrl,
     viewport: viewportOption(input.viewportId),
-    scope: scopeOption(input.scope),
+    scope,
+    selectedPages,
   };
 }
 
@@ -101,10 +166,11 @@ export function validateScanRequest(input: {
  * rejected synchronously, while DNS work happens in the worker.
  */
 export async function enqueueScan(input: EnqueueInput): Promise<{ id: string }> {
-  const { normalizedUrl, viewport, scope } = validateScanRequest({
+  const { normalizedUrl, viewport, scope, selectedPages } = validateScanRequest({
     url: input.url,
     scope: input.scope,
     viewportId: input.viewportId,
+    selectedPages: input.selectedPages,
   });
 
   const scan = await prisma.scan.create({
@@ -115,7 +181,10 @@ export async function enqueueScan(input: EnqueueInput): Promise<{ id: string }> 
       scope: input.scope,
       viewportWidth: viewport.width,
       viewportHeight: viewport.height,
-      pagesTotal: scope.maxPages,
+      // A selected-pages scan knows its page count up front: the seed plus
+      // the validated list. Crawl scopes only know their ceiling until the
+      // worker sees the site's links.
+      pagesTotal: scope.id === "selected_pages" ? 1 + selectedPages.length : scope.maxPages,
       pagesScanned: 0,
       pagesFailed: 0,
       userAgent: SCANNER_USER_AGENT,
@@ -123,12 +192,30 @@ export async function enqueueScan(input: EnqueueInput): Promise<{ id: string }> 
       userId: input.userId,
       rulesVersion: AUDIT_RULES_VERSION,
       scannerVersion: AUDIT_SCANNER_VERSION,
-      metadata: { stage: "validating" satisfies ScanStageId, ruleCount: AUDIT_RULE_COUNT },
+      metadata: {
+        stage: "validating" satisfies ScanStageId,
+        ruleCount: AUDIT_RULE_COUNT,
+        // The worker's queue for `selected_pages`: validated normalized URLs
+        // the seed page plus this list must not exceed the scope's budget.
+        ...(selectedPages.length > 0 ? { selectedPages } : {}),
+      },
     },
     select: { id: true },
   });
 
   return scan;
+}
+
+/**
+ * The explicit page list stored on a `selected_pages` row at enqueue time.
+ * Anything unexpected here (a row written before this scope existed, a shape
+ * that is not a list) is not a list — the caller validates what comes back.
+ */
+function readSelectedPages(metadata: unknown): unknown {
+  if (metadata && typeof metadata === "object" && !Array.isArray(metadata)) {
+    return (metadata as Record<string, unknown>).selectedPages;
+  }
+  return undefined;
 }
 
 async function readMetadata(scanId: string): Promise<Record<string, unknown>> {
@@ -162,12 +249,17 @@ export function seedErrorMessage(input: {
   statusCode: number;
   blockedProvider: string | null;
   maxPages: number;
+  /** Names the scope so the failure says what never ran; omitted keeps the old crawl wording. */
+  scope?: ScanScopeId;
 }): string {
   if (input.blockedProvider) {
+    const scope = input.scope ?? (input.maxPages > 1 ? "homepage_plus_pages" : "single_page");
     const crawlNote =
-      input.maxPages > 1
-        ? ", so the crawl never started and no pages were audited"
-        : " before it could be audited";
+      scope === "selected_pages"
+        ? ", so none of the selected pages were audited"
+        : scope === "single_page"
+          ? " before it could be audited"
+          : ", so the crawl never started and no pages were audited";
     return (
       `${input.blockedProvider} bot verification blocked the seed page${crawlNote}. ` +
       "The blocked-page finding has the allowlist steps — or audit the page from your own browser at /audit/this-page, which runs with your session."
@@ -408,12 +500,34 @@ export async function runClaimedScan(scanId: string, options: RunOptions = {}): 
     pagesScanned += 1;
     if (seedResult.failed) pagesFailed += 1;
 
+    // No crawling for explicitly selected pages: the reader named them, so
+    // the queue is the validated list stored on the row at enqueue time,
+    // re-normalized and re-capped the same way the request was. Every entry
+    // clears the SSRF gates again inside `scanOnePage`, exactly as a followed
+    // link would — a listed URL that went private since enqueue is refused
+    // per page, and the seed's own links are never followed.
+    if (scope.id === "selected_pages" && !seedResult.failed) {
+      for (const next of normalizeSelectedPages({
+        seedNormalizedUrl: seed.url.toString(),
+        selectedPages: readSelectedPages(scan.metadata),
+        maxPages: scope.maxPages,
+      })) {
+        known.add(next);
+        queue.push(next);
+      }
+
+      await prisma.scan.update({
+        where: { id: scanId },
+        data: { pagesTotal: pagesScanned + queue.length },
+      });
+    }
+
     // Plan follow-up pages from the seed's inventory while the render context
     // and the reader's patience both last. Fetch-mode outcomes carry no links,
     // so a degraded scan is a one-page scan — stated by renderMode, never
     // pretended away. An error document's links are not the site's links, so
     // a failed seed page ends the crawl where it began.
-    if (scope.maxPages > 1 && seedOutcome.links && !seedResult.failed) {
+    if (scope.id !== "selected_pages" && scope.maxPages > 1 && seedOutcome.links && !seedResult.failed) {
       for (const next of planNextPages({
         scannedUrl: seed.url.toString(),
         seedUrl: scan.normalizedUrl,
@@ -431,8 +545,12 @@ export async function runClaimedScan(scanId: string, options: RunOptions = {}): 
         where: { id: scanId },
         data: { pagesTotal: pagesScanned + queue.length },
       });
+    }
 
-      while (queue.length > 0) {
+    // Drain whatever the scope queued: crawled links for whole-site scans, the
+    // reader's explicit list for selected-pages scans. An empty queue skips
+    // straight to the report, so single-page scans behave exactly as before.
+    while (queue.length > 0) {
         if (Date.now() - startedAt > CRAWL_TIME_BUDGET_MS) {
           crawlStoppedByBudget = true;
           break;
@@ -446,8 +564,9 @@ export async function runClaimedScan(scanId: string, options: RunOptions = {}): 
 
           // Breadth across the site, not depth down one branch: links from
           // every page join the same queue, so /pricing and /about both make
-          // the cut before either section's children do.
-          if (outcome.links) {
+          // the cut before either section's children do. Selected-pages scans
+          // never follow links — the queue stays exactly what was listed.
+          if (scope.id !== "selected_pages" && outcome.links) {
             for (const next of planNextPages({
               scannedUrl: outcome.finalUrl,
               seedUrl: scan.normalizedUrl,
@@ -496,7 +615,6 @@ export async function runClaimedScan(scanId: string, options: RunOptions = {}): 
           });
         }
       }
-    }
 
     await onStage("preparing");
     const outcome = firstOutcome as AnalysisOutcome;
@@ -517,6 +635,7 @@ export async function runClaimedScan(scanId: string, options: RunOptions = {}): 
               statusCode: outcome.statusCode,
               blockedProvider: seedBlockedProvider(outcome),
               maxPages: scope.maxPages,
+              scope: scope.id,
             })
           : pagesFailed > 0
             ? `${pagesFailed} of ${pagesScanned} pages could not be analysed; findings describe the rest.`

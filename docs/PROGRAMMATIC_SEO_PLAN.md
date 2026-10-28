@@ -114,6 +114,17 @@ content duplicates its children (`/p/[id]`). Children are the unit that
 should rank. Revisit only if the gallery gains genuinely unique browsing copy
 per filter — and then filters must get distinct URLs first (§2.2).
 
+**Implemented (28 October 2026):** the community catalog gained two things.
+(1) Up-votes as a second curation signal — one `ProjectVote` row per
+(project, voter), `user:<id>` for signed-in readers else the salted IP hash,
+toggled via `POST /api/gallery/[id]/vote`; rank is votes → anchor ratio →
+recency (`compareCommunityEntries`), degrading exactly to the old order when
+nothing has votes. (2) Entry pages (`/gallery/[id]`) list up to six sibling
+entries (same harmony first), and the gallery grid links cards to the
+indexable `/gallery/[id]` pages rather than the noindex `/p/[id]` share view
+— before this, the indexable community pages were reachable only from the
+noindex hub plus the sitemap, against the §5 rule below.
+
 ### 3c. Curated collections — extend the `/palettes/[theme]` pattern
 
 The theme + gallery-palette family already demonstrates the working pattern:
@@ -169,6 +180,10 @@ Re-checked by `scripts/seo-audit.mjs`, which must gain the new routes:
   crawl glue — new families get one: related systems, sibling palettes, or
   "seed this into the generator" links.
 - No indexable page may be reachable *only* from a `noindex` page.
+  Minted pages additionally carry jump navigation (both ends, ±100, ±1,000)
+  plus same-number counterparts in the next two themes, so the 20,000-link
+  per-theme chains and the theme silos both collapse to short crawl paths
+  (28 October 2026).
 
 ## 6. Measurement (the prerequisite everyone skips)
 

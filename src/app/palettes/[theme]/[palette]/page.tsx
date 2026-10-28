@@ -3,18 +3,27 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   GALLERY_PALETTES,
+  MINTED_PER_THEME,
   themeBySlug,
-  paletteBySlug,
+  resolvePalette,
   relatedPalettes,
+  relatedMintedPalettes,
+  crossThemeMintedPalettes,
+  mintJumpIndexes,
   paletteGeneratorHref,
   variationSeedHex,
 } from "@/lib/palettes";
+import { mintedSlug } from "@/lib/palette-mint";
 import { PaletteCard, PaletteSwatches } from "@/components/palettes/palette-card";
 import { JsonLd } from "@/components/site/json-ld";
 import { siteUrl } from "@/lib/site-url";
 import { clampDescription } from "@/lib/meta";
 
-export const dynamicParams = false;
+// The curated thousand pre-render at build; the minted million render on
+// first request and cache (`force-static` keeps them cached rather than
+// dynamic). Catalog slugs always resolve from the catalog, so a curated page
+// never changes shape when the mint grows around it.
+export const dynamicParams = true;
 export const dynamic = "force-static";
 
 export function generateStaticParams() {
@@ -30,7 +39,7 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { theme: themeSlug, palette: slug } = await params;
-  const palette = paletteBySlug(themeSlug, slug);
+  const palette = resolvePalette(themeSlug, slug);
   const theme = themeBySlug(themeSlug);
   if (!palette || !theme) return {};
   // The hex list is a bonus, not a right: when the pair overflows the SERP
@@ -51,10 +60,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function PaletteDetailPage({ params }: Props) {
   const { theme: themeSlug, palette: slug } = await params;
-  const palette = paletteBySlug(themeSlug, slug);
+  const palette = resolvePalette(themeSlug, slug);
   const theme = themeBySlug(themeSlug);
   if (!palette || !theme) notFound();
-  const related = relatedPalettes(palette);
+  const mintedIndex = palette.mintedIndex;
+  const related =
+    mintedIndex === undefined
+      ? relatedPalettes(palette)
+      : [
+          ...relatedMintedPalettes(themeSlug, mintedIndex),
+          ...crossThemeMintedPalettes(themeSlug, mintedIndex),
+        ];
+  const mintJumps =
+    mintedIndex === undefined ? [] : mintJumpIndexes(mintedIndex);
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
@@ -171,6 +189,40 @@ export default async function PaletteDetailPage({ params }: Props) {
           </Link>
         </p>
       </section>
+
+      {mintJumps.length > 0 ? (
+        <nav
+          aria-label={`Jump through the ${theme.name.toLowerCase()} mint`}
+          className="mt-8 border-t border-zinc-200 pt-6 dark:border-zinc-800"
+        >
+          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            Browse the mint
+          </h2>
+          <p className="mt-1 text-xs leading-5 text-zinc-500 dark:text-zinc-400">
+            Every palette in this theme has its own page — skip along the mint
+            instead of walking it one by one.
+          </p>
+          <ul className="mt-3 flex flex-wrap gap-2">
+            {mintJumps.map((target) => (
+              <li key={target}>
+                <Link
+                  href={`/palettes/${themeSlug}/${mintedSlug(themeSlug, target)}`}
+                  aria-current={target === mintedIndex ? "page" : undefined}
+                  className="rounded-full border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                >
+                  {target === 0
+                    ? "« First"
+                    : target === MINTED_PER_THEME - 1
+                      ? "Last »"
+                      : target < (mintedIndex ?? 0)
+                        ? `‹ ${((mintedIndex ?? 0) - target).toLocaleString()} back`
+                        : `${(target - (mintedIndex ?? 0)).toLocaleString()} ahead ›`}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      ) : null}
     </div>
   );
 }

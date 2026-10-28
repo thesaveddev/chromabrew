@@ -69,10 +69,10 @@ export interface ScanScopeOption {
 }
 
 /**
- * `single_page` and `homepage_plus_pages` are executable. `selected_pages`
- * stays listed so the UI can show where the product is going, and the API
- * rejects it with a clear message instead of silently scanning one page and
- * pretending.
+ * Every listed scope is executable. `selected_pages` scans exactly the URLs
+ * the reader enters (the seed plus an explicit list, no crawling) instead of
+ * following links, so the API validates the list rather than rejecting the
+ * scope.
  */
 export const SCAN_SCOPES: readonly ScanScopeOption[] = [
   {
@@ -90,13 +90,18 @@ export const SCAN_SCOPES: readonly ScanScopeOption[] = [
   },
   {
     id: "selected_pages",
-    label: "Selected pages",
-    description: "Choose specific URLs. Not available in this release.",
+    label: "Selected pages (up to 10)",
+    description:
+      "Audit exactly the URLs you list — the address above plus more, one per line. No crawling; each page passes the same safety checks.",
     maxPages: 10,
   },
 ] as const;
 
-export const IMPLEMENTED_SCOPES: readonly ScanScopeId[] = ["single_page", "homepage_plus_pages"];
+export const IMPLEMENTED_SCOPES: readonly ScanScopeId[] = [
+  "single_page",
+  "homepage_plus_pages",
+  "selected_pages",
+];
 
 export function scopeOption(id: ScanScopeId): ScanScopeOption {
   return SCAN_SCOPES.find((scope) => scope.id === id) ?? SCAN_SCOPES[0];

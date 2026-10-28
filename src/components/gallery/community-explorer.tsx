@@ -7,12 +7,21 @@ import {
   filterCommunityEntries,
   type CommunityEntry,
 } from "@/lib/gallery";
+import { VoteButton } from "./vote-button";
 
 function strategyLabel(id: string): string {
   return PALETTE_STRATEGIES.find((s) => s.id === id)?.label ?? id;
 }
 
-export function CommunityExplorer({ entries }: { entries: CommunityEntry[] }) {
+export function CommunityExplorer({
+  entries,
+  votedIds = [],
+}: {
+  entries: CommunityEntry[];
+  /** Entry ids the current reader already up-voted, for first-paint state. */
+  votedIds?: string[];
+}) {
+  const voted = new Set(votedIds);
   const [query, setQuery] = useState("");
   const [strategy, setStrategy] = useState("all");
 
@@ -81,8 +90,10 @@ export function CommunityExplorer({ entries }: { entries: CommunityEntry[] }) {
         <ul className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {results.map((entry) => (
             <li key={entry.id}>
+              {/* The indexable entry page, not the share view: this card is
+                  the internal path crawlers follow to the community catalog. */}
               <Link
-                href={`/p/${entry.id}`}
+                href={`/gallery/${entry.id}`}
                 className="group block overflow-hidden rounded-xl border border-zinc-200 bg-white transition-colors hover:border-zinc-400 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-600"
               >
                 <span className="flex h-24" aria-hidden="true">
@@ -104,6 +115,14 @@ export function CommunityExplorer({ entries }: { entries: CommunityEntry[] }) {
                   </span>
                 </span>
               </Link>
+              <div className="mt-2 flex items-center gap-2 px-1">
+                <VoteButton
+                  projectId={entry.id}
+                  initialVotes={entry.votes}
+                  initialVoted={voted.has(entry.id)}
+                  compact
+                />
+              </div>
             </li>
           ))}
         </ul>

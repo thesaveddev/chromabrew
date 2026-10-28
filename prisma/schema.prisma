@@ -81,6 +81,7 @@ model Project {
   user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   versions ProjectVersion[]
   members  ProjectMember[]
+  votes    ProjectVote[]
 
   @@index([userId])
   @@index([visibility])
@@ -102,6 +103,27 @@ model ProjectVersion {
   projectId String
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
+  @@index([projectId])
+  @@schema("chromabrew")
+}
+
+// --- Community gallery votes ---------------------------------------------
+//
+// One row per (project, voter): the second curation signal behind the
+// gallery order. Voter identity is `user:<id>` for a signed-in reader and
+// `ip:<hash>` for an anonymous one (same salted hash as the audit rate
+// limiter), so voting needs no account while staying one-per-person. Only
+// listed public projects can collect votes — the vote route 404s anything
+// else, and unlisting a project simply stops its page rendering.
+// Deleting a project removes its votes rather than orphaning them.
+model ProjectVote {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  voterKey  String
+  createdAt DateTime @default(now())
+
+  @@unique([projectId, voterKey])
   @@index([projectId])
   @@schema("chromabrew")
 }

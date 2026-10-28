@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { PALETTE_THEMES, GALLERY_PALETTES, palettesForTheme } from "@/lib/palettes";
+import {
+  PALETTE_THEMES,
+  GALLERY_PALETTES,
+  MINTED_PER_THEME,
+  palettesForTheme,
+} from "@/lib/palettes";
 import { PaletteCard } from "@/components/palettes/palette-card";
 import { PaletteExplorer } from "@/components/palettes/palette-explorer";
 import { LazyThemeSection } from "@/components/palettes/lazy-theme-section";
@@ -65,6 +70,7 @@ export default function PalettesIndexPage() {
 
       {PALETTE_THEMES.map((theme, index) => {
         const palettes = palettesForTheme(theme.slug);
+        const total = palettes.length + MINTED_PER_THEME;
         const preview = palettes
           .flatMap((p) => p.colors)
           .slice(0, 10);
@@ -88,7 +94,7 @@ export default function PalettesIndexPage() {
                 href={`/palettes/${theme.slug}`}
                 className="shrink-0 text-sm font-medium text-zinc-900 underline underline-offset-4 dark:text-zinc-100"
               >
-                All {palettes.length} →
+                All {total.toLocaleString()} →
               </Link>
             </div>
             <div className="mt-3 flex h-12 overflow-hidden rounded-lg" aria-hidden>
@@ -108,7 +114,7 @@ export default function PalettesIndexPage() {
               ))}
             </ul>
             <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-400">
-              Showing 2 of {palettes.length} —{" "}
+              Showing 2 of {total.toLocaleString()} —{" "}
               <Link
                 href={`/palettes/${theme.slug}`}
                 className="font-medium underline underline-offset-4"
@@ -123,7 +129,8 @@ export default function PalettesIndexPage() {
 
       <p className="mt-12 text-xs text-zinc-500 dark:text-zinc-400">
         {GALLERY_PALETTES.length} curated palettes across {PALETTE_THEMES.length}{" "}
-        themes. Made something of your own?{" "}
+        themes — plus {MINTED_PER_THEME.toLocaleString()} more per theme,
+        every one with its own page. Made something of your own?{" "}
         <Link href="/design-system" className="font-medium underline underline-offset-4">
           Generate a design system
         </Link>{" "}

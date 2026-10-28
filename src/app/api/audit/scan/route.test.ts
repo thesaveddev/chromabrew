@@ -163,6 +163,50 @@ describe("POST /api/audit/scan", () => {
     expect((await response.json()).id).toBe("cmv4crawl");
   });
 
+  it("queues a selected-pages scan with the listed URLs", async () => {
+    db.workerHeartbeat.findFirst.mockResolvedValue({
+      workerId: "vps-1",
+      lastSeenAt: new Date(),
+      stoppedAt: null,
+    });
+    db.scan.create.mockResolvedValue({ id: "cmv4selected" });
+    db.scan.findUnique.mockResolvedValue({
+      ...queuedRow(),
+      id: "cmv4selected",
+      scope: "selected_pages",
+      pagesTotal: 3,
+    });
+
+    const response = await POST(
+      post({
+        url: "example.com",
+        scope: "selected_pages",
+        selectedPages: ["https://example.com/pricing", "https://example.com/about"],
+      }),
+    );
+
+    expect(response.status).toBe(202);
+    expect((await response.json()).id).toBe("cmv4selected");
+    const written = db.scan.create.mock.calls[0][0].data;
+    // The seed plus the validated list: the worker's queue is on the row.
+    expect(written.pagesTotal).toBe(3);
+    expect(written.metadata.selectedPages).toEqual([
+      "https://example.com/pricing",
+      "https://example.com/about",
+    ]);
+  });
+
+  it("refuses a selected-pages scan with no pages before checking the scanner", async () => {
+    db.workerHeartbeat.findFirst.mockResolvedValue(null);
+
+    const response = await POST(post({ url: "example.com", scope: "selected_pages" }));
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({ error: expect.stringContaining("one more page") });
+    expect(db.workerHeartbeat.findFirst).not.toHaveBeenCalled();
+    expect(db.scan.create).not.toHaveBeenCalled();
+  });
+
   it("still answers a typo with a typo, not with the scanner's state", async () => {
     db.workerHeartbeat.findFirst.mockResolvedValue(null);
 

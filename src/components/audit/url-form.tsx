@@ -14,11 +14,20 @@ import {
   VIEWPORTS,
   WORKER_HEARTBEAT_MS,
   formatQueueWait,
-  isScopeImplemented,
   type ScanScopeId,
   type ScannerAvailability,
 } from "@/lib/audit/types";
 import { useQueueClock } from "./use-queue-clock";
+import { DiscoveredPagesPicker, type DiscoveredPageChoice } from "./discovered-pages";
+
+/** One URL per line, with a missing scheme read as https. */
+function parseExtraPages(text: string): string[] {
+  return text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0)
+    .map((line) => (/^https?:\/\//i.test(line) ? line : `https://${line}`));
+}
 
 /**
  * The audit form.
@@ -39,6 +48,17 @@ export interface UrlFormViewProps {
   onUrlChange: (value: string) => void;
   scope: ScanScopeId;
   onScopeChange: (scope: ScanScopeId) => void;
+  /** One URL per line; only read when the scope is `selected_pages`. */
+  selectedPages: string;
+  onSelectedPagesChange: (value: string) => void;
+  /** The browse-the-site checklist; null until the reader browses. */
+  discovered: DiscoveredPageChoice[] | null;
+  discovering: boolean;
+  discoverError: string;
+  onBrowseDiscovered: () => void;
+  onToggleDiscovered: (url: string) => void;
+  onSelectAllDiscovered: (select: boolean) => void;
+  onAddDiscovered: () => void;
   viewport: string;
   onViewportChange: (viewport: string) => void;
   onSubmit: (event: React.FormEvent) => void;
@@ -66,6 +86,15 @@ export function UrlFormView({
   onUrlChange,
   scope,
   onScopeChange,
+  selectedPages,
+  onSelectedPagesChange,
+  discovered,
+  discovering,
+  discoverError,
+  onBrowseDiscovered,
+  onToggleDiscovered,
+  onSelectAllDiscovered,
+  onAddDiscovered,
   viewport,
   onViewportChange,
   onSubmit,
@@ -145,9 +174,8 @@ export function UrlFormView({
             className={`mt-1.5 ${fieldStyles}`}
           >
             {SCAN_SCOPES.map((option) => (
-              <option key={option.id} value={option.id} disabled={!isScopeImplemented(option.id)}>
+              <option key={option.id} value={option.id}>
                 {option.label}
-                {isScopeImplemented(option.id) ? "" : " — coming soon"}
               </option>
             ))}
           </select>
@@ -180,6 +208,41 @@ export function UrlFormView({
           </p>
         </div>
       </div>
+
+      {/* The explicit page list: only the URLs entered here are audited, so
+          the reader sees exactly what the scanner will visit before committing. */}
+      {scope === "selected_pages" ? (
+        <div>
+          <DiscoveredPagesPicker
+            state={discovering ? "loading" : discovered ? "ready" : "idle"}
+            pages={discovered ?? []}
+            error={discoverError}
+            canBrowse={url.trim().length > 0}
+            onBrowse={onBrowseDiscovered}
+            onToggle={onToggleDiscovered}
+            onSelectAll={onSelectAllDiscovered}
+            onAdd={onAddDiscovered}
+          />
+          <label
+            htmlFor="audit-pages"
+            className="mt-4 block text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400"
+          >
+            Page URLs
+          </label>
+          <textarea
+            id="audit-pages"
+            value={selectedPages}
+            onChange={(e) => onSelectedPagesChange(e.target.value)}
+            placeholder={"One URL per line — e.g.\nhttps://example.com/pricing\nhttps://example.com/about"}
+            rows={4}
+            className={`mt-1.5 ${fieldStyles} min-h-24 font-mono`}
+          />
+          <p className="mt-1.5 text-xs leading-5 text-zinc-500 dark:text-zinc-500">
+            Up to 9 more pages besides the address above, one per line. Only these pages are
+            audited — nothing is crawled, and each URL passes the same safety checks.
+          </p>
+        </div>
+      ) : null}
 
       {/* Above the button, not below it: a disabled control is not in the tab
           order, so the reason it is one has to be met on the way to it. `status`
@@ -236,6 +299,10 @@ export function UrlFormView({
 export function UrlForm() {
   const [url, setUrl] = useState("");
   const [scope, setScope] = useState<ScanScopeId>("single_page");
+  const [selectedPages, setSelectedPages] = useState("");
+  const [discovered, setDiscovered] = useState<DiscoveredPageChoice[] | null>(null);
+  const [discovering, setDiscovering] = useState(false);
+  const [discoverError, setDiscoverError] = useState("");
   const [viewport, setViewport] = useState(VIEWPORTS[0].id);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -279,21 +346,86 @@ export function UrlForm() {
 
   const offline = refused || (availability !== null && !availability.online);
 
+  // A new address invalidates the browsed list: offering last URL's pages
+  // under this one would silently audit the wrong site.
+  const handleUrlChange = (value: string) => {
+    setUrl(value);
+    setDiscovered(null);
+    setDiscoverError("");
+  };
+
+  const handleBrowse = async () => {
+    const inputUrl = parseExtraPages(url.trim())[0];
+    if (!inputUrl || discovering) return;
+    setDiscovering(true);
+    setDiscoverError("");
+    try {
+      const res = await fetch("/api/audit/discover", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: inputUrl }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "The page list could not be read.");
+      const pages = (data.pages as Array<{ url: string; text: string }>).map((page) => ({
+        ...page,
+        checked: true,
+      }));
+      setDiscovered(pages);
+    } catch (err) {
+      setDiscoverError(err instanceof Error ? err.message : "The page list could not be read.");
+      setDiscovered(null);
+    } finally {
+      setDiscovering(false);
+    }
+  };
+
+  const handleAddDiscovered = () => {
+    // Best-effort dedupe against typed lines; the route and the worker
+    // canonicalize and dedupe authoritatively before anything is scanned.
+    const current = selectedPages
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
+    const fresh = (discovered ?? [])
+      .filter((page) => page.checked)
+      .map((page) => page.url)
+      .filter((pageUrl) => !current.includes(pageUrl));
+    if (fresh.length === 0) return;
+    setSelectedPages([...current, ...fresh].join("\n"));
+    setDiscovered((prev) =>
+      prev?.map((page) =>
+        page.checked && fresh.includes(page.url) ? { ...page, checked: false } : page,
+      ) ?? null,
+    );
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
     try {
-      let inputUrl = url.trim();
-      if (!/^https?:\/\//i.test(inputUrl)) {
-        inputUrl = `https://${inputUrl}`;
+      // One URL per line; the main address counts as the first page, so the
+      // list holds the rest. Parsed here so an empty list is answered
+      // immediately, and validated again by the route before anything runs.
+      const inputUrl = parseExtraPages(url.trim())[0] ?? "";
+      const extraPages = scope === "selected_pages" ? parseExtraPages(selectedPages) : [];
+      if (scope === "selected_pages" && extraPages.length === 0) {
+        setError("Add at least one more page URL, or switch to Single page for just this URL.");
+        setLoading(false);
+        return;
       }
 
       const res = await fetch("/api/audit/scan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: inputUrl, scope, viewport }),
+        body: JSON.stringify({
+          url: inputUrl,
+          scope,
+          viewport,
+          ...(scope === "selected_pages" ? { selectedPages: extraPages } : {}),
+        }),
       });
 
       if (!res.ok) {
@@ -332,9 +464,26 @@ export function UrlForm() {
   return (
     <UrlFormView
       url={url}
-      onUrlChange={setUrl}
+      onUrlChange={handleUrlChange}
       scope={scope}
       onScopeChange={setScope}
+      selectedPages={selectedPages}
+      onSelectedPagesChange={setSelectedPages}
+      discovered={discovered}
+      discovering={discovering}
+      discoverError={discoverError}
+      onBrowseDiscovered={handleBrowse}
+      onToggleDiscovered={(pageUrl) =>
+        setDiscovered((prev) =>
+          prev?.map((page) =>
+            page.url === pageUrl ? { ...page, checked: !page.checked } : page,
+          ) ?? null,
+        )
+      }
+      onSelectAllDiscovered={(select) =>
+        setDiscovered((prev) => prev?.map((page) => ({ ...page, checked: select })) ?? null)
+      }
+      onAddDiscovered={handleAddDiscovered}
       viewport={viewport}
       onViewportChange={setViewport}
       onSubmit={handleSubmit}

@@ -97,10 +97,26 @@ describe("checkScanQuota", () => {
     });
 
     expect(decision.allowed).toBe(true);
-    // The crawl budget is counted separately from the general hourly/daily
-    // scans: the last count query is scoped to whole-site rows.
+    // The multi-page budget is counted separately from the general
+    // hourly/daily scans: the last count query covers both multi-page scopes.
     const crawlWhere = db.count.mock.calls.at(-1)![0].where;
-    expect(crawlWhere.scope).toBe("homepage_plus_pages");
+    expect(crawlWhere.scope).toEqual({ in: ["homepage_plus_pages", "selected_pages"] });
+  });
+
+  it("holds selected-pages scans to the same multi-page budget", async () => {
+    db.count.mockResolvedValue(0);
+    db.findFirst.mockResolvedValue(null);
+
+    const allowed = await checkScanQuota({
+      userId: "user-1",
+      ipHash: null,
+      scope: "selected_pages",
+      isPro: false,
+    });
+
+    expect(allowed.allowed).toBe(true);
+    const crawlWhere = db.count.mock.calls.at(-1)![0].where;
+    expect(crawlWhere.scope).toEqual({ in: ["homepage_plus_pages", "selected_pages"] });
   });
 
   it("refuses a crawl over the free allowance with the upgrade path", async () => {
@@ -122,6 +138,27 @@ describe("checkScanQuota", () => {
     expect(decision.code).toBe("quota");
     expect(decision.reason).toContain("whole-site");
     expect(decision.reason).toContain(`Pro for ${PRO_CRAWL_SCANS_PER_DAY} a day`);
+  });
+
+  it("refuses a selected-pages scan over the budget in its own words", async () => {
+    db.count
+      .mockResolvedValueOnce(0) // scanner free
+      .mockResolvedValueOnce(0) // this hour
+      .mockResolvedValueOnce(0) // today
+      .mockResolvedValueOnce(FREE_CRAWL_SCANS_PER_DAY); // multi-page today
+    db.findFirst.mockResolvedValue(null);
+
+    const decision = await checkScanQuota({
+      userId: "user-1",
+      ipHash: null,
+      scope: "selected_pages",
+      isPro: false,
+    });
+
+    expect(decision.allowed).toBe(false);
+    expect(decision.code).toBe("quota");
+    expect(decision.reason).toContain("selected-pages");
+    expect(decision.reason).not.toContain("whole-site");
   });
 
   it("holds Pro crawls to the higher allowance, not the free one", async () => {

@@ -41,10 +41,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Send a JSON body with a url." }, { status: 400 });
   }
 
-  const { url, scope, viewport } = (body ?? {}) as {
+  const { url, scope, viewport, selectedPages } = (body ?? {}) as {
     url?: unknown;
     scope?: ScanScopeId;
     viewport?: string;
+    selectedPages?: unknown;
   };
 
   if (typeof url !== "string" || url.trim() === "") {
@@ -58,7 +59,7 @@ export async function POST(request: Request) {
     // Before the quota, deliberately: a load limit must not decide whether a typo
     // is a typo, or a busy scanner answers an unparseable URL with "try again
     // shortly". `enqueueScan` runs the same check again when it writes.
-    validateScanRequest({ url, scope: scopeId, viewportId });
+    validateScanRequest({ url, scope: scopeId, viewportId, selectedPages });
 
     // Then whether anything is there to run it, and before the quota. With no
     // scanner the true answer is "the scanner is offline"; a quota refusal
@@ -110,7 +111,14 @@ export async function POST(request: Request) {
       );
     }
 
-    const { id } = await enqueueScan({ url, scope: scopeId, viewportId, userId, ipHash });
+    const { id } = await enqueueScan({
+      url,
+      scope: scopeId,
+      viewportId,
+      userId,
+      ipHash,
+      selectedPages,
+    });
 
     // The same DTO the poll endpoint returns, so the first frame the client draws
     // comes from the row rather than from a guess at which stage it is in.

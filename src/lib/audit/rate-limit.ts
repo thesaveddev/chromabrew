@@ -168,11 +168,13 @@ export async function checkScanQuota(input: {
     };
   }
 
-  // Crawls render every page in a real browser, so each one counts extra.
-  // The general hourly/daily limits above still apply; this is the crawl's
-  // own daily budget on top of them, and the reason names it so a refused
-  // whole-site scan does not read as a refused scan of any kind.
-  if (input.scope === "homepage_plus_pages") {
+  // Multi-page scans render every page in a real browser, so each one counts
+  // extra. The general hourly/daily limits above still apply; this is the
+  // multi-page daily budget on top of them, and the reason names the scope so
+  // a refused whole-site or selected-pages scan does not read as a refused
+  // scan of any kind.
+  if (input.scope === "homepage_plus_pages" || input.scope === "selected_pages") {
+    const scopeNoun = input.scope === "selected_pages" ? "selected-pages" : "whole-site";
     const crawlLimit = !input.userId
       ? ANONYMOUS_CRAWL_SCANS_PER_DAY
       : input.isPro
@@ -181,7 +183,7 @@ export async function checkScanQuota(input: {
     const crawlsToday = await prisma.scan.count({
       where: {
         ...identity,
-        scope: "homepage_plus_pages",
+        scope: { in: ["homepage_plus_pages", "selected_pages"] },
         createdAt: { gte: new Date(now - DAY_MS) },
       },
     });
@@ -190,10 +192,10 @@ export async function checkScanQuota(input: {
         allowed: false,
         code: "quota",
         reason: !input.userId
-          ? `Free whole-site audits are limited to ${crawlLimit} per day. Sign in for a higher limit.`
+          ? `Free ${scopeNoun} audits are limited to ${crawlLimit} per day. Sign in for a higher limit.`
           : input.isPro
-            ? `You have reached ${crawlLimit} whole-site audits today.`
-            : `Free whole-site audits are limited to ${crawlLimit} per day. Upgrade to Pro for ${PRO_CRAWL_SCANS_PER_DAY} a day.`,
+            ? `You have reached ${crawlLimit} ${scopeNoun} audits today.`
+            : `Free ${scopeNoun} audits are limited to ${crawlLimit} per day. Upgrade to Pro for ${PRO_CRAWL_SCANS_PER_DAY} a day.`,
         retryAfterSeconds: 3600,
       };
     }

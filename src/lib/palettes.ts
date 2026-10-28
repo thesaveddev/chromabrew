@@ -15,6 +15,12 @@
  */
 
 import { GENERATED_PALETTES } from "./palettes-generated";
+import {
+  MINTED_PER_THEME as MINTED_COUNT,
+  huePool,
+  mintPalette,
+  parseMintedSlug,
+} from "./palette-mint";
 
 export interface PaletteTheme {
   slug: string;
@@ -33,7 +39,12 @@ export interface GalleryPalette {
   /** What the palette is for, in the palette's own words — unique per page. */
   description: string;
   tags: string[];
+  /** Set on deterministically minted long-tail entries (see `./palette-mint`). */
+  mintedIndex?: number;
 }
+
+/** Addressable minted palettes per theme (see `./palette-mint`). */
+export { MINTED_COUNT as MINTED_PER_THEME };
 
 const HEX = /^#[0-9a-f]{6}$/i;
 
@@ -2253,4 +2264,117 @@ export function paletteGeneratorHref(palette: GalleryPalette): string {
     accent: accent.replace("#", ""),
   });
   return `/design-system?${params.toString()}`;
+}
+
+/* ------------------------------------------------------------------ */
+/* The long tail: deterministic minted palettes                        */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Hue pool for a theme, mined from its curated palettes. The mint draws its
+ * base hues from here, so a minted retro palette is actually retro — the
+ * curated seeds define each theme's color territory, and the fallback sweep
+ * only serves themes too thin to mine (never the case today, but the mint
+ * must not depend on that staying true).
+ */
+export function themeHuePool(themeSlug: string): number[] {
+  const hexes = CURATED_PALETTES.filter((p) => p.theme === themeSlug).flatMap(
+    (p) => p.colors,
+  );
+  return huePool(hexes);
+}
+
+/** Mint the palette at (theme, index), or null outside the addressable space. */
+export function mintedPalette(themeSlug: string, index: number): GalleryPalette | null {
+  const theme = themeBySlug(themeSlug);
+  if (!theme) return null;
+  if (!Number.isInteger(index) || index < 0 || index >= MINTED_COUNT) return null;
+  return mintPalette({
+    themeSlug,
+    themeName: theme.name,
+    index,
+    hues: themeHuePool(themeSlug),
+  });
+}
+
+/**
+ * Resolve any palette URL: the curated/generated catalog first, the mint
+ * second. Catalog entries always win on collision, so hand-built pages can
+ * never be shadowed by a generated slug — and anything else 404s.
+ */
+export function resolvePalette(theme: string, slug: string): GalleryPalette | null {
+  return (
+    paletteBySlug(theme, slug) ??
+    (() => {
+      const index = parseMintedSlug(theme, slug);
+      return index === null ? null : mintedPalette(theme, index);
+    })()
+  );
+}
+
+/**
+ * Neighbors for a minted palette page: nearby indexes in the same theme,
+ * which share the hue pool and read as a family without extra queries.
+ */
+export function relatedMintedPalettes(
+  themeSlug: string,
+  index: number,
+  count = 3,
+): GalleryPalette[] {
+  const neighbors: GalleryPalette[] = [];
+  for (let step = 1; neighbors.length < count && step < MINTED_COUNT; step++) {
+    for (const candidate of [index + step, index - step]) {
+      if (neighbors.length >= count) break;
+      if (candidate < 0 || candidate >= MINTED_COUNT) continue;
+      const palette = mintedPalette(themeSlug, candidate);
+      if (palette) neighbors.push(palette);
+    }
+  }
+  return neighbors;
+}
+
+/**
+ * Jump targets through the mint for a palette page: both ends plus ±100 and
+ * ±1,000 skips, in-range only, ascending. Index-neighbor related links chain
+ * all 20,000 pages but leave deep indexes thousands of hops from any hub —
+ * these skips collapse that crawl depth while reading as honest "browse the
+ * mint" navigation. Pure arithmetic: no minting needed to list the targets.
+ */
+export function mintJumpIndexes(index: number): number[] {
+  const targets = new Set<number>();
+  for (const candidate of [
+    0,
+    index - 1000,
+    index - 100,
+    index + 100,
+    index + 1000,
+    MINTED_COUNT - 1,
+  ]) {
+    if (candidate >= 0 && candidate < MINTED_COUNT && candidate !== index) {
+      targets.add(candidate);
+    }
+  }
+  return [...targets].sort((a, b) => a - b);
+}
+
+/**
+ * Cross-theme counterparts: the same mint number in the next themes over
+ * (wrapping around the theme list). The mint reads as one mesh instead of
+ * one 20,000-link chain per theme, and every counterpart shares the page's
+ * number, which is the only thing a reader can hold onto across territories.
+ */
+export function crossThemeMintedPalettes(
+  themeSlug: string,
+  index: number,
+  count = 2,
+): GalleryPalette[] {
+  const order = PALETTE_THEMES.map((theme) => theme.slug);
+  const at = order.indexOf(themeSlug);
+  if (at === -1) return [];
+  const counterparts: GalleryPalette[] = [];
+  for (let step = 1; counterparts.length < count && step < order.length; step++) {
+    const palette = mintedPalette(order[(at + step) % order.length], index);
+    if (palette) counterparts.push(palette);
+  }
+  return counterparts;
 }

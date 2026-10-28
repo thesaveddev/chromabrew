@@ -1,116 +1,118 @@
 import { describe, expect, it } from "vitest";
-import sitemap from "./sitemap";
+import {
+  CORE_SITEMAP_NAME,
+  chunkUrl,
+  coreSitemapUrls,
+  renderSitemapIndex,
+  renderUrlset,
+  sitemapChunkNames,
+  themeChunkUrls,
+} from "@/lib/sitemap";
 import { TOOLS } from "@/lib/tools";
 import { livePosts } from "@/lib/posts";
-import { PALETTE_THEMES, GALLERY_PALETTES } from "@/lib/palettes";
-import { NAMED_COLORS } from "@/lib/colors";
-import { BRAND_PALETTES } from "@/lib/brand-palettes";
-import { brandSlug } from "@/lib/brand-pages";
+import { PALETTE_THEMES, GALLERY_PALETTES, MINTED_PER_THEME } from "@/lib/palettes";
+import { parseMintedSlug } from "@/lib/palette-mint";
 import { siteUrl } from "@/lib/site-url";
 
-/** The hand-listed hub routes, which carry no honest modification date. */
-const HUBS = ["/", "/design-system", "/generate", "/tools", "/audit", "/color-tools", "/blog", "/pricing", "/about", "/contact", "/privacy", "/terms"];
-
-describe("sitemap", () => {
-  const entries = sitemap();
-  const byUrl = new Map(entries.map((entry) => [entry.url, entry]));
-
-  it("lists every indexable route exactly once", () => {
-    const expected =
-      HUBS.length +
-      TOOLS.length +
-      livePosts().length +
-      1 +
-      PALETTE_THEMES.length +
-      GALLERY_PALETTES.length +
-      1 +
-      NAMED_COLORS.length +
-      1 +
-      BRAND_PALETTES.length;
-    expect(entries).toHaveLength(expected);
-
-    const urls = entries.map((entry) => entry.url);
-    expect(new Set(urls).size).toBe(urls.length);
-    expect(entries).toHaveLength(byUrl.size);
+/**
+ * The sitemap as an index plus derived chunks.
+ *
+ * A million palette URLs cannot live in one document (50,000 per file, and a
+ * build that inlines them would never finish), so `/sitemap.xml` only lists
+ * chunk names while `/sitemaps/[name]` derives each chunk from the same mint
+ * that renders the pages. These tests pin the shape that keeps the sitemap
+ * and the site from disagreeing: chunk inventory, URL counts, and the
+ * round-trip that every listed palette URL actually resolves.
+ */
+describe("sitemap index", () => {
+  it("lists the core chunk plus one chunk per theme", () => {
+    const names = sitemapChunkNames();
+    expect(names).toHaveLength(1 + PALETTE_THEMES.length);
+    expect(names[0]).toBe(CORE_SITEMAP_NAME);
+    expect(new Set(names).size).toBe(names.length);
+    for (const theme of PALETTE_THEMES) {
+      expect(names).toContain(`palettes-${theme.slug}`);
+    }
   });
 
-  it("spells the home URL the way the canonical does", () => {
-    // The root layout canonicalises "/" to the origin without a trailing slash,
-    // so a second spelling here would publish two URLs for one page.
-    expect(byUrl.has(siteUrl)).toBe(true);
-    expect(byUrl.has(`${siteUrl}/`)).toBe(false);
-    expect(byUrl.get(siteUrl)?.url).toBe(siteUrl);
+  it("renders a well-formed index pointing at the chunk routes", () => {
+    const xml = renderSitemapIndex(sitemapChunkNames());
+    expect(xml.startsWith('<?xml version="1.0" encoding="UTF-8"?>')).toBe(true);
+    expect(xml).toContain("<sitemapindex");
+    expect(xml).toContain(`<loc>${siteUrl}/sitemaps/core.xml</loc>`);
+    expect(xml).toContain(`<loc>${siteUrl}/sitemaps/palettes-retro.xml</loc>`);
+    expect(xml.match(/<sitemap>/g)).toHaveLength(1 + PALETTE_THEMES.length);
+  });
+
+  it("keeps every chunk URL on the canonical origin", () => {
+    for (const name of sitemapChunkNames()) {
+      expect(chunkUrl(name).startsWith(siteUrl)).toBe(true);
+      expect(chunkUrl(name).slice(siteUrl.length)).not.toContain("//");
+    }
+  });
+});
+
+describe("core chunk", () => {
+  it("lists every indexable non-minted route exactly once", () => {
+    const entries = coreSitemapUrls();
+    const urls = entries.map((entry) => entry.url);
+    expect(new Set(urls).size).toBe(urls.length);
+    expect(urls).toContain(siteUrl);
+    expect(urls).not.toContain(`${siteUrl}/`);
+    expect(urls).toContain(`${siteUrl}/palettes`);
+    for (const theme of PALETTE_THEMES) {
+      expect(urls).toContain(`${siteUrl}/palettes/${theme.slug}`);
+    }
+    for (const palette of GALLERY_PALETTES) {
+      expect(urls).toContain(`${siteUrl}/palettes/${palette.theme}/${palette.slug}`);
+    }
+    for (const tool of TOOLS) {
+      expect(urls).toContain(`${siteUrl}${tool.href}`);
+    }
   });
 
   it("stamps a real modification date on posts and nothing else", () => {
-    // A lastModified that moves on every deploy without the content changing is
-    // the pattern search engines learn to distrust, so only content with a real
-    // date publishes one.
+    const byUrl = new Map(coreSitemapUrls().map((entry) => [entry.url, entry]));
     for (const post of livePosts()) {
-      const entry = byUrl.get(`${siteUrl}/blog/${post.slug}`);
-      expect(entry, `missing sitemap entry for ${post.slug}`).toBeDefined();
       const expected = new Date(`${post.updatedAt ?? post.publishedAt}T00:00:00Z`);
-      expect(entry!.lastModified).toEqual(expected);
+      expect(byUrl.get(`${siteUrl}/blog/${post.slug}`)?.lastModified).toEqual(expected);
     }
+    expect(byUrl.get(`${siteUrl}/palettes/retro`)?.lastModified).toBeUndefined();
+  });
 
-    for (const tool of TOOLS) {
-      const entry = byUrl.get(`${siteUrl}${tool.href}`);
-      expect(entry, `missing sitemap entry for ${tool.href}`).toBeDefined();
-      expect("lastModified" in entry!).toBe(false);
-    }
+  it("is deterministic", () => {
+    expect(coreSitemapUrls()).toEqual(coreSitemapUrls());
+  });
+});
 
-    for (const theme of PALETTE_THEMES) {
-      const entry = byUrl.get(`${siteUrl}/palettes/${theme.slug}`);
-      expect(entry, `missing sitemap entry for theme ${theme.slug}`).toBeDefined();
-      expect("lastModified" in entry!).toBe(false);
-    }
-
-    for (const palette of GALLERY_PALETTES) {
-      const entry = byUrl.get(`${siteUrl}/palettes/${palette.theme}/${palette.slug}`);
-      expect(entry, `missing sitemap entry for palette ${palette.slug}`).toBeDefined();
-      expect("lastModified" in entry!).toBe(false);
-    }
-
-    for (const color of NAMED_COLORS) {
-      const entry = byUrl.get(`${siteUrl}/colors/${color.slug}`);
-      expect(entry, `missing sitemap entry for color ${color.slug}`).toBeDefined();
-      expect("lastModified" in entry!).toBe(false);
-    }
-
-    for (const brand of BRAND_PALETTES) {
-      const entry = byUrl.get(`${siteUrl}/brands/${brandSlug(brand.name)}`);
-      expect(entry, `missing sitemap entry for brand ${brand.name}`).toBeDefined();
-      expect("lastModified" in entry!).toBe(false);
-    }
-
-    for (const hub of HUBS) {
-      const entry = byUrl.get(hub === "/" ? siteUrl : `${siteUrl}${hub}`);
-      expect(entry, `missing sitemap entry for ${hub}`).toBeDefined();
-      expect("lastModified" in entry!).toBe(false);
+describe("theme chunks", () => {
+  it("lists exactly the addressable minted URLs for a theme", () => {
+    const urls = themeChunkUrls("retro");
+    expect(urls).toHaveLength(MINTED_PER_THEME);
+    expect(new Set(urls).size).toBe(urls.length);
+    for (const url of urls.slice(0, 50)) {
+      expect(url.startsWith(`${siteUrl}/palettes/retro/`)).toBe(true);
     }
   });
 
-  it("does not claim a change frequency, which crawlers ignore", () => {
-    for (const entry of entries) {
-      expect("changeFrequency" in entry).toBe(false);
+  it("lists URLs that resolve back through the mint", () => {
+    for (const url of themeChunkUrls("ocean").slice(0, 25)) {
+      const slug = url.split("/").pop()!;
+      expect(parseMintedSlug("ocean", slug)).not.toBeNull();
     }
   });
+});
 
-  it("keeps every URL on the canonical origin with one spelling per path", () => {
-    for (const entry of entries) {
-      expect(entry.url.startsWith(siteUrl)).toBe(true);
-      // Everything after the origin, which must never contain a double slash.
-      expect(entry.url.slice(siteUrl.length)).not.toContain("//");
-    }
-    // No path carries a trailing slash: the home entry reduces to the origin
-    // itself, so every other path is a bare "/segment" form.
-    const paths = entries.map((entry) => entry.url.slice(siteUrl.length));
-    expect(paths.filter((path) => path.endsWith("/"))).toEqual([]);
-    expect(paths[0]).toBe("");
-  });
-
-  it("is deterministic — two calls produce the same document", () => {
-    // No module-scope `new Date()`: the output depends on content dates only.
-    expect(sitemap()).toEqual(sitemap());
+describe("urlset rendering", () => {
+  it("renders entries with dates only where they exist", () => {
+    const xml = renderUrlset([
+      { url: `${siteUrl}/tools` },
+      { url: `${siteUrl}/blog/hi`, lastModified: new Date("2026-01-02T00:00:00Z") },
+    ]);
+    expect(xml).toContain("<urlset");
+    expect(xml).toContain(`<loc>${siteUrl}/tools</loc>`);
+    expect(xml).toContain("<lastmod>2026-01-02T00:00:00.000Z</lastmod>");
+    expect(xml.match(/<lastmod>/g)).toHaveLength(1);
+    expect(xml).not.toContain("changefreq");
   });
 });

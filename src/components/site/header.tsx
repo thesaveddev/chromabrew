@@ -4,6 +4,7 @@ import { ThemeToggle } from "./theme-toggle";
 import { AuthNav } from "./auth-nav";
 import { ToolSearch } from "./tool-search";
 import { PalettesDropdown } from "./palettes-dropdown";
+import { FreeToolsDropdown } from "./free-tools-dropdown";
 import { MobileMenu } from "./mobile-menu";
 
 const NAV_LINK =
@@ -11,8 +12,9 @@ const NAV_LINK =
 
 /**
  * Four principal destinations: Design System, Palettes (dropdown with the
- * four palette routes), Free Tools, Website Audit. Right side: Log in +
- * prominent Go Pro when logged out (AuthNav adapts when logged in).
+ * four palette routes), Free Tools (mega menu with featured tools and a
+ * view-all footer), Website Audit. Right side: Log in + prominent Go Pro
+ * when logged out (AuthNav adapts when logged in).
  * Every destination is a genuine link, so crawlers and keyboards agree.
  */
 export function SiteHeader() {
@@ -25,9 +27,7 @@ export function SiteHeader() {
             Design System
           </Link>
           <PalettesDropdown />
-          <Link href="/tools" className={NAV_LINK}>
-            Free Tools
-          </Link>
+          <FreeToolsDropdown />
           <Link href="/audit" className={NAV_LINK}>
             Website Audit
           </Link>

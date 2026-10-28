@@ -1,12 +1,10 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { prisma } from "@/lib/db";
-import {
-  galleryStrategy,
-  parseGalleryConfig,
-  projectPalette,
-  type CommunityEntry,
-} from "@/lib/gallery";
+import { headers } from "next/headers";
+import { auth } from "@/lib/auth/config";
+import { voterKeyFor } from "@/lib/gallery";
+import { fetchCommunityEntries, fetchVotedIds } from "@/lib/gallery-server";
+import { clientIpFromHeaders, hashIp } from "@/lib/audit/rate-limit";
 import { CommunityExplorer } from "@/components/gallery/community-explorer";
 
 export const metadata: Metadata = {
@@ -19,35 +17,23 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function GalleryPage() {
-  const projects = await prisma.project.findMany({
-    where: { visibility: "public", listedInGallery: true },
-    select: {
-      id: true,
-      name: true,
-      config: true,
-      updatedAt: true,
-      user: { select: { name: true } },
-    },
-    orderBy: { updatedAt: "desc" },
-    take: 60,
-  });
+  // Curation, not recency: the contrast gate decides membership and
+  // up-votes plus the anchor ratio decide order, so the community's
+  // strongest and most-loved work surfaces.
+  const entries = await fetchCommunityEntries(200);
 
-  const entries: CommunityEntry[] = projects.flatMap((project) => {
-    const config = parseGalleryConfig(project.config);
-    if (!config) return [];
-    const colors = projectPalette(config);
-    if (!colors) return [];
-    return [
-      {
-        id: project.id,
-        name: project.name,
-        author: project.user.name ?? "Anonymous",
-        colors,
-        strategy: galleryStrategy(config),
-        updatedAt: project.updatedAt.toISOString(),
-      },
-    ];
+  // Whose votes these are, so buttons render pressed correctly on first
+  // paint: the signed-in user when there is one, else the hashed IP.
+  const session = await auth().catch(() => null);
+  const headerList = await headers();
+  const voterKey = voterKeyFor({
+    userId: session?.user?.id ?? null,
+    ipHash: hashIp(clientIpFromHeaders(headerList)),
   });
+  const votedIds = await fetchVotedIds(
+    entries.map((entry) => entry.id),
+    voterKey,
+  );
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
@@ -60,8 +46,9 @@ export default async function GalleryPage() {
         </h1>
         <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
           Public design systems whose owners opted in. Unlisted projects never
-          appear here — opt in from any public project&apos;s settings. Newest
-          updates first.
+          appear here — opt in from any public project&apos;s settings. Only
+          palettes whose darkest and lightest stops clear the contrast gate
+          are listed, most up-voted first, each with its own page.
         </p>
       </div>
 
@@ -83,7 +70,7 @@ export default async function GalleryPage() {
           </Link>
         </div>
       ) : (
-        <CommunityExplorer entries={entries} />
+        <CommunityExplorer entries={entries} votedIds={[...votedIds]} />
       )}
     </div>
   );

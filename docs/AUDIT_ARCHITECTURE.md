@@ -516,11 +516,14 @@ Two pages are public on purpose, and neither takes a scan id:
 | `/r/[token]` | A shared report: the same DTO the owner sees, screenshot and coverage panel included, `noindex, nofollow` |
 | `/r/[token]/screenshot?page=<id>` | The screenshot for a page of that shared report, scoped to the token |
 
-The request body is `{ url, scope?, viewport? }`. `scope` accepts
-`single_page` and `homepage_plus_pages` (the seed page plus same-origin links,
-up to five pages); `selected_pages` exists in the enum and in the UI marked
-"coming soon", but `validateScanRequest` rejects it with a clear message rather
-than silently auditing a different set of pages than the reader chose.
+The request body is `{ url, scope?, viewport?, selectedPages? }`. `scope` accepts
+`single_page`, `homepage_plus_pages` (the seed page plus same-origin links, up
+to five pages), and `selected_pages`: the seed plus an explicit `selectedPages`
+list of URLs, up to ten pages total, with no crawling. `validateScanRequest`
+normalizes and validates the list — the seed and repeats are dropped, anything
+past the budget or an empty list is refused with a displayable message — and
+`enqueueScan` stores it on the row's `metadata` for the worker, which drains it
+as its queue instead of planning follow-up pages from link inventories.
 
 `viewport` names an entry in `VIEWPORTS` — `desktop` (1280×720, the default) or
 `mobile` (390×844). It is written to the row the worker renders with, and an

@@ -1,6 +1,7 @@
 ﻿import type { Metadata } from "next";
 import Link from "next/link";
-import { TOOLS, categoryLabel, type ToolCategory } from "@/lib/tools";
+import { TOOLS } from "@/lib/tools";
+import { ToolsExplorer } from "@/components/tools/tools-explorer";
 import { siteUrl } from "@/lib/site-url";
 import { JsonLd } from "@/components/site/json-ld";
 import { defaultOgImage } from "@/lib/og";
@@ -32,15 +33,7 @@ export const metadata: Metadata = {
   },
 };
 
-const ORDER: ToolCategory[] = ["color", "converter", "css", "image", "ai"];
-
 export default function ToolsIndexPage() {
-  const groups = ORDER.map((category) => ({
-    category,
-    label: categoryLabel(category),
-    tools: TOOLS.filter((tool) => tool.category === category),
-  })).filter((group) => group.tools.length > 0);
-
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
       <JsonLd
@@ -94,30 +87,7 @@ export default function ToolsIndexPage() {
         </p>
       </header>
 
-      {groups.map((group) => (
-        <section key={group.category} aria-labelledby={`cat-${group.category}`} className="mt-10">
-          <h2 id={`cat-${group.category}`} className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-            {group.label}
-          </h2>
-          <ul className="mt-3 grid gap-3 sm:grid-cols-2">
-            {group.tools.map((tool) => (
-              <li key={tool.href}>
-                <Link
-                  href={tool.href}
-                  className="group block h-full rounded-xl border border-zinc-200 bg-white p-5 transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-600 dark:focus-visible:outline-zinc-100"
-                >
-                  <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 group-hover:underline group-hover:underline-offset-4">
-                    {tool.title}
-                  </h3>
-                  <p className="mt-1.5 text-xs leading-5 text-zinc-500 dark:text-zinc-400">
-                    {tool.blurb}
-                  </p>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ))}
+      <ToolsExplorer />
     </div>
   );
 }

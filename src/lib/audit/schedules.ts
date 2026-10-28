@@ -191,6 +191,15 @@ export async function createSchedule(input: {
   const now = input.now ?? Date.now();
   const scope = input.scope ?? "homepage_plus_pages";
 
+  // A watch re-scans one URL on a schedule; an explicit page list does not
+  // fit that model, so it is refused up front rather than failing every tick.
+  if (scope === "selected_pages") {
+    throw new ScheduleError(
+      "scope_not_supported",
+      "Scheduled re-scans watch one URL — run selected-pages audits on demand instead.",
+    );
+  }
+
   if (!allowedIntervals(input.isPro).includes(input.intervalDays)) {
     throw new ScheduleError(
       "interval_not_allowed",

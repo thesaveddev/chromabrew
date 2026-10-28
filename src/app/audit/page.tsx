@@ -129,7 +129,9 @@ export default function AuditPage() {
             <ul className="mt-3 space-y-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
               <li>
                 Up to five pages per audit on the whole-site scope, same origin only — it follows
-                your site&apos;s links, not someone else&apos;s, and stops at the budget.
+                your site&apos;s links, not someone else&apos;s, and stops at the budget. To name
+                the pages instead, the selected-pages scope audits up to ten exact URLs with no
+                crawling.
               </li>
               <li>
                 Public pages only, and only pages you are allowed to scan. The scanner fetches the

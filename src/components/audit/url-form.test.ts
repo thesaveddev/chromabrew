@@ -30,6 +30,15 @@ function render(overrides: Partial<UrlFormViewProps> = {}): string {
     viewport: "desktop",
     onViewportChange: () => {},
     onSubmit: () => {},
+    selectedPages: "",
+    onSelectedPagesChange: () => {},
+    discovered: null,
+    discovering: false,
+    discoverError: "",
+    onBrowseDiscovered: () => {},
+    onToggleDiscovered: () => {},
+    onSelectAllDiscovered: () => {},
+    onAddDiscovered: () => {},
     loading: false,
     error: "",
     offline: false,
@@ -59,14 +68,65 @@ describe("UrlFormView with a scanner", () => {
     expect(html).toContain("hashed IP address");
   });
 
-  it("offers the whole-site scope and disables the one that is not ready", () => {
+  it("offers every scope as selectable, with nothing marked coming soon", () => {
     const html = render();
 
-    // The two executable scopes are selectable; the third stays visible but
-    // disabled, so the roadmap is legible without the API ever receiving it.
+    // All three scopes execute now: the picker enables each one and the old
+    // "coming soon" marker is gone, so the roadmap can no longer be mistaken
+    // for the product.
+    expect(html).toContain("Single page");
     expect(html).toContain("Whole site (up to 5 pages)");
-    expect(html).toContain("Selected pages");
-    expect(html).toContain("coming soon");
+    expect(html).toContain("Selected pages (up to 10)");
+    expect(html).not.toContain("coming soon");
+    // No disabled attribute on any option (the `disabled:` Tailwind variant on
+    // the button is styling, not a state, so only the attribute counts).
+    expect(html).not.toContain("disabled=");
+  });
+
+  it("shows the browse button only on the selected-pages scope", () => {
+    const selected = render({ scope: "selected_pages", url: "example.com" });
+    const single = render({ scope: "single_page", url: "example.com" });
+
+    expect(selected).toContain("Browse this site");
+    expect(single).not.toContain("Browse this site");
+  });
+
+  it("renders the browsed checklist with counts and the add button", () => {
+    const html = render({
+      scope: "selected_pages",
+      url: "example.com",
+      discovered: [
+        { url: "https://example.com/pricing", text: "Pricing", checked: true },
+        { url: "https://example.com/about", text: "", checked: false },
+      ],
+    });
+
+    expect(html).toContain("1 of 2 selected");
+    expect(html).toContain("Pricing");
+    expect(html).toContain("https://example.com/about");
+    expect(html).toContain("Add 1 selected page");
+  });
+
+  it("announces discovery work and failures", () => {
+    const loading = render({ scope: "selected_pages", discovering: true });
+    expect(loading).toContain('role="status"');
+
+    const failed = render({ scope: "selected_pages", discoverError: "Nope." });
+    expect(failed).toContain('role="alert"');
+    expect(failed).toContain("Nope.");
+  });
+
+  it("asks for the page list only on the selected-pages scope", () => {
+    const selected = render({ scope: "selected_pages", selectedPages: "" });
+    const single = render({ scope: "single_page" });
+
+    // The list is where the request's page set is decided, so it appears with
+    // the scope that needs it and stays out of the way otherwise.
+    expect(selected).toContain("Page URLs");
+    expect(selected).toContain('id="audit-pages"');
+    expect(selected).toContain("Up to 9 more pages besides the address above");
+    expect(single).not.toContain("Page URLs");
+    expect(single).not.toContain('id="audit-pages"');
   });
 
   it("explains whichever scope is selected, in the scanner's own words", () => {

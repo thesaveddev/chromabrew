@@ -93,7 +93,7 @@ export interface FetchedPage {
 }
 
 export class FetchError extends Error {
-  readonly code: "timeout" | "too_large" | "network" | "too_many_redirects" | "blocked";
+  readonly code: "timeout" | "too_large" | "network" | "too_many_redirects" | "blocked" | "http";
 
   constructor(code: FetchError["code"], message: string) {
     super(message);

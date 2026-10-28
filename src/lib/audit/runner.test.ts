@@ -6,7 +6,13 @@ const db = vi.hoisted(() => ({ updateMany: vi.fn() }));
 
 vi.mock("@/lib/db", () => ({ prisma: { scan: { updateMany: db.updateMany } } }));
 
-import { expireAbandonedScan, recoverStaleScans, seedErrorMessage } from "./runner";
+import {
+  expireAbandonedScan,
+  normalizeSelectedPages,
+  recoverStaleScans,
+  seedErrorMessage,
+  validateScanRequest,
+} from "./runner";
 
 /**
  * Closing rows nothing is coming for.
@@ -78,6 +84,121 @@ describe("seedErrorMessage", () => {
     });
     expect(message).toContain("so the crawl never started and no pages were audited");
     expect(message).toContain("/audit/this-page");
+  });
+
+  it("says the selected pages were never audited when their seed is blocked", () => {
+    const message = seedErrorMessage({
+      statusCode: 403,
+      blockedProvider: "Cloudflare",
+      maxPages: 10,
+      scope: "selected_pages",
+    });
+    expect(message).toContain("so none of the selected pages were audited");
+    expect(message).not.toContain("crawl never started");
+    expect(message).toContain("/audit/this-page");
+  });
+});
+
+/**
+ * The explicit page list behind the selected-pages scope.
+ *
+ * The scope is only honest if the list it scans is exactly the list the reader
+ * typed: the seed is scanned anyway so listing it again must not double-scan
+ * it, junk must be refused with a message before anything is written, and a
+ * list longer than the budget must be refused rather than quietly truncated —
+ * a reader who listed eleven pages and got ten audited would never know which
+ * one was skipped.
+ */
+describe("normalizeSelectedPages", () => {
+  const SEED = "https://example.com/";
+
+  it("normalizes entries, assumes https, and drops blanks and repeats", () => {
+    expect(
+      normalizeSelectedPages({
+        seedNormalizedUrl: SEED,
+        selectedPages: [
+          "example.com/pricing",
+          "https://example.com/pricing",
+          "https://example.com/about?utm_source=x",
+          "   ",
+          42,
+        ],
+        maxPages: 10,
+      }),
+    ).toEqual(["https://example.com/pricing", "https://example.com/about"]);
+  });
+
+  it("drops the seed URL itself instead of scanning it twice", () => {
+    expect(
+      normalizeSelectedPages({
+        seedNormalizedUrl: SEED,
+        selectedPages: ["https://example.com/", "https://example.com/about"],
+        maxPages: 10,
+      }),
+    ).toEqual(["https://example.com/about"]);
+  });
+
+  it("refuses an empty list with the way forward", () => {
+    expect(() =>
+      normalizeSelectedPages({ seedNormalizedUrl: SEED, selectedPages: [], maxPages: 10 }),
+    ).toThrow(/at least one more page URL/);
+  });
+
+  it("refuses a list past the budget instead of truncating it", () => {
+    const pages = Array.from({ length: 10 }, (_, i) => `https://example.com/p${i}`);
+    expect(() =>
+      normalizeSelectedPages({ seedNormalizedUrl: SEED, selectedPages: pages, maxPages: 10 }),
+    ).toThrow(/up to 10 pages/);
+  });
+
+  it("refuses junk with the validator's own message", () => {
+    expect(() =>
+      normalizeSelectedPages({
+        seedNormalizedUrl: SEED,
+        selectedPages: ["https://example.com/about", "not a url at all!!!"],
+        maxPages: 10,
+      }),
+    ).toThrow();
+  });
+});
+
+describe("validateScanRequest with selected_pages", () => {
+  it("accepts the scope with a page list and returns it normalized", () => {
+    const result = validateScanRequest({
+      url: "example.com",
+      scope: "selected_pages",
+      viewportId: "desktop",
+      selectedPages: ["example.com/pricing", "https://example.com/about"],
+    });
+
+    expect(result.normalizedUrl).toBe("https://example.com/");
+    expect(result.scope.id).toBe("selected_pages");
+    expect(result.selectedPages).toEqual([
+      "https://example.com/pricing",
+      "https://example.com/about",
+    ]);
+  });
+
+  it("refuses the scope without a page list", () => {
+    expect(() =>
+      validateScanRequest({
+        url: "example.com",
+        scope: "selected_pages",
+        viewportId: "desktop",
+        selectedPages: [],
+      }),
+    ).toThrow(/at least one more page URL/);
+  });
+
+  it("ignores a page list on other scopes", () => {
+    const result = validateScanRequest({
+      url: "example.com",
+      scope: "single_page",
+      viewportId: "desktop",
+      selectedPages: ["https://example.com/pricing"],
+    });
+
+    expect(result.selectedPages).toEqual([]);
   });
 });
 
