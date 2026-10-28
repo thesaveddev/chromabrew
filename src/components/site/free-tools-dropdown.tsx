@@ -82,11 +82,13 @@ const POPULAR = new Set([
 ]);
 
 /**
- * Free Tools mega menu: a wide four-column panel of the most-used tools,
- * grouped by job, each with a signature swatch — plus a footer into the
- * full directory. Click/tap toggles (not hover-only), Escape closes,
- * selecting a link closes, clicking outside closes. Genuine links keep
- * it crawlable.
+ * Free Tools mega menu: a full-navbar-width four-column panel of the
+ * most-used tools, grouped by job, each with a large signature swatch —
+ * plus a footer into the full directory. The panel positions against the
+ * header bar (the trigger wrapper stays unpositioned), so it spans the
+ * whole navbar instead of hanging off the button. Click/tap toggles (not
+ * hover-only), Escape closes, selecting a link closes, clicking outside
+ * closes. Genuine links keep it crawlable.
  */
 export function FreeToolsDropdown() {
   const [open, setOpen] = useState(false);
@@ -108,7 +110,7 @@ export function FreeToolsDropdown() {
   }, []);
 
   return (
-    <div ref={ref} className="relative hidden md:block">
+    <div ref={ref} className="hidden md:block">
       <button
         type="button"
         aria-haspopup="true"
@@ -127,7 +129,7 @@ export function FreeToolsDropdown() {
           id="free-tools-menu"
           role="menu"
           aria-label="Free tools"
-          className="absolute left-1/2 top-full z-50 mt-2 w-[54rem] max-w-[calc(100vw-2rem)] -translate-x-1/2 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-2xl dark:border-zinc-700 dark:bg-zinc-900"
+          className="absolute inset-x-0 top-full z-50 mt-2 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-2xl dark:border-zinc-700 dark:bg-zinc-900"
         >
           <div className="flex items-center justify-between px-6 pt-5">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-400 dark:text-zinc-500">
@@ -157,7 +159,7 @@ export function FreeToolsDropdown() {
                         >
                           <span
                             aria-hidden
-                            className="mt-0.5 h-9 w-9 shrink-0 rounded-lg border border-black/10 shadow-sm"
+                            className="mt-0.5 h-12 w-12 shrink-0 rounded-xl border border-black/10 shadow-sm"
                             style={{
                               background: SWATCHES[href] ?? "#71717a",
                             }}
