@@ -6,7 +6,15 @@
  * is a no-op: we deliberately do not ship invasive tracking.
  */
 export type AnalyticsEvent =
+  | "hero_generator_clicked"
+  | "hero_audit_clicked"
+  | "login_clicked"
+  | "go_pro_clicked"
   | "design_system_generated"
+  | "code_copied_or_exported"
+  | "project_saved"
+  | "pro_checkout_started"
+  | "pro_purchase_completed"
   | "palette_randomized"
   | "palette_strategy_changed"
   | "contrast_checked"

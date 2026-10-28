@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AuditSection } from "@/components/home/audit-section";
+import { HeroActions } from "@/components/home/hero-actions";
+import { HeroColourForm } from "@/components/home/hero-form";
 import { LinkButton } from "@/components/ui/primitives";
 import { PLANS } from "@/lib/entitlements";
 import { siteUrl } from "@/lib/site-url";
@@ -29,36 +31,58 @@ export const metadata: Metadata = {
   },
 };
 
-const CALM_PALETTE = ["#264653", "#2A9D8F", "#E9C46A", "#F4A261", "#E76F51"];
-
-const WHAT_YOU_CAN_DO = [
+const CAPABILITIES = [
   {
-    title: "Generate palettes",
-    body: "Press space for fresh five-color schemes. Lock what you love, copy any hex.",
-    href: "/generate",
-    link: "Open the generator",
+    title: "Perceptual color scales",
+    body: "50–950 steps computed in OKLCH, so every stop is evenly spaced to the eye.",
   },
   {
-    title: "Build a design system",
-    body: "Turn one color into scales, tokens, light and dark themes — WCAG checked.",
-    href: "/design-system",
-    link: "Open the design system generator",
+    title: "Semantic tokens",
+    body: "Background, surface, primary, border and status roles that map to real components.",
   },
   {
-    title: "Audit a live website",
-    body: "Paste a URL. Get contrast and accessibility findings with fixes you can ship.",
-    href: "/audit",
-    link: "Run a free audit",
+    title: "Accessibility built in",
+    body: "Key pairs graded against WCAG AA/AAA from measured values — fixes offered, never assumed.",
+  },
+  {
+    title: "Developer-ready exports",
+    body: "CSS variables, DTCG-style JSON, Tailwind v4 themes and shadcn/ui variables to paste in.",
   },
 ] as const;
 
-const POPULAR_TOOLS = [
-  { title: "Contrast checker", href: "/tools/contrast-checker" },
-  { title: "Palette generator", href: "/tools/color-palette-generator" },
-  { title: "Image color extractor", href: "/tools/image-color-extractor" },
-  { title: "Tailwind generator", href: "/tools/tailwind-color-generator" },
-  { title: "Dark mode generator", href: "/tools/dark-mode-generator" },
-  { title: "Shade generator", href: "/tools/shade-generator" },
+const TOOL_GROUPS = [
+  {
+    label: "Palette creation",
+    tools: [
+      { title: "Color palette generator", href: "/tools/color-palette-generator" },
+      { title: "Shade generator", href: "/tools/shade-generator" },
+      { title: "Image color extractor", href: "/tools/image-color-extractor" },
+    ],
+  },
+  {
+    label: "Accessibility and contrast",
+    tools: [
+      { title: "Contrast checker", href: "/tools/contrast-checker" },
+      { title: "WCAG palette checker", href: "/tools/wcag-palette-checker" },
+      { title: "Color blindness simulator", href: "/tools/color-blindness-simulator" },
+    ],
+  },
+  {
+    label: "Design tokens and themes",
+    tools: [
+      { title: "Design token generator", href: "/tools/design-token-generator" },
+      { title: "Dark mode generator", href: "/tools/dark-mode-generator" },
+      { title: "Tailwind color generator", href: "/tools/tailwind-color-generator" },
+    ],
+  },
+  {
+    label: "Developer utilities",
+    tools: [
+      { title: "Color converter", href: "/tools/color-converter" },
+      { title: "CSS gradient generator", href: "/tools/css-gradient-generator" },
+      { title: "AI palette ideas", href: "/tools/ai-palette-suggestion" },
+    ],
+  },
 ] as const;
 
 export default function HomePage() {
@@ -78,87 +102,178 @@ export default function HomePage() {
         }}
       />
 
-      {/* Hero — one idea, two doors. Centered like Coolors: headline,
-          one supporting line, two calm actions, one quiet palette. */}
-      <section className="mx-auto w-full max-w-3xl px-4 pb-10 pt-16 text-center sm:px-6 sm:pt-24">
+      {/* Hero — first screen: value, two doors, quick start. No Go Pro
+          here on purpose; it owns the header. */}
+      <section className="mx-auto w-full max-w-3xl px-4 pb-12 pt-14 text-center sm:px-6 sm:pt-20">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">
           Free color toolkit · No sign-up
         </p>
-        <h1 className="mt-4 text-4xl font-bold leading-[1.08] tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-6xl">
-          Colors that work. Sites that pass.
+        <h1 className="mt-4 text-4xl font-bold leading-[1.08] tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-5xl">
+          Build better design systems. Find what&apos;s wrong with your website.
         </h1>
         <p className="mx-auto mt-5 max-w-xl text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-          Generate accessible palettes and design tokens — or audit a live
-          website for contrast and accessibility issues. Free in your browser.
+          Generate colour palettes and production-ready design tokens, or
+          audit a live website for contrast and accessibility issues. Start
+          free, right in your browser.
         </p>
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-          <LinkButton href="/generate" variant="primary" className="px-6 py-3 text-base">
-            Start generating — it&apos;s free
-          </LinkButton>
-          <LinkButton href="/audit" variant="secondary" className="px-6 py-3 text-base">
-            Run a free audit
-          </LinkButton>
+        <HeroActions />
+        <div className="mt-8 flex justify-center">
+          <HeroColourForm />
         </div>
-
-        {/* One calm palette strip. Static, no motion, links into the real generator. */}
-        <Link
-          href="/generate"
-          aria-label="Open the palette generator"
-          className="group mt-12 block overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800"
-        >
-          <span className="flex h-28 sm:h-36" aria-hidden>
-            {CALM_PALETTE.map((hex) => (
-              <span key={hex} className="flex-1" style={{ backgroundColor: hex }} />
-            ))}
-          </span>
-          <span className="flex items-center justify-between bg-white px-4 py-3 dark:bg-zinc-900">
-            <span className="font-mono text-xs tracking-wide text-zinc-500 dark:text-zinc-400">
-              #264653 · #2A9D8F · #E9C46A · #F4A261 · #E76F51
-            </span>
-            <span className="text-sm font-medium text-zinc-900 group-hover:underline dark:text-zinc-100">
-              Open in generator →
-            </span>
-          </span>
-        </Link>
+        <p className="mt-4 text-sm text-zinc-500 dark:text-zinc-400">
+          Free, no account.{" "}
+          <Link
+            href="/projects"
+            className="font-medium text-zinc-700 underline decoration-zinc-300 underline-offset-4 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-zinc-100"
+          >
+            Save to My Projects
+          </Link>{" "}
+          when you sign in.
+        </p>
       </section>
 
-      {/* What you can do — three quiet cards, nothing more. */}
+      {/* Two workflows — pick your job, one click each. */}
       <section
-        aria-labelledby="do-heading"
-        className="mx-auto w-full max-w-5xl px-4 py-14 sm:px-6"
+        aria-labelledby="workflows-heading"
+        className="mx-auto w-full max-w-5xl px-4 pb-14 sm:px-6"
       >
         <h2
-          id="do-heading"
+          id="workflows-heading"
           className="text-center text-sm font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400"
         >
-          What you can do
+          Two ways to use ChromaBrew
         </h2>
-        <div className="mt-8 grid gap-4 md:grid-cols-3">
-          {WHAT_YOU_CAN_DO.map((item) => (
-            <article
-              key={item.title}
-              className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900"
-            >
-              <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
-                {item.title}
-              </h3>
-              <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                {item.body}
-              </p>
+        <div className="mt-8 grid gap-4 md:grid-cols-2">
+          <article className="flex flex-col rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
+              Create
+            </p>
+            <h3 className="mt-2 text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
+              From one colour to a system you can ship.
+            </h3>
+            <p className="mt-2 flex-1 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+              Start with a brand colour and get scales, accessible
+              combinations, semantic tokens, light and dark themes, and code
+              exports. Open any{" "}
               <Link
-                href={item.href}
-                className="mt-4 inline-block text-sm font-medium text-zinc-900 underline underline-offset-4 dark:text-zinc-100"
+                href="/tools/color-palette-generator"
+                className="font-medium text-zinc-900 underline underline-offset-4 dark:text-zinc-100"
               >
-                {item.link}
-              </Link>
-            </article>
-          ))}
+                palette
+              </Link>{" "}
+              in the generator to continue.
+            </p>
+            <div className="mt-5">
+              <LinkButton href="/design-system" variant="secondary">
+                Explore the generator
+              </LinkButton>
+            </div>
+          </article>
+          <article className="flex flex-col rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
+              Audit
+            </p>
+            <h3 className="mt-2 text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
+              See what is failing on a page you already shipped.
+            </h3>
+            <p className="mt-2 flex-1 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+              Inspect a public website, discover measured design and
+              accessibility issues, and get actionable recommendations. Free,
+              no account needed to run it.
+            </p>
+            <div className="mt-5">
+              <LinkButton href="/audit" variant="secondary">
+                Explore website audit
+              </LinkButton>
+            </div>
+          </article>
         </div>
       </section>
 
       <AuditSection />
 
-      {/* Pro — Free vs Pro, plainly. Full comparison lives on /pricing. */}
+      {/* Capabilities — what the generator guarantees, stated once. */}
+      <section
+        aria-labelledby="capabilities-heading"
+        className="mx-auto w-full max-w-5xl px-4 py-14 sm:px-6"
+      >
+        <h2
+          id="capabilities-heading"
+          className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100"
+        >
+          Design-system capabilities, built in
+        </h2>
+        <p className="mt-1 max-w-2xl text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+          What the{" "}
+          <Link
+            href="/design-system"
+            className="font-medium text-zinc-900 underline underline-offset-4 dark:text-zinc-100"
+          >
+            design system generator
+          </Link>{" "}
+          produces from your color — measured, themed and exportable.
+        </p>
+        <div className="mt-6 grid gap-x-10 gap-y-6 sm:grid-cols-2">
+          {CAPABILITIES.map((feature) => (
+            <div key={feature.title}>
+              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                {feature.title}
+              </h3>
+              <p className="mt-1 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+                {feature.body}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Popular tools — grouped by intent, full directory on /tools. */}
+      <section
+        aria-labelledby="tools-heading"
+        className="border-t border-zinc-200 bg-zinc-50 py-14 dark:border-zinc-800 dark:bg-zinc-900/60"
+      >
+        <div className="mx-auto w-full max-w-5xl px-4 sm:px-6">
+          <h2
+            id="tools-heading"
+            className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100"
+          >
+            Popular free tools
+          </h2>
+          <p className="mt-1 max-w-2xl text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+            Focused tools for each step — or{" "}
+            <Link
+              href="/tools"
+              className="font-medium text-zinc-900 underline underline-offset-4 dark:text-zinc-100"
+            >
+              browse all free tools
+            </Link>
+            .
+          </p>
+          <div className="mt-8 grid gap-x-10 gap-y-8 sm:grid-cols-2">
+            {TOOL_GROUPS.map((group) => (
+              <div key={group.label}>
+                <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                  {group.label}
+                </h3>
+                <ul className="mt-3 space-y-2.5">
+                  {group.tools.map((tool) => (
+                    <li key={tool.href}>
+                      <Link
+                        href={tool.href}
+                        className="text-sm font-medium text-zinc-700 underline decoration-zinc-300 underline-offset-4 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-zinc-100"
+                      >
+                        {tool.title}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Pro — discoverable, not dominant. Free stays the primary path. */}
       <section
         aria-labelledby="pro-heading"
         className="mx-auto w-full max-w-4xl px-4 py-16 text-center sm:px-6"
@@ -174,7 +289,8 @@ export default function HomePage() {
         </h2>
         <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-zinc-600 dark:text-zinc-400">
           Everything that generates, checks, and exports is free. Pro adds
-          saving, every export adapter, and AI.
+          saving, every export adapter, and AI — verified against the live
+          plans below.
         </p>
         <div className="mt-8 grid gap-4 text-left sm:grid-cols-2">
           <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
@@ -187,7 +303,7 @@ export default function HomePage() {
             <ul className="mt-4 space-y-2 text-sm text-zinc-700 dark:text-zinc-300">
               <li>Full generator + WCAG checks</li>
               <li>CSS, JSON, Tailwind, shadcn exports</li>
-              <li>10 standalone color tools</li>
+              <li>Standalone color tools</li>
             </ul>
             <LinkButton href="/design-system" variant="secondary" className="mt-6 w-full">
               Get started
@@ -201,9 +317,9 @@ export default function HomePage() {
               {PLANS.pro.description}
             </p>
             <ul className="mt-4 space-y-2 text-sm text-zinc-700 dark:text-zinc-300">
-              <li>Everything in Free</li>
-              <li>Unlimited saving + version history</li>
-              <li>All export adapters + AI features</li>
+              <li>Unlimited project saving + version history</li>
+              <li>All export adapters + team sharing</li>
+              <li>AI features, included as they ship</li>
             </ul>
             <LinkButton href="/pricing" variant="primary" className="mt-6 w-full">
               See Pro plans
@@ -212,37 +328,33 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Popular tools — one quiet line of links, full directory on /tools. */}
-      <section
-        aria-labelledby="tools-heading"
-        className="mx-auto w-full max-w-5xl px-4 pb-16 text-center sm:px-6"
-      >
-        <h2
-          id="tools-heading"
-          className="text-sm font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400"
-        >
-          Popular tools
-        </h2>
-        <p className="mt-4 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm">
-          {POPULAR_TOOLS.map((tool) => (
-            <Link
-              key={tool.href}
-              href={tool.href}
-              className="font-medium text-zinc-700 underline decoration-zinc-300 underline-offset-4 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-zinc-100"
+      {/* Final CTA — both journeys once more, matching the hero. */}
+      <section className="mx-auto w-full max-w-5xl px-4 pb-16 sm:px-6">
+        <div className="rounded-2xl bg-zinc-900 px-6 py-12 text-center sm:px-12">
+          <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
+            Start with one color — or fix the site you already shipped.
+          </h2>
+          <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-zinc-300">
+            Generate a palette, tokens, light and dark themes, and
+            production-ready CSS from a single HEX — or run a free audit on a
+            live URL. Free, no account required.
+          </p>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5">
+            <LinkButton href="/design-system" variant="primary">
+              Generate a design system
+            </LinkButton>
+            <LinkButton
+              href="/audit"
+              variant="secondary"
+              className="border-zinc-700 bg-transparent text-zinc-100 hover:bg-zinc-800 hover:text-white dark:border-zinc-700 dark:bg-transparent dark:text-zinc-100 dark:hover:bg-zinc-800"
             >
-              {tool.title}
-            </Link>
-          ))}
-          <Link
-            href="/tools"
-            className="font-medium text-zinc-900 underline underline-offset-4 dark:text-zinc-100"
-          >
-            All tools →
-          </Link>
-        </p>
+              Audit a website
+            </LinkButton>
+          </div>
+        </div>
       </section>
 
-      {/* FAQ — kept for search, trimmed to four. */}
+      {/* FAQ — kept for search, now including Pro. */}
       <section
         aria-labelledby="faq-heading"
         className="border-t border-zinc-200 py-14 dark:border-zinc-800"

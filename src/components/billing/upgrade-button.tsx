@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { track } from "@/lib/analytics";
 
 type Interval = "month" | "year";
 
@@ -39,12 +40,16 @@ export function UpgradeButton({ interval, children, className }: UpgradeButtonPr
       const data = (await res.json().catch(() => null)) as
         | { url?: string; error?: string }
         | null;
+      // A checkout click is intent, not revenue: the purchase event fires
+      // server-side on the Polar webhook, never here.
+      track("go_pro_clicked", { location: "upgrade-button", interval });
       if (!res.ok || !data?.url) {
         setError(
           data?.error ?? "Checkout is not available right now. Try again later.",
         );
         return;
       }
+      track("pro_checkout_started", { interval });
       window.location.href = data.url;
     } catch {
       setError("Something went wrong. Try again later.");

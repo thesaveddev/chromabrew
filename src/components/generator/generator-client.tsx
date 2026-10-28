@@ -272,6 +272,7 @@ export function GeneratorWorkspace() {
         if (res.ok) {
           setSaveMessage("Saved");
           track("project_updated");
+          track("project_saved", { mode: "update" });
         }
       } else {
         const res = await fetch("/api/projects", {
@@ -285,6 +286,7 @@ export function GeneratorWorkspace() {
           window.history.replaceState(null, "", `?project=${data.id}`);
           setSaveMessage("Saved");
           track("project_created");
+          track("project_saved", { mode: "create" });
         }
       }
     } catch {

@@ -117,7 +117,10 @@ export function ExportPanel({
             <CopyButton
               value={result.code}
               label={`Copy ${adapter.name}`}
-              onCopied={() => track(ADAPTER_EVENT[adapter.id])}
+              onCopied={() => {
+                track(ADAPTER_EVENT[adapter.id]);
+                track("code_copied_or_exported", { adapter: adapter.id });
+              }}
               className="px-2.5 py-1 text-xs"
             />
           )}
