@@ -71,8 +71,14 @@ export default async function PaletteDetailPage({ params }: Props) {
           ...relatedMintedPalettes(themeSlug, mintedIndex),
           ...crossThemeMintedPalettes(themeSlug, mintedIndex),
         ];
+  // The jump nav lives on curated pages too: they are where most readers
+  // land, and without it they never learn the mint exists. No current index
+  // there, so the jumps are fixed doors in — first, middle, last — rather
+  // than skips relative to the page.
   const mintJumps =
-    mintedIndex === undefined ? [] : mintJumpIndexes(mintedIndex);
+    mintedIndex === undefined
+      ? [0, Math.floor(MINTED_PER_THEME / 2), MINTED_PER_THEME - 1]
+      : mintJumpIndexes(mintedIndex);
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
@@ -199,8 +205,9 @@ export default async function PaletteDetailPage({ params }: Props) {
             Browse the mint
           </h2>
           <p className="mt-1 text-xs leading-5 text-zinc-500 dark:text-zinc-400">
-            Every palette in this theme has its own page — skip along the mint
-            instead of walking it one by one.
+            {mintedIndex === undefined
+              ? `This theme also has ${MINTED_PER_THEME.toLocaleString()} minted palettes, every one with its own page — jump into the mint anywhere.`
+              : "Every palette in this theme has its own page — skip along the mint instead of walking it one by one."}
           </p>
           <ul className="mt-3 flex flex-wrap gap-2">
             {mintJumps.map((target) => (
@@ -214,9 +221,11 @@ export default async function PaletteDetailPage({ params }: Props) {
                     ? "« First"
                     : target === MINTED_PER_THEME - 1
                       ? "Last »"
-                      : target < (mintedIndex ?? 0)
-                        ? `‹ ${((mintedIndex ?? 0) - target).toLocaleString()} back`
-                        : `${(target - (mintedIndex ?? 0)).toLocaleString()} ahead ›`}
+                      : mintedIndex === undefined
+                        ? "Middle"
+                        : target < mintedIndex
+                          ? `‹ ${(mintedIndex - target).toLocaleString()} back`
+                          : `${(target - mintedIndex).toLocaleString()} ahead ›`}
                 </Link>
               </li>
             ))}
