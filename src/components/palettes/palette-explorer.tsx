@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { GalleryPalette, PaletteTheme } from "@/lib/palettes";
+import { MINTED_PER_THEME, type GalleryPalette, type PaletteTheme } from "@/lib/palettes";
 import { PaletteCard } from "./palette-card";
 
 /** Cards rendered before the visitor asks for more. Keeps first paint light. */
@@ -114,7 +114,7 @@ export function PaletteExplorer({ palettes, themes }: Props) {
 
       <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-400" role="status">
         {results.length === palettes.length
-          ? `${palettes.length} curated palettes — search or pick a theme to narrow it down.`
+          ? `${palettes.length} hand-picked palettes here — plus ${MINTED_PER_THEME.toLocaleString()} minted per theme, browsable from each theme page below.`
           : `${results.length} of ${palettes.length} palettes match.`}
       </p>
 

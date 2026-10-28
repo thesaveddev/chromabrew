@@ -128,9 +128,10 @@ export default function PalettesIndexPage() {
       })}
 
       <p className="mt-12 text-xs text-zinc-500 dark:text-zinc-400">
-        {GALLERY_PALETTES.length} curated palettes across {PALETTE_THEMES.length}{" "}
-        themes — plus {MINTED_PER_THEME.toLocaleString()} more per theme,
-        every one with its own page. Made something of your own?{" "}
+        A million palettes across {PALETTE_THEMES.length} themes —{" "}
+        {GALLERY_PALETTES.length.toLocaleString()} hand-picked, plus{" "}
+        {MINTED_PER_THEME.toLocaleString()} minted per theme, every one with
+        its own page. Made something of your own?{" "}
         <Link href="/design-system" className="font-medium underline underline-offset-4">
           Generate a design system
         </Link>{" "}

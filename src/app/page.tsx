@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Free Color Palette Generator & Design Tools · ChromaBrew",
     description:
-      "Generate color palettes instantly or browse 1000 curated schemes. WCAG contrast checks, image color extraction, design tokens, and Tailwind or shadcn exports — free, no sign-up.",
+      "Generate color palettes instantly or browse a million ready-made palettes. WCAG contrast checks, image color extraction, design tokens, and Tailwind or shadcn exports — free, no sign-up.",
     url: "/",
     type: "website",
     images: [defaultOgImage],
