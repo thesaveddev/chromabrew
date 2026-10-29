@@ -69,7 +69,7 @@ export default function BrandsIndexPage() {
               <li key={brand.name}>
                 <Link
                   href={`/brands/${brandSlug(brand.name)}`}
-                  className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white p-3 transition-shadow hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900"
+                  className="lift flex items-center gap-3 rounded-xl border border-zinc-200 bg-white p-3 hover:shadow-lg dark:border-zinc-800 dark:bg-zinc-900"
                 >
                   <span
                     className="h-12 w-12 shrink-0 rounded-lg border border-black/10"

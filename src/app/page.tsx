@@ -4,6 +4,7 @@ import { AuditSection } from "@/components/home/audit-section";
 import { HeroAuditLink } from "@/components/home/hero-audit-link";
 import { HeroColourForm } from "@/components/home/hero-form";
 import { HeroPlayground } from "@/components/home/hero-playground";
+import { ScrollReveal } from "@/components/site/scroll-reveal";
 import { LinkButton } from "@/components/ui/primitives";
 import { PLANS } from "@/lib/entitlements";
 import { siteUrl } from "@/lib/site-url";
@@ -106,30 +107,47 @@ export default function HomePage() {
       {/* Hero — the product, working, above the fold. Text on the left
           says what ChromaBrew does; the playground on the right proves it.
           No Go Pro here on purpose; it owns the header. */}
-      <section className="mx-auto flex min-h-[calc(100svh-3.5rem)] w-full max-w-6xl items-center px-4 py-12 sm:px-6 lg:py-16">
+      <section className="relative overflow-hidden">
+        {/* Signature backdrop: a dot field (design-system graph paper) washed
+            with brand hues and a slow-spinning hue-wheel glow. Static CSS only;
+            the spin is motion-safe so reduced-motion users get a still frame. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 [mask-image:radial-gradient(ellipse_80%_70%_at_50%_35%,black,transparent)]"
+        >
+          <div className="absolute inset-0 bg-[radial-gradient(rgba(24,24,27,0.09)_1px,transparent_1px)] bg-[size:22px_22px] dark:bg-[radial-gradient(rgba(255,255,255,0.08)_1px,transparent_1px)]" />
+          <div className="absolute -left-48 top-1/4 h-[30rem] w-[30rem] rounded-full bg-[radial-gradient(circle,rgba(124,58,237,0.22),transparent_65%)] blur-3xl dark:bg-[radial-gradient(circle,rgba(124,58,237,0.28),transparent_65%)]" />
+          <div className="absolute -right-40 bottom-0 h-[26rem] w-[26rem] rounded-full bg-[radial-gradient(circle,rgba(14,165,233,0.18),transparent_65%)] blur-3xl dark:bg-[radial-gradient(circle,rgba(14,165,233,0.25),transparent_65%)]" />
+          <div className="absolute -right-24 -top-24 h-80 w-80 rounded-full bg-[conic-gradient(from_90deg,#ef4444,#f59e0b,#10b981,#3b82f6,#8b5cf6,#ef4444)] opacity-[0.14] blur-2xl motion-safe:animate-[spin_60s_linear_infinite] dark:opacity-[0.22]" />
+        </div>
+        <div className="relative mx-auto flex min-h-[calc(100svh-3.5rem)] w-full max-w-6xl items-center px-4 py-12 sm:px-6 lg:py-16">
         <div className="grid w-full items-center gap-10 lg:grid-cols-[0.95fr_1.05fr]">
           <div className="text-center lg:text-left">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">
+            <p className="hero-enter text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">
               Free color toolkit · No sign-up
             </p>
-            <h1 className="mt-4 text-4xl font-bold leading-[1.06] tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-5xl">
+            <h1 className="hero-enter mt-4 text-4xl font-bold leading-[1.06] tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-5xl [--hero-delay:70ms]">
               Turn one color into a design system.
             </h1>
-            <p className="mx-auto mt-4 max-w-xl text-lg leading-8 text-zinc-600 dark:text-zinc-400 lg:mx-0">
+            <p className="hero-enter mx-auto mt-4 max-w-xl text-lg leading-8 text-zinc-600 dark:text-zinc-400 lg:mx-0 [--hero-delay:140ms]">
               Palettes, WCAG contrast, tokens, and dark mode — ready to ship.
             </p>
-            <div className="mt-7 flex justify-center lg:justify-start">
+            <div className="hero-enter mt-7 flex justify-center lg:justify-start [--hero-delay:210ms]">
               <HeroColourForm />
             </div>
-            <p className="mt-4 text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="hero-enter mt-4 text-sm text-zinc-500 dark:text-zinc-400 [--hero-delay:280ms]">
               Free, no account — <HeroAuditLink />.
             </p>
           </div>
-          <HeroPlayground />
+          <div className="hero-enter [--hero-delay:180ms]">
+            <HeroPlayground />
+          </div>
+        </div>
         </div>
       </section>
 
       {/* Two workflows — pick your job, one click each. */}
+      <ScrollReveal>
       <section
         aria-labelledby="workflows-heading"
         className="mx-auto w-full max-w-5xl px-4 pb-14 sm:px-6"
@@ -199,10 +217,14 @@ export default function HomePage() {
           </article>
         </div>
       </section>
+      </ScrollReveal>
 
-      <AuditSection />
+      <ScrollReveal>
+        <AuditSection />
+      </ScrollReveal>
 
       {/* Capabilities — what the generator guarantees, stated once. */}
+      <ScrollReveal>
       <section
         aria-labelledby="capabilities-heading"
         className="mx-auto w-full max-w-5xl px-4 py-14 sm:px-6"
@@ -236,8 +258,10 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+      </ScrollReveal>
 
       {/* Popular tools — grouped by intent, full directory on /tools. */}
+      <ScrollReveal>
       <section
         aria-labelledby="tools-heading"
         className="border-t border-zinc-200 bg-zinc-50 py-14 dark:border-zinc-800 dark:bg-zinc-900/60"
@@ -282,6 +306,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+      </ScrollReveal>
 
       {/* Pro — discoverable, not dominant. Free stays the primary path. */}
       <section
@@ -303,7 +328,7 @@ export default function HomePage() {
           plans below.
         </p>
         <div className="mt-8 grid gap-4 text-left sm:grid-cols-2">
-          <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+          <ScrollReveal className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
             <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
               {PLANS.free.name} · {PLANS.free.price}
             </h3>
@@ -318,8 +343,8 @@ export default function HomePage() {
             <LinkButton href="/design-system" variant="secondary" className="mt-6 w-full">
               Get started
             </LinkButton>
-          </div>
-          <div className="rounded-2xl border-2 border-zinc-900 bg-white p-6 dark:border-zinc-100 dark:bg-zinc-900">
+          </ScrollReveal>
+          <ScrollReveal delay={90} className="rounded-2xl border-2 border-zinc-900 bg-white p-6 dark:border-zinc-100 dark:bg-zinc-900">
             <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
               {PLANS.pro.name} · {PLANS.pro.price}/{PLANS.pro.period}
             </h3>
@@ -334,13 +359,13 @@ export default function HomePage() {
             <LinkButton href="/pricing" variant="primary" className="mt-6 w-full">
               See Pro plans
             </LinkButton>
-          </div>
+          </ScrollReveal>
         </div>
       </section>
 
       {/* Final CTA — both journeys once more, matching the hero. */}
       <section className="mx-auto w-full max-w-5xl px-4 pb-16 sm:px-6">
-        <div className="rounded-2xl bg-zinc-900 px-6 py-12 text-center sm:px-12">
+        <ScrollReveal className="rounded-2xl bg-zinc-900 px-6 py-12 text-center sm:px-12">
           <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
             Start with one color — or fix the site you already shipped.
           </h2>
@@ -361,7 +386,7 @@ export default function HomePage() {
               Audit a website
             </LinkButton>
           </div>
-        </div>
+        </ScrollReveal>
       </section>
 
       {/* FAQ — kept for search, now including Pro. */}

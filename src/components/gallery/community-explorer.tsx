@@ -7,6 +7,7 @@ import {
   filterCommunityEntries,
   type CommunityEntry,
 } from "@/lib/gallery";
+import { ScrollReveal } from "@/components/site/scroll-reveal";
 import { VoteButton } from "./vote-button";
 
 function strategyLabel(id: string): string {
@@ -88,13 +89,13 @@ export function CommunityExplorer({
 
       {results.length > 0 ? (
         <ul className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {results.map((entry) => (
-            <li key={entry.id}>
+          {results.map((entry, i) => (
+            <ScrollReveal as="li" key={entry.id} delay={(i % 9) * 35}>
               {/* The indexable entry page, not the share view: this card is
                   the internal path crawlers follow to the community catalog. */}
               <Link
                 href={`/gallery/${entry.id}`}
-                className="group block overflow-hidden rounded-xl border border-zinc-200 bg-white transition-colors hover:border-zinc-400 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-600"
+                className="group lift block overflow-hidden rounded-xl border border-zinc-200 bg-white hover:border-zinc-400 hover:shadow-lg dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-600"
               >
                 <span className="flex h-24" aria-hidden="true">
                   {entry.colors.map((hex) => (
@@ -123,7 +124,7 @@ export function CommunityExplorer({
                   compact
                 />
               </div>
-            </li>
+            </ScrollReveal>
           ))}
         </ul>
       ) : (

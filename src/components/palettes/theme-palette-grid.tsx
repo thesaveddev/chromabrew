@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { GalleryPalette } from "@/lib/palettes";
+import { ScrollReveal } from "@/components/site/scroll-reveal";
 import { PaletteCard } from "./palette-card";
 
 /** Cards rendered before the visitor asks for more. Keeps huge themes light. */
@@ -15,10 +16,10 @@ export function ThemePaletteGrid({ palettes }: { palettes: GalleryPalette[] }) {
   return (
     <>
       <ul className="mt-8 grid gap-4 sm:grid-cols-2">
-        {visible.map((palette) => (
-          <li key={palette.slug}>
+        {visible.map((palette, i) => (
+          <ScrollReveal as="li" key={palette.slug} delay={(i % PAGE_SIZE) * 35}>
             <PaletteCard palette={palette} />
-          </li>
+          </ScrollReveal>
         ))}
       </ul>
       {hasMore && (

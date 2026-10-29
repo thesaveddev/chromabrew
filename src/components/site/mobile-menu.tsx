@@ -39,7 +39,7 @@ export function MobileMenu({ proHref }: { proHref: string }) {
       {open ? (
         <div
           id="mobile-menu"
-          className="absolute inset-x-0 top-full z-50 border-b border-zinc-200 bg-white px-4 pb-6 pt-2 shadow-lg dark:border-zinc-800 dark:bg-zinc-950"
+          className="menu-pop absolute inset-x-0 top-full z-50 origin-top border-b border-zinc-200 bg-white px-4 pb-6 pt-2 shadow-lg dark:border-zinc-800 dark:bg-zinc-950"
         >
           <nav aria-label="Mobile" className="flex flex-col">
             <Link

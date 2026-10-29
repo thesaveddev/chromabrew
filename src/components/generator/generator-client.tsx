@@ -21,7 +21,9 @@ import type {
   ThemeMode,
   TypeScaleRatio,
 } from "@/lib/design-system/types";
-import { randomTrio } from "@/lib/design-system/colour/refine";
+import { normaliseHue, randomPleasantHex, randomTrio } from "@/lib/design-system/colour/refine";
+import { deriveCompanions } from "@/lib/design-system/colour/companions";
+import { hexToRgb, rgbToOklch } from "@/lib/design-system/colour/convert";
 import { regeneratePalette } from "@/lib/design-system/palette/generate";
 import { applyRefinement } from "@/lib/design-system/colour/refine";
 import { track } from "@/lib/analytics";
@@ -65,6 +67,12 @@ export function GeneratorWorkspace() {
   const [mode, setMode] = useState<ThemeMode>("light");
   const [preview, setPreview] = useState<PreviewId>("saas");
   const [pickingColours, setPickingColours] = useState(false);
+  /** Locked trio slots survive Random and primary changes. UI-only, not saved. */
+  const [lockedSlots, setLockedSlots] = useState({
+    primary: false,
+    secondary: false,
+    accent: false,
+  });
   const [projectId, setProjectId] = useState<string | null>(null);
   const [projectName, setProjectName] = useState("");
   const [saving, setSaving] = useState(false);
@@ -152,33 +160,97 @@ export function GeneratorWorkspace() {
 
   /** Submit picked colours -- one commit, instant system-wide update. */
   const applyColours = useCallback((next: { primary?: string; secondary?: string; accent?: string }) => {
-    setConfig((prev) =>
-      normaliseConfig({
+    setConfig((prev) => {
+      // A new primary invalidates companions picked for the old one — same
+      // rule as Random: unless this same commit also sets them (or the slot
+      // is locked), drop explicit secondary/accent so they re-derive from
+      // the new primary by role. Locked companions are pinned instead.
+      const primaryChanged =
+        !!next.primary && next.primary.toLowerCase() !== prev.primary.toLowerCase();
+      const oldDerived = primaryChanged ? deriveCompanions(prev.primary) : null;
+      const pinSecondary =
+        primaryChanged && lockedSlots.secondary && next.secondary === undefined
+          ? (prev.secondary ?? oldDerived?.secondary)
+          : undefined;
+      const pinAccent =
+        primaryChanged && lockedSlots.accent && next.accent === undefined
+          ? (prev.accent ?? oldDerived?.accent)
+          : undefined;
+      const resetSecondary =
+        primaryChanged && next.secondary === undefined && !lockedSlots.secondary;
+      const resetAccent = primaryChanged && next.accent === undefined && !lockedSlots.accent;
+      return normaliseConfig({
         ...prev,
         ...(next.primary ? { primary: next.primary } : {}),
-        ...(next.secondary !== undefined ? { secondary: next.secondary } : {}),
-        ...(next.accent !== undefined ? { accent: next.accent } : {}),
-      }),
-    );
-  }, []);
+        ...(next.secondary !== undefined
+          ? { secondary: next.secondary }
+          : pinSecondary
+            ? { secondary: pinSecondary }
+            : resetSecondary
+              ? { secondary: undefined }
+              : {}),
+        ...(next.accent !== undefined
+          ? { accent: next.accent }
+          : pinAccent
+            ? { accent: pinAccent }
+            : resetAccent
+              ? { accent: undefined }
+              : {}),
+      });
+    });
+  }, [lockedSlots]);
 
   const randomize = useCallback(() => {
-    // Randomise the *primary* only — companions derive from it by role, so
-    // a fresh seed always yields a coherent new trio instead of reusing
-    // companions picked for the old one.
-    const { primary } = randomTrio();
-    setConfig((prev) =>
-      normaliseConfig({
+    // Fresh trio, minus whatever is locked. Locked slots keep their exact
+    // colour (auto slots materialise on lock); unlocked companions follow the
+    // new primary when it changes, or roll matching variants when it is
+    // pinned — so Random with a locked primary still gives new colours.
+    const fresh = randomTrio();
+    setConfig((prev) => {
+      const newPrimary = lockedSlots.primary ? prev.primary : fresh.primary;
+      const oldDerived = deriveCompanions(prev.primary);
+      const oldSecondary = prev.secondary ?? oldDerived.secondary;
+      const oldAccent = prev.accent ?? oldDerived.accent;
+      let newSecondary: string | undefined;
+      let newAccent: string | undefined;
+      if (lockedSlots.secondary) {
+        newSecondary = oldSecondary;
+      } else if (lockedSlots.primary) {
+        const h = rgbToOklch(hexToRgb(newPrimary)).h;
+        newSecondary = randomPleasantHex(
+          normaliseHue(h + (Math.random() < 0.5 ? -35 : 35)),
+        );
+      } else {
+        newSecondary = fresh.secondary;
+      }
+      if (lockedSlots.accent) {
+        newAccent = oldAccent;
+      } else if (lockedSlots.primary) {
+        const h = rgbToOklch(hexToRgb(newPrimary)).h;
+        newAccent = randomPleasantHex(
+          normaliseHue(h + 150 + Math.random() * 60),
+          0.55 + Math.random() * 0.2,
+          0.14 + Math.random() * 0.08,
+        );
+      } else {
+        newAccent = fresh.accent;
+      }
+      // Auto slots stay auto unless locked: undefined re-derives from the new
+      // primary by role. Locked auto slots pin their current colour instead.
+      const secondaryWasAuto = prev.secondary === undefined;
+      const accentWasAuto = prev.accent === undefined;
+      return normaliseConfig({
         ...prev,
-        primary,
-        secondary: undefined,
-        accent: undefined,
+        primary: newPrimary,
+        secondary:
+          lockedSlots.secondary || !secondaryWasAuto ? newSecondary : undefined,
+        accent: lockedSlots.accent || !accentWasAuto ? newAccent : undefined,
         lockedIndices: [],
         paletteOverrides: {},
-      }),
-    );
+      });
+    });
     track("palette_randomized");
-  }, []);
+  }, [lockedSlots]);
 
   const setStrategy = (strategy: PaletteStrategyId) => {
     track("palette_strategy_changed", { strategy });
@@ -214,11 +286,27 @@ export function GeneratorWorkspace() {
   const setRefinement = (refinement: Refinement) =>
     setConfig((prev) => normaliseConfig({ ...prev, refinement }));
 
+  const toggleSlotLock = useCallback(
+    (slot: "primary" | "secondary" | "accent") => {
+      // Locking an auto slot pins its current colour so the lock is visible
+      // immediately instead of waiting for the next Random.
+      if (!lockedSlots[slot] && slot !== "primary") {
+        const derived = deriveCompanions(config.primary);
+        const current = config[slot] ?? (slot === "secondary" ? derived.secondary : derived.accent);
+        setConfig((prev) => normaliseConfig({ ...prev, [slot]: current }));
+      }
+      setLockedSlots((prev) => ({ ...prev, [slot]: !prev[slot] }));
+    },
+    [lockedSlots, config],
+  );
+
   const removeSecondary = useCallback(() => {
+    setLockedSlots((prev) => ({ ...prev, secondary: false }));
     setConfig((prev) => normaliseConfig({ ...prev, secondary: undefined }));
   }, []);
 
   const removeAccent = useCallback(() => {
+    setLockedSlots((prev) => ({ ...prev, accent: false }));
     setConfig((prev) => normaliseConfig({ ...prev, accent: undefined }));
   }, []);
 
@@ -419,6 +507,8 @@ export function GeneratorWorkspace() {
             accent={config.accent}
             derivedSecondary={system.primitives.colors.secondarySeed.hex}
             derivedAccent={system.primitives.colors.accentSeed.hex}
+            locked={lockedSlots}
+            onToggleLock={toggleSlotLock}
             onApply={applyColours}
             onRemoveSecondary={removeSecondary}
             onRemoveAccent={removeAccent}

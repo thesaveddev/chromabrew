@@ -8,7 +8,7 @@ export function PaletteCard({ palette }: { palette: GalleryPalette }) {
   return (
     <Link
       href={href}
-      className="group block overflow-hidden rounded-xl border border-zinc-200 bg-white transition-shadow hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900"
+      className="group lift block overflow-hidden rounded-xl border border-zinc-200 bg-white hover:shadow-lg dark:border-zinc-800 dark:bg-zinc-900"
     >
       <span className="flex h-20" aria-hidden>
         {palette.colors.map((color) => (

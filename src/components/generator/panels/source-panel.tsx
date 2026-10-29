@@ -24,6 +24,8 @@ export function SourcePanel({
   accent,
   derivedSecondary,
   derivedAccent,
+  locked,
+  onToggleLock,
   onApply,
   onRemoveSecondary,
   onRemoveAccent,
@@ -35,6 +37,9 @@ export function SourcePanel({
   /** Auto-derived secondary/accent from the palette (when the user hasn't chosen one). */
   derivedSecondary?: string;
   derivedAccent?: string;
+  /** Locked trio slots survive Random and primary changes. */
+  locked: { primary: boolean; secondary: boolean; accent: boolean };
+  onToggleLock: (slot: SlotId) => void;
   /** Commit a colour -- the whole system updates instantly. */
   onApply: (next: { primary?: string; secondary?: string; accent?: string }) => void;
   onRemoveSecondary?: () => void;
@@ -106,6 +111,8 @@ export function SourcePanel({
           {...SLOT_META[0]}
           value={values.primary!}
           isActive={activeSlot === "primary"}
+          locked={locked.primary}
+          onToggleLock={() => onToggleLock("primary")}
           onChange={(hex) => applySlot("primary", hex)}
           onSelect={() => setActiveSlot("primary")}
         />
@@ -114,6 +121,8 @@ export function SourcePanel({
             {...SLOT_META[1]}
             value={secondary!}
             isActive={activeSlot === "secondary"}
+            locked={locked.secondary}
+            onToggleLock={() => onToggleLock("secondary")}
             onChange={(hex) => applySlot("secondary", hex)}
             onSelect={() => setActiveSlot("secondary")}
             onRemove={onRemoveSecondary}
@@ -124,6 +133,8 @@ export function SourcePanel({
             value={derivedSecondary}
             isActive={activeSlot === "secondary"}
             auto
+            locked={locked.secondary}
+            onToggleLock={() => onToggleLock("secondary")}
             onChange={(hex) => applySlot("secondary", hex)}
             onSelect={() => setActiveSlot("secondary")}
           />
@@ -148,6 +159,8 @@ export function SourcePanel({
             {...SLOT_META[2]}
             value={accent!}
             isActive={activeSlot === "accent"}
+            locked={locked.accent}
+            onToggleLock={() => onToggleLock("accent")}
             onChange={(hex) => applySlot("accent", hex)}
             onSelect={() => setActiveSlot("accent")}
             onRemove={onRemoveAccent}
@@ -158,6 +171,8 @@ export function SourcePanel({
             value={derivedAccent}
             isActive={activeSlot === "accent"}
             auto
+            locked={locked.accent}
+            onToggleLock={() => onToggleLock("accent")}
             onChange={(hex) => applySlot("accent", hex)}
             onSelect={() => setActiveSlot("accent")}
           />
@@ -260,6 +275,8 @@ function ColourSlot({
   value,
   isActive,
   auto,
+  locked,
+  onToggleLock,
   onChange,
   onSelect,
   onRemove,
@@ -270,6 +287,8 @@ function ColourSlot({
   isActive: boolean;
   /** When true, this value is auto-derived from the primary rather than user-picked. */
   auto?: boolean;
+  locked?: boolean;
+  onToggleLock?: () => void;
   onChange: (hex: string) => void;
   onSelect: () => void;
   onRemove?: () => void;
@@ -336,21 +355,42 @@ function ColourSlot({
             <path d="M6 9l6 6 6-6" />
           </svg>
         </button>
-        {onRemove && (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onRemove();
-            }}
-            title={`Remove ${label}`}
-            className="shrink-0 rounded-md p-1 text-zinc-400 transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/30 dark:hover:text-red-400"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-              <path d="M18 6L6 18M6 6l12 12" />
-            </svg>
-          </button>
-        )}
+        <span className="flex shrink-0 items-center gap-1">
+          {onToggleLock && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleLock();
+              }}
+              title={locked ? `Unlock ${label}` : `Lock ${label}`}
+              aria-label={locked ? `Unlock ${label}` : `Lock ${label}`}
+              aria-pressed={!!locked}
+              className={`rounded-md px-1.5 py-1 text-[10px] font-medium transition-colors ${
+                locked
+                  ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+                  : "text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+              }`}
+            >
+              {locked ? "Locked" : "Lock"}
+            </button>
+          )}
+          {onRemove && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onRemove();
+              }}
+              title={`Remove ${label}`}
+              className="rounded-md p-1 text-zinc-400 transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/30 dark:hover:text-red-400"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                <path d="M18 6L6 18M6 6l12 12" />
+              </svg>
+            </button>
+          )}
+        </span>
       </div>
 
       {expanded && (

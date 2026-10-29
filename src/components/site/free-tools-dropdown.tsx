@@ -129,7 +129,7 @@ export function FreeToolsDropdown() {
           id="free-tools-menu"
           role="menu"
           aria-label="Free tools"
-          className="absolute inset-x-0 top-full z-50 mt-2 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-2xl dark:border-zinc-700 dark:bg-zinc-900"
+          className="menu-pop absolute inset-x-0 top-full z-50 mt-2 origin-top overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-2xl dark:border-zinc-700 dark:bg-zinc-900"
         >
           <div className="flex items-center justify-between px-6 pt-5">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-400 dark:text-zinc-500">

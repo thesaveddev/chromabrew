@@ -140,6 +140,95 @@ html {
   }
 }
 
+/* Motion system: one strong ease-out, tight durations, movement only where
+   it aids comprehension (entrances, menus, hover affordances). Pressed,
+   hovered and entering states below are all gated for reduced-motion at
+   the bottom, matching the ribbon/scanner/reveal contract above. */
+:root {
+  --ease-out-strong: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Menus + popovers: fade, rise 4px, grow from the trigger edge. Origin is
+   set per menu (origin-top-left, origin-top) so the panel grows out of
+   its trigger instead of the center. */
+@keyframes menu-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.menu-pop {
+  animation: menu-pop 0.16s var(--ease-out-strong);
+  will-change: opacity, transform;
+}
+
+/* Hero entrance: rise + fade on mount, staggered via --hero-delay.
+   Above the fold, so this runs once on load rather than on scroll. */
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-enter {
+  animation: hero-rise 0.7s var(--ease-out-strong) both;
+  animation-delay: var(--hero-delay, 0ms);
+  will-change: opacity, transform;
+}
+
+/* Card lift: quiet until hovered, then rise 3px with a deeper shadow.
+   Hover-gated so touch devices never see a stuck raised state. */
+@media (hover: hover) and (pointer: fine) {
+  .lift {
+    transition:
+      transform 0.25s var(--ease-out-strong),
+      box-shadow 0.25s var(--ease-out-strong),
+      border-color 0.2s ease;
+  }
+  .lift:hover {
+    transform: translateY(-3px);
+  }
+}
+
+/* Arrow nudge for text links ending in an arrow glyph. The arrow must be
+   wrapped in its own element (e.g. <span aria-hidden>→</span>). */
+@media (hover: hover) and (pointer: fine) {
+  .arrow-nudge > :last-child {
+    display: inline-block;
+    transition: transform 0.2s var(--ease-out-strong);
+  }
+  .arrow-nudge:hover > :last-child {
+    transform: translateX(3px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menu-pop,
+  .hero-enter {
+    animation: none;
+  }
+  .lift,
+  .arrow-nudge > :last-child {
+    transition: none;
+  }
+  .lift:hover {
+    transform: none;
+  }
+  .arrow-nudge:hover > :last-child {
+    transform: none;
+  }
+}
+
 body {
   text-rendering: optimizeLegibility;
 }

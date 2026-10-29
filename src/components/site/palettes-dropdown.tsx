@@ -74,7 +74,7 @@ export function PalettesDropdown() {
           id="palettes-menu"
           role="menu"
           aria-label="Palette tools"
-          className="absolute left-0 top-full z-50 mt-2 w-72 overflow-hidden rounded-xl border border-zinc-200 bg-white py-1 shadow-lg dark:border-zinc-700 dark:bg-zinc-900"
+          className="menu-pop absolute left-0 top-full z-50 mt-2 w-72 origin-top-left overflow-hidden rounded-xl border border-zinc-200 bg-white py-1 shadow-lg dark:border-zinc-700 dark:bg-zinc-900"
         >
           {PALETTE_LINKS.map((link) => (
             <Link

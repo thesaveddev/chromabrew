@@ -75,7 +75,7 @@ export function PaletteTool({ initial = "#47003a" }: { initial?: string }) {
       <p className="text-sm text-zinc-600 dark:text-zinc-400">
         {PALETTE_STRATEGIES.find((s) => s.id === strategy)?.description} Want the
         full design system from this color?{" "}
-        <a href={`/design-system?primary=${primary.replace("#", "")}`} className="font-medium text-zinc-900 dark:text-zinc-100 underline underline-offset-4">
+        <a href={`/design-system?primary=${primary.replace("#", "")}${palette[1] ? `&secondary=${palette[1].hex.replace("#", "")}` : ""}${palette[2] ? `&accent=${palette[2].hex.replace("#", "")}` : ""}&strategy=${strategy}`} className="font-medium text-zinc-900 dark:text-zinc-100 underline underline-offset-4">
           Open it in the generator
         </a>
         .

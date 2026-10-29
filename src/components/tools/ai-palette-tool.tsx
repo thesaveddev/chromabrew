@@ -31,10 +31,15 @@ const EXAMPLE_BRIEFS = [
 ];
 
 function generatorHref(suggestion: Suggestion): string {
+  // Carry the preview you see: lead color plus the next two stops as
+  // secondary + accent, so the generator starts from the exact trio shown.
+  const preview = generatePalette(suggestion.primary, suggestion.strategy as PaletteStrategyId);
   const params = new URLSearchParams({
     primary: suggestion.primary.replace("#", ""),
     strategy: suggestion.strategy,
   });
+  if (preview[1]) params.set("secondary", preview[1].hex.replace("#", ""));
+  if (preview[2]) params.set("accent", preview[2].hex.replace("#", ""));
   return `/design-system?${params.toString()}`;
 }
 

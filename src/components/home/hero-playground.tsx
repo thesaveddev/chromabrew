@@ -183,10 +183,10 @@ export function HeroPlayground() {
             Shuffle&nbsp;&nbsp;<kbd className="rounded bg-white/20 px-1 font-sans dark:bg-zinc-900/10">space</kbd>
           </button>
           <Link
-            href={`/design-system?primary=${primary.replace("#", "")}&strategy=${strategy}`}
-            className="ml-auto text-xs font-semibold text-zinc-900 underline underline-offset-4 hover:text-zinc-600 dark:text-zinc-100 dark:hover:text-zinc-300"
+            href={`/design-system?primary=${primary.replace("#", "")}&secondary=${swatches[1].hex.replace("#", "")}&accent=${swatches[2].hex.replace("#", "")}&strategy=${strategy}`}
+            className="arrow-nudge ml-auto text-xs font-semibold text-zinc-900 underline underline-offset-4 hover:text-zinc-600 dark:text-zinc-100 dark:hover:text-zinc-300"
           >
-            Open in generator →
+            Open in generator <span aria-hidden>→</span>
           </Link>
         </div>
       </div>
