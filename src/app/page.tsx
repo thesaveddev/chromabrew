@@ -148,9 +148,9 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Product proof — one real screenshot above the fold-adjacent fold.
-          Readers skim: show the generator UI (colours, 50–950 scale, live
-          interface preview, WCAG grades) instead of describing it again. */}
+      {/* Colour break — an outside photograph for skimmers, before the
+          text-heavy workflow and capability sections. The audit section
+          further down carries the real product screenshots. */}
       <ScrollReveal>
         <section
           aria-labelledby="product-shot-heading"
@@ -158,7 +158,7 @@ export default function HomePage() {
         >
           <div className="mx-auto max-w-2xl text-center">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">
-              Real product, not a mockup
+              Colour, up close
             </p>
             <h2
               id="product-shot-heading"
@@ -167,26 +167,26 @@ export default function HomePage() {
               One color in. A working interface out.
             </h2>
             <p className="mt-3 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-              Colour roles, the 50–950 OKLCH scale, a live SaaS preview, and
-              measured WCAG passes — everything on this screen was generated
-              from a single brand color.
+              Every palette starts with a single colour. ChromaBrew turns it
+              into scales, tokens, live interface previews, and measured
+              WCAG grades — try it on yours.
             </p>
           </div>
           <figure className="mt-8">
             <div className="overflow-hidden rounded-2xl border border-zinc-200 shadow-xl dark:border-zinc-700 dark:shadow-black/40">
               <Image
-                src="/product/generator-preview.png"
-                alt="The ChromaBrew generator: primary, secondary and accent colour roles, the 50 to 950 shade scale, a live SaaS dashboard preview, and a WCAG accessibility table with passing grades."
-                width={1223}
-                height={931}
+                src="/product/color-macro.jpg"
+                alt="Macro photograph of swirling oil droplets in pink, purple, orange, yellow and blue."
+                width={1600}
+                height={1067}
                 sizes="(min-width: 1280px) 1152px, 100vw"
                 loading="lazy"
                 className="block h-auto w-full"
               />
             </div>
             <figcaption className="mx-auto mt-3 max-w-3xl text-center text-xs leading-5 text-zinc-500 dark:text-zinc-400">
-              The actual generator UI with brand color #47003A — colours,
-              scale, live preview, and accessibility grades in one place.
+              Colour mixing in the wild (photography via Unsplash). Your
+              starting point can be any single brand colour.
             </figcaption>
           </figure>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
