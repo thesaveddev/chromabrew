@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { Analytics } from "@vercel/analytics/next";
 import { SiteHeader } from "@/components/site/header";
 import { SiteFooter } from "@/components/site/footer";
 import { Providers } from "@/components/providers";
@@ -103,8 +102,17 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <SiteFooter />
           <FeedbackWidget />
         </Providers>
-        {/* Analytics only load on Vercel deployments; local/dev stays silent. */}
-        {process.env.VERCEL ? <Analytics /> : null}
+        {/* Self-hosted Umami analytics (stats.chromabrew.com). Rendered only
+            when configured; builds without the env vars stay silent. */}
+        {process.env.NEXT_PUBLIC_UMAMI_URL &&
+        process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID ? (
+          <script
+            async
+            defer
+            src={`${process.env.NEXT_PUBLIC_UMAMI_URL}/script.js`}
+            data-website-id={process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID}
+          />
+        ) : null}
       </body>
     </html>
   );

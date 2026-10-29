@@ -137,10 +137,11 @@ export default function PrivacyPage() {
             5. Analytics
           </h2>
           <p className="mt-2">
-            The site uses privacy-conscious deployment analytics (Vercel
-            Analytics) to understand aggregate usage such as page views. No
-            advertising identifiers are set by ChromaBrew itself, and analytics
-            data is never joined with account data for ad targeting.
+            The site uses privacy-conscious self-hosted analytics (Umami) to
+            understand aggregate usage such as page views, referrers, and
+            popular pages. No advertising identifiers are set by ChromaBrew
+            itself, and analytics data is never joined with account data for
+            ad targeting.
           </p>
         </section>
 

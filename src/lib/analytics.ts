@@ -53,23 +53,24 @@ export type AnalyticsEvent =
 
 type Sink = (event: AnalyticsEvent, properties?: Record<string, string | number>) => void;
 
-interface VercelAnalyticsWindow {
-  va?: (event: string, properties?: Record<string, string | number>) => void;
+interface UmamiWindow {
+  umami?: {
+    track?: (event: string, data?: Record<string, string | number>) => void;
+  };
 }
 
 /**
- * Default sink: forward to Vercel Analytics custom events when the script
- * is active (production on Vercel). It is cookie-less and PII-free; the
- * call sites stay provider-agnostic — swap this sink to integrate
- * Plausible/GA4/PostHog later without touching product code.
+ * Default sink: forward to self-hosted Umami custom events when the tracker
+ * script is active. It is cookie-less and PII-free; the call sites stay
+ * provider-agnostic.
  */
-const vercelSink: Sink = (event, properties) => {
+const umamiSink: Sink = (event, properties) => {
   if (typeof window === "undefined") return;
-  const va = (window as unknown as VercelAnalyticsWindow).va;
-  if (typeof va === "function") va(event, properties);
+  const trackFn = (window as unknown as UmamiWindow).umami?.track;
+  if (typeof trackFn === "function") trackFn(event, properties);
 };
 
-let sink: Sink = vercelSink;
+let sink: Sink = umamiSink;
 
 export function setAnalyticsSink(next: Sink): void {
   sink = next;
