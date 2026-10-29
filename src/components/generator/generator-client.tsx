@@ -237,14 +237,20 @@ export function GeneratorWorkspace() {
       }
       // Auto slots stay auto unless locked: undefined re-derives from the new
       // primary by role. Locked auto slots pin their current colour instead.
+      // Exception: with a locked primary, auto companions would re-derive
+      // the identical colours (derivation is deterministic in the primary),
+      // so pin the freshly rolled variants explicitly — otherwise Random
+      // with a locked primary visibly changes nothing.
       const secondaryWasAuto = prev.secondary === undefined;
       const accentWasAuto = prev.accent === undefined;
+      const pinSecondary =
+        lockedSlots.secondary || !secondaryWasAuto || lockedSlots.primary;
+      const pinAccent = lockedSlots.accent || !accentWasAuto || lockedSlots.primary;
       return normaliseConfig({
         ...prev,
         primary: newPrimary,
-        secondary:
-          lockedSlots.secondary || !secondaryWasAuto ? newSecondary : undefined,
-        accent: lockedSlots.accent || !accentWasAuto ? newAccent : undefined,
+        secondary: pinSecondary ? newSecondary : undefined,
+        accent: pinAccent ? newAccent : undefined,
         lockedIndices: [],
         paletteOverrides: {},
       });
