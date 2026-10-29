@@ -190,9 +190,6 @@ export function HeroPlayground() {
           </Link>
         </div>
       </div>
-      <p className="mt-3 text-center text-xs text-zinc-500 dark:text-zinc-400">
-        Live demo — click a hex to copy, lock the keepers, shuffle the rest.
-      </p>
     </div>
   );
 }

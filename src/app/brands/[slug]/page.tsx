@@ -28,13 +28,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const brand = brandBySlug(slug);
   if (!brand) return {};
+  const hex = brand.hex.toUpperCase();
   return {
-    title: `${brand.name} Brand Color`,
-    description: `Reference color for ${brand.name} (${brand.hex}): values, scale, and measured contrast — plus how to use it as a design seed.`,
+    title: `${brand.name} Brand Color Code: ${hex} HEX, RGB & CMYK`,
+    description: `${brand.name}'s brand color is ${hex} — RGB, HSL, OKLCH and CMYK values, tint scale, and measured contrast, plus how to use it as a design seed.`,
     alternates: { canonical: `/brands/${slug}` },
     openGraph: {
-      title: `${brand.name} Brand Color (${brand.hex}) · ChromaBrew`,
-      description: `The widely cited ${brand.name} anchor color with values, scale, and contrast — reference only, not official guidelines.`,
+      title: `${brand.name} Brand Color ${hex} · ChromaBrew`,
+      description: `What is ${brand.name}'s brand color? The widely cited anchor ${hex} with every format, scale, and contrast — reference only, not official guidelines.`,
       url: `/brands/${slug}`,
       type: "article",
     },
@@ -56,7 +57,7 @@ export default async function BrandDetailPage({ params }: Props) {
         data={{
           "@context": "https://schema.org",
           "@type": "Article",
-          headline: `${brand.name} Brand Color`,
+          headline: `${brand.name} Brand Color ${brand.hex.toUpperCase()}`,
           description: copy.lede,
           author: {
             "@type": "Person",
@@ -69,6 +70,38 @@ export default async function BrandDetailPage({ params }: Props) {
             url: siteUrl,
           },
           mainEntityOfPage: `${siteUrl}/brands/${slug}`,
+        }}
+      />
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: [
+            {
+              "@type": "Question",
+              name: `What is ${brand.name}'s brand color?`,
+              acceptedAnswer: {
+                "@type": "Answer",
+                text: `The widely cited ${brand.name} brand color is ${brand.hex.toUpperCase()} (${ref.formats.rgb}, ${ref.formats.cmyk}). It is a reference value, not official brand guidelines.`,
+              },
+            },
+            {
+              "@type": "Question",
+              name: `What is the ${brand.name} color in RGB and CMYK?`,
+              acceptedAnswer: {
+                "@type": "Answer",
+                text: `${brand.hex.toUpperCase()} converts to ${ref.formats.rgb}, ${ref.formats.hsl}, and ${ref.formats.cmyk}. Open the page for the full tint scale and copy-ready values.`,
+              },
+            },
+            {
+              "@type": "Question",
+              name: `Can I use the ${brand.name} color in my own design?`,
+              acceptedAnswer: {
+                "@type": "Answer",
+                text: `Use it as a seed, not a rule: confirm the current value against ${brand.name}'s own materials before shipping anything in their identity, and derive accessible steps in the generator.`,
+              },
+            },
+          ],
         }}
       />
       <nav aria-label="Breadcrumb" className="text-xs text-zinc-500 dark:text-zinc-400">
@@ -89,7 +122,7 @@ export default async function BrandDetailPage({ params }: Props) {
           style={{ backgroundColor: brand.hex }}
         >
           <h1 className="text-2xl font-bold text-white mix-blend-difference">
-            {brand.name}
+            {brand.name} brand color {brand.hex.toUpperCase()}
           </h1>
           <CopyHexButton hex={brand.hex} />
         </div>
@@ -194,6 +227,14 @@ export default async function BrandDetailPage({ params }: Props) {
         </div>
       </section>
 
+      <section aria-labelledby="brand-faq" className="mt-10">
+        <h2 id="brand-faq" className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">Frequently asked questions</h2>
+        <div className="mt-4 space-y-4 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+          <div><p className="font-semibold text-zinc-900 dark:text-zinc-100">What is the brand color?</p><p className="mt-1">The widely cited anchor is {brand.hex.toUpperCase()} ({ref.formats.rgb}, {ref.formats.cmyk}) — a reference value, not official guidelines.</p></div>
+          <div><p className="font-semibold text-zinc-900 dark:text-zinc-100">What are the RGB and CMYK values?</p><p className="mt-1">{brand.hex.toUpperCase()} converts to {ref.formats.rgb}, {ref.formats.hsl}, and {ref.formats.cmyk}. The values table above has every format copy-ready.</p></div>
+          <div><p className="font-semibold text-zinc-900 dark:text-zinc-100">Can I use it in my own design?</p><p className="mt-1">Use it as a seed, not a rule — confirm against official materials before shipping in their identity.</p></div>
+        </div>
+      </section>
       <section aria-labelledby="related" className="mt-10 border-t border-zinc-200 pt-8 dark:border-zinc-800">
         <h2 id="related" className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
           Related brands

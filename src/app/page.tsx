@@ -106,32 +106,23 @@ export default function HomePage() {
       {/* Hero — the product, working, above the fold. Text on the left
           says what ChromaBrew does; the playground on the right proves it.
           No Go Pro here on purpose; it owns the header. */}
-      <section className="mx-auto w-full max-w-6xl px-4 pb-12 pt-12 sm:px-6 lg:pt-16">
-        <div className="grid items-center gap-10 lg:grid-cols-[0.95fr_1.05fr]">
+      <section className="mx-auto flex min-h-[calc(100svh-3.5rem)] w-full max-w-6xl items-center px-4 py-12 sm:px-6 lg:py-16">
+        <div className="grid w-full items-center gap-10 lg:grid-cols-[0.95fr_1.05fr]">
           <div className="text-center lg:text-left">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">
               Free color toolkit · No sign-up
             </p>
             <h1 className="mt-4 text-4xl font-bold leading-[1.06] tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-5xl">
-              Generate palettes. Build design systems. Fix your website.
+              Turn one color into a design system.
             </h1>
-            <p className="mx-auto mt-5 max-w-xl text-lg leading-8 text-zinc-600 dark:text-zinc-400 lg:mx-0">
-              Generate harmonious palettes, turn one color into a
-              WCAG-checked design system with production-ready tokens — or
-              audit a live website for contrast and accessibility issues.
+            <p className="mx-auto mt-4 max-w-xl text-lg leading-8 text-zinc-600 dark:text-zinc-400 lg:mx-0">
+              Palettes, WCAG contrast, tokens, and dark mode — ready to ship.
             </p>
-            <div className="mt-8 flex justify-center lg:justify-start">
+            <div className="mt-7 flex justify-center lg:justify-start">
               <HeroColourForm />
             </div>
             <p className="mt-4 text-sm text-zinc-500 dark:text-zinc-400">
-              Free, no account — <HeroAuditLink />.{" "}
-              <Link
-                href="/projects"
-                className="font-medium text-zinc-700 underline decoration-zinc-300 underline-offset-4 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-zinc-100"
-              >
-                Save to My Projects
-              </Link>{" "}
-              only needs a sign-in.
+              Free, no account — <HeroAuditLink />.
             </p>
           </div>
           <HeroPlayground />
