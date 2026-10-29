@@ -98,7 +98,7 @@ export function HeroDotField() {
 
     function draw(now: number) {
       g.clearRect(0, 0, w, h);
-      const drift = reduced.matches ? 0 : Math.sin(now / 2400) * 3;
+      const drift = reduced.matches ? 0 : Math.sin(now / 4200) * 3;
       const ox = parallax.x * 10;
       const oy = parallax.y * 8 + drift;
 
@@ -127,10 +127,10 @@ export function HeroDotField() {
       raf = 0;
       if (!running || !inView) return;
       // Ease pointer + parallax toward their targets for a premium settle.
-      eased.x += (target.x - eased.x) * 0.12;
-      eased.y += (target.y - eased.y) * 0.12;
-      parallax.x += (parallaxTarget.x - parallax.x) * 0.06;
-      parallax.y += (parallaxTarget.y - parallax.y) * 0.06;
+      eased.x += (target.x - eased.x) * 0.07;
+      eased.y += (target.y - eased.y) * 0.07;
+      parallax.x += (parallaxTarget.x - parallax.x) * 0.035;
+      parallax.y += (parallaxTarget.y - parallax.y) * 0.035;
       draw(performance.now());
       raf = requestAnimationFrame(loop);
     }
