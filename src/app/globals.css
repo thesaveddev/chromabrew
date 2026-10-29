@@ -186,6 +186,29 @@ html {
   will-change: opacity, transform;
 }
 
+/* Hero gradient drift: the backdrop blobs wander on slow opposing loops so
+   the hero feels alive without demanding attention. Transform-only (GPU
+   cheap); applied with Tailwind's motion-safe: variant so reduced-motion
+   visitors get still gradients. */
+@keyframes hero-drift-a {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(6rem, 3rem, 0) scale(1.12);
+  }
+}
+@keyframes hero-drift-b {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1.08);
+  }
+  50% {
+    transform: translate3d(-5rem, -3.5rem, 0) scale(1);
+  }
+}
+
 /* Card lift: quiet until hovered, then rise 3px with a deeper shadow.
    Hover-gated so touch devices never see a stuck raised state. */
 @media (hover: hover) and (pointer: fine) {

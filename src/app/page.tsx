@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { AuditSection } from "@/components/home/audit-section";
 import { HeroAuditLink } from "@/components/home/hero-audit-link";
@@ -110,13 +111,15 @@ export default function HomePage() {
           No Go Pro here on purpose; it owns the header. */}
       <section className="relative overflow-hidden">
         {/* Signature backdrop: an interactive dot field (design-system graph
-            paper) washed with brand hues and a slow-spinning hue-wheel glow.
-            The canvas covers the full hero and reacts to the pointer;
-            reduced-motion visitors get a single static frame. */}
+            paper) washed with brand hues that drift on slow opposing loops,
+            plus a slow-spinning hue-wheel glow. The canvas covers the full
+            hero and reacts to the pointer; it stays quieter in dark mode
+            where the gradients lead. Reduced-motion visitors get still
+            gradients and a single static dot frame. */}
         <div aria-hidden className="pointer-events-none absolute inset-0">
           <HeroDotField />
-          <div className="absolute -left-48 top-1/4 h-[30rem] w-[30rem] rounded-full bg-[radial-gradient(circle,rgba(124,58,237,0.22),transparent_65%)] blur-3xl dark:bg-[radial-gradient(circle,rgba(124,58,237,0.28),transparent_65%)]" />
-          <div className="absolute -right-40 bottom-0 h-[26rem] w-[26rem] rounded-full bg-[radial-gradient(circle,rgba(14,165,233,0.18),transparent_65%)] blur-3xl dark:bg-[radial-gradient(circle,rgba(14,165,233,0.25),transparent_65%)]" />
+          <div className="absolute -left-48 top-1/4 h-[30rem] w-[30rem] rounded-full bg-[radial-gradient(circle,rgba(124,58,237,0.22),transparent_65%)] blur-3xl motion-safe:animate-[hero-drift-a_26s_ease-in-out_infinite] dark:bg-[radial-gradient(circle,rgba(124,58,237,0.28),transparent_65%)]" />
+          <div className="absolute -right-40 bottom-0 h-[26rem] w-[26rem] rounded-full bg-[radial-gradient(circle,rgba(14,165,233,0.18),transparent_65%)] blur-3xl motion-safe:animate-[hero-drift-b_34s_ease-in-out_infinite] dark:bg-[radial-gradient(circle,rgba(14,165,233,0.25),transparent_65%)]" />
           <div className="absolute -right-24 -top-24 h-80 w-80 rounded-full bg-[conic-gradient(from_90deg,#ef4444,#f59e0b,#10b981,#3b82f6,#8b5cf6,#ef4444)] opacity-[0.14] blur-2xl motion-safe:animate-[spin_60s_linear_infinite] dark:opacity-[0.22]" />
         </div>
         <div className="relative mx-auto flex min-h-[calc(100svh-3.5rem)] w-full max-w-6xl items-center px-4 py-12 sm:px-6 lg:py-16">
@@ -144,6 +147,59 @@ export default function HomePage() {
         </div>
         </div>
       </section>
+
+      {/* Product proof — one real screenshot above the fold-adjacent fold.
+          Readers skim: show the generator UI (colours, 50–950 scale, live
+          interface preview, WCAG grades) instead of describing it again. */}
+      <ScrollReveal>
+        <section
+          aria-labelledby="product-shot-heading"
+          className="mx-auto w-full max-w-6xl px-4 pb-14 sm:px-6"
+        >
+          <div className="mx-auto max-w-2xl text-center">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">
+              Real product, not a mockup
+            </p>
+            <h2
+              id="product-shot-heading"
+              className="mt-3 text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-3xl"
+            >
+              One color in. A working interface out.
+            </h2>
+            <p className="mt-3 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+              Colour roles, the 50–950 OKLCH scale, a live SaaS preview, and
+              measured WCAG passes — everything on this screen was generated
+              from a single brand color.
+            </p>
+          </div>
+          <figure className="mt-8">
+            <div className="overflow-hidden rounded-2xl border border-zinc-200 shadow-xl dark:border-zinc-700 dark:shadow-black/40">
+              <Image
+                src="/product/generator-preview.png"
+                alt="The ChromaBrew generator: primary, secondary and accent colour roles, the 50 to 950 shade scale, a live SaaS dashboard preview, and a WCAG accessibility table with passing grades."
+                width={1223}
+                height={931}
+                sizes="(min-width: 1280px) 1152px, 100vw"
+                loading="lazy"
+                className="block h-auto w-full"
+              />
+            </div>
+            <figcaption className="mx-auto mt-3 max-w-3xl text-center text-xs leading-5 text-zinc-500 dark:text-zinc-400">
+              The actual generator UI with brand color #47003A — colours,
+              scale, live preview, and accessibility grades in one place.
+            </figcaption>
+          </figure>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
+            <LinkButton href="/design-system">Open the generator</LinkButton>
+            <Link
+              href="/audit"
+              className="arrow-nudge text-sm font-semibold text-zinc-900 underline underline-offset-4 hover:text-zinc-600 dark:text-zinc-100 dark:hover:text-zinc-300"
+            >
+              Or audit a live website <span aria-hidden>→</span>
+            </Link>
+          </div>
+        </section>
+      </ScrollReveal>
 
       {/* Two workflows — pick your job, one click each. */}
       <ScrollReveal>

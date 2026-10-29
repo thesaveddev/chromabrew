@@ -8,8 +8,9 @@ import { useEffect, useRef } from "react";
  * A full-bleed canvas grid that covers the whole hero (its parent is
  * `absolute inset-0`) and responds to the pointer: dots near the cursor
  * brighten, tint violet and swell slightly, while the whole layer drifts
- * with a gentle parallax. Idle state is a clearly visible dot grid, not
- * a whisper.
+ * with a gentle parallax. Idle state is a clearly visible dot grid in
+ * light mode and a quieter wash in dark mode, where the animated
+ * gradients carry the backdrop instead.
  *
  * Performance + a11y: single canvas, DPR-capped, rAF loop that pauses
  * offscreen; `prefers-reduced-motion` renders one static frame and
@@ -90,10 +91,10 @@ export function HeroDotField() {
       // Hot dots near the cursor pick up a violet tint; idle dots stay neutral.
       if (hot > 0.01) {
         return dark
-          ? `rgba(167,139,250,${(0.28 + hot * 0.62).toFixed(3)})`
+          ? `rgba(167,139,250,${(0.16 + hot * 0.5).toFixed(3)})`
           : `rgba(109,40,217,${(0.24 + hot * 0.56).toFixed(3)})`;
       }
-      return dark ? `rgba(255,255,255,${alpha.toFixed(3)})` : `rgba(24,24,27,${alpha.toFixed(3)})`;
+      return dark ? `rgba(255,255,255,${(alpha * 0.45).toFixed(3)})` : `rgba(24,24,27,${alpha.toFixed(3)})`;
     };
 
     function draw(now: number) {
