@@ -14,9 +14,9 @@ import { track } from "@/lib/analytics";
 /**
  * The hero's living proof: the real palette engine, running inline.
  * Five swatches from a random primary + strategy — spacebar or button to
- * shuffle, click a lock to keep a swatch, click a hex to copy. Every
- * palette links straight into the generator with the same primary and
- * strategy, so the prettiest part of the page is also a door in.
+ * shuffle, click a hex to copy. Every palette links straight into the
+ * generator with the same primary and strategy, so the prettiest part
+ * of the page is also a door in.
  *
  * Server fallback is deterministic (brand primary, complementary) so the
  * statically rendered HTML matches the first client render; a fresh
@@ -72,26 +72,12 @@ export function HeroPlayground() {
   const [override, setOverride] = useState<Seed | null>(null);
   const primary = override?.primary ?? seed.primary;
   const strategy = override?.strategy ?? seed.strategy;
-  const [locked, setLocked] = useState<boolean[]>(() =>
-    Array.from({ length: SIZE }, () => false),
-  );
-  // Locked hexes live alongside the flags so a shuffle keeps them.
-  const [lockedHex, setLockedHex] = useState<(string | null)[]>(() =>
-    Array.from({ length: SIZE }, () => null),
-  );
   const [copied, setCopied] = useState<string | null>(null);
 
-  const swatches = generatePalette(primary, strategy, { size: SIZE }).map(
-    (swatch, i) =>
-      locked[i] && lockedHex[i]
-        ? { ...swatch, hex: (lockedHex[i] as string).toLowerCase() }
-        : swatch,
-  );
+  const swatches = generatePalette(primary, strategy, { size: SIZE });
 
   const shuffle = useCallback(() => {
     setOverride({ primary: randomPrimary(), strategy: randomStrategy() });
-    setLocked(Array.from({ length: SIZE }, () => false));
-    setLockedHex(Array.from({ length: SIZE }, () => null));
     setCopied(null);
     track("palette_randomized", { location: "hero" });
   }, []);
@@ -116,20 +102,6 @@ export function HeroPlayground() {
     return () => window.removeEventListener("keydown", onKey);
   }, [shuffle]);
 
-  const toggleLock = (index: number) => {
-    const current = generatePalette(primary, strategy, { size: SIZE })[index];
-    setLocked((prev) => {
-      const next = [...prev];
-      next[index] = !next[index];
-      return next;
-    });
-    setLockedHex((prev) => {
-      const next = [...prev];
-      next[index] = next[index] ? null : current.hex;
-      return next;
-    });
-  };
-
   const copyHex = async (hex: string) => {
     const ok = await copyToClipboard(hex);
     if (ok) {
@@ -145,21 +117,12 @@ export function HeroPlayground() {
         aria-label={`Sample ${strategyLabel(strategy)} palette. Press space for a new one.`}
       >
         <div className="flex h-64 sm:h-80" aria-hidden={false}>
-          {swatches.map((swatch, i) => (
+          {swatches.map((swatch) => (
             <div
               key={swatch.index}
               className="group relative flex-1 transition-colors"
               style={{ backgroundColor: swatch.hex }}
             >
-              <button
-                type="button"
-                onClick={() => toggleLock(i)}
-                aria-pressed={locked[i]}
-                aria-label={locked[i] ? `Unlock ${swatch.hex}` : `Lock ${swatch.hex}`}
-                className="absolute left-1/2 top-3 -translate-x-1/2 rounded-full bg-black/30 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-white opacity-100 transition-opacity hover:bg-black/50 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
-              >
-                {locked[i] ? "Locked" : "Lock"}
-              </button>
               <button
                 type="button"
                 onClick={() => void copyHex(swatch.hex)}
