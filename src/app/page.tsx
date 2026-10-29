@@ -3,6 +3,7 @@ import Link from "next/link";
 import { AuditSection } from "@/components/home/audit-section";
 import { HeroAuditLink } from "@/components/home/hero-audit-link";
 import { HeroColourForm } from "@/components/home/hero-form";
+import { HeroDotField } from "@/components/home/hero-dot-field";
 import { HeroPlayground } from "@/components/home/hero-playground";
 import { ScrollReveal } from "@/components/site/scroll-reveal";
 import { LinkButton } from "@/components/ui/primitives";
@@ -108,14 +109,12 @@ export default function HomePage() {
           says what ChromaBrew does; the playground on the right proves it.
           No Go Pro here on purpose; it owns the header. */}
       <section className="relative overflow-hidden">
-        {/* Signature backdrop: a dot field (design-system graph paper) washed
-            with brand hues and a slow-spinning hue-wheel glow. Static CSS only;
-            the spin is motion-safe so reduced-motion users get a still frame. */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 [mask-image:radial-gradient(ellipse_80%_70%_at_50%_35%,black,transparent)]"
-        >
-          <div className="absolute inset-0 bg-[radial-gradient(rgba(24,24,27,0.09)_1px,transparent_1px)] bg-[size:22px_22px] dark:bg-[radial-gradient(rgba(255,255,255,0.08)_1px,transparent_1px)]" />
+        {/* Signature backdrop: an interactive dot field (design-system graph
+            paper) washed with brand hues and a slow-spinning hue-wheel glow.
+            The canvas covers the full hero and reacts to the pointer;
+            reduced-motion visitors get a single static frame. */}
+        <div aria-hidden className="pointer-events-none absolute inset-0">
+          <HeroDotField />
           <div className="absolute -left-48 top-1/4 h-[30rem] w-[30rem] rounded-full bg-[radial-gradient(circle,rgba(124,58,237,0.22),transparent_65%)] blur-3xl dark:bg-[radial-gradient(circle,rgba(124,58,237,0.28),transparent_65%)]" />
           <div className="absolute -right-40 bottom-0 h-[26rem] w-[26rem] rounded-full bg-[radial-gradient(circle,rgba(14,165,233,0.18),transparent_65%)] blur-3xl dark:bg-[radial-gradient(circle,rgba(14,165,233,0.25),transparent_65%)]" />
           <div className="absolute -right-24 -top-24 h-80 w-80 rounded-full bg-[conic-gradient(from_90deg,#ef4444,#f59e0b,#10b981,#3b82f6,#8b5cf6,#ef4444)] opacity-[0.14] blur-2xl motion-safe:animate-[spin_60s_linear_infinite] dark:opacity-[0.22]" />
