@@ -168,6 +168,32 @@ export function ExportPanel({
 
       <p className="text-xs text-zinc-500">{adapter.description}</p>
 
+      {adapter.id === "figma" && !locked && (
+        <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-900/60">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+            Two ways into Figma
+          </p>
+          <ol className="mt-2 list-decimal space-y-1 pl-5 text-[11px] leading-4 text-zinc-600 dark:text-zinc-300">
+            <li>
+              Native variables: install the free plugin (Figma desktop →
+              Plugins → Development → Import plugin from manifest), enter a
+              hex, Generate — Light &amp; Dark modes included.
+            </li>
+            <li>
+              Tokens Studio: copy the JSON above (or download
+              figma-tokens.json) and import from JSON in Tokens Studio.
+            </li>
+          </ol>
+          <p className="mt-2 text-[11px] leading-4 text-zinc-500 dark:text-zinc-500">
+            Full install steps, paste guide, and Dev Mode code handoff —{" "}
+            <Link href="/figma" className="font-medium underline underline-offset-2">
+              Figma plugin &amp; variables guide
+            </Link>
+            .
+          </p>
+        </div>
+      )}
+
       {adapter.id === "zip" && !locked && (
         <fieldset className="rounded-xl border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-900/60">
           <legend className="px-1 text-[11px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">

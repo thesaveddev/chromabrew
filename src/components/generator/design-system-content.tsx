@@ -20,7 +20,7 @@ const FAQS = [
   },
   {
     q: "Which export formats are supported?",
-    a: "Export as plain CSS variables, JSON, Tailwind CSS, Bootstrap, shadcn/ui, MUI, Ant Design or Chakra themes; React Native, Flutter, iOS (Swift) and Android tokens; Figma variables, W3C design tokens, Penpot, or a ZIP with every format.",
+    a: "Export as plain CSS variables, JSON, Tailwind CSS, Bootstrap, shadcn/ui, MUI, Ant Design or Chakra themes; React Native, Flutter, iOS (Swift) and Android tokens; free Figma Tokens Studio JSON plus a free Figma plugin that creates native Figma variables with Light & Dark modes; W3C design tokens, Penpot, or a ZIP with every format. See the Figma install and paste guide on the Figma page.",
   },
 ] as const;
 

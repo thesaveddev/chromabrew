@@ -4,14 +4,23 @@ import { DesignSystemContent } from "@/components/generator/design-system-conten
 import { defaultOgImage } from "@/lib/og";
 
 export const metadata: Metadata = {
-  title: "Design system generator",
+  title: "Design system generator — Figma variables & tokens",
   description:
-    "Turn one color into an accessible design system: scale, palette, semantic tokens, light and dark themes, WCAG checks and production-ready exports. Free.",
+    "Turn one color into an accessible design system: scale, palette, semantic tokens, light and dark themes, WCAG checks, Figma variables and Tokens Studio export, and production-ready code. Free.",
+  keywords: [
+    "design system generator",
+    "figma design system generator",
+    "figma variables",
+    "figma design tokens",
+    "figma tokens studio",
+    "figma color palette generator",
+    "export to figma",
+  ],
   alternates: { canonical: "/design-system" },
   openGraph: {
-    title: "Design System Generator — from one color to a full theme · ChromaBrew",
+    title: "Design System Generator — Figma variables from one color · ChromaBrew",
     description:
-      "Turn one color into an accessible design system: scale, palette, semantic tokens, light and dark themes, WCAG checks and production-ready exports. Free.",
+      "Turn one color into an accessible design system: scale, palette, semantic tokens, light and dark themes, WCAG checks, Figma variables export and production-ready code. Free.",
     url: "/design-system",
     type: "website",
     images: [defaultOgImage],

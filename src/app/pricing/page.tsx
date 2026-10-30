@@ -144,7 +144,7 @@ export default function PricingPage() {
           {[
             {
               q: "Is it really free?",
-              a: "Yes. The full design system generator, all color controls, WCAG accessibility checks, and core exports (CSS, JSON, Tailwind, shadcn/ui) are free forever with no account required.",
+              a: "Yes. The full design system generator, all color controls, WCAG accessibility checks, and core exports (CSS, JSON, Tailwind, shadcn/ui, Figma) are free forever with no account required.",
             },
             {
               q: "Do I need an account to use the generator?",
@@ -152,11 +152,11 @@ export default function PricingPage() {
             },
             {
               q: "Can I export to frameworks like Tailwind and shadcn/ui?",
-              a: "Yes. CSS variables, JSON (DTCG), Tailwind CSS v4, and shadcn/ui theme exports are all included for free.",
+              a: "Yes. CSS variables, JSON (DTCG), Tailwind CSS v4, shadcn/ui themes, and Figma Tokens Studio exports are all included for free — plus a free Figma plugin that creates native Figma variables.",
             },
             {
               q: "What do I get with Pro?",
-              a: "Unlimited project saving and palette history, every export adapter (Figma, Flutter, iOS, Android, MUI, Ant Design, Chakra), version history, team sharing, emailed site reports for watched sites, and AI features as they ship — on top of everything free.",
+              a: "Unlimited project saving and palette history, every remaining export adapter (Bootstrap, MUI, Ant Design, Chakra, W3C, Penpot, Flutter, iOS, Android, ZIP bundle), version history, team sharing, emailed site reports for watched sites, and AI features as they ship — on top of everything free.",
             },
             {
               q: "How does team sharing work?",

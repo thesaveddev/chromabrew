@@ -43,6 +43,7 @@ export function SiteFooter() {
           <nav aria-label="Site" className="flex flex-wrap gap-x-5 gap-y-2">
             {[
               ["/design-system", "Design system generator"],
+              ["/figma", "Figma plugin & variables"],
               ["/tools", "Free tools"],
               ["/color-tools", "Color tools"],
               ["/blog", "Blog & guides"],

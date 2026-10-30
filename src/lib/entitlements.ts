@@ -39,7 +39,7 @@ export const PLANS = {
       "Everything in Free",
       "Unlimited project saving",
       "Unlimited palette history",
-      "All 13 export adapters (Figma, Flutter, iOS, Android, MUI, Ant Design, Chakra)",
+      "Every other export adapter (Bootstrap, MUI, Ant Design, Chakra, W3C, Penpot, Flutter, iOS, Android, ZIP bundle)",
       "Project version history",        "Team sharing and collaboration (invite viewers and editors to your projects)",
         "Emailed site reports — every watch emails its report to up to 3 addresses",
       "AI features, included as they ship",
@@ -48,12 +48,19 @@ export const PLANS = {
   },
 } as const;
 
-/** Free-tier export adapter IDs (no payment required). */
+/**
+ * Free-tier export adapter IDs (no payment required).
+ *
+ * Figma sits with the free core on purpose: the Figma plugin and the
+ * Tokens Studio export are the designer-acquisition loop, so gating them
+ * would bounce exactly the traffic the /figma page is built to attract.
+ */
 export const FREE_ADAPTERS = [
   "css",
   "json",
   "tailwind",
   "shadcn",
+  "figma",
 ] as const;
 
 /** Maximum palette history entries for free tier. */

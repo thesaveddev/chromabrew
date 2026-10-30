@@ -52,11 +52,11 @@ describe("planForEntitlements", () => {
 });
 
 describe("adapterRequiresPro", () => {
-  it("keeps the core four free and gates the rest", () => {
-    for (const id of ["css", "json", "tailwind", "shadcn"]) {
+  it("keeps the free five (incl. Figma) free and gates the rest", () => {
+    for (const id of ["css", "json", "tailwind", "shadcn", "figma"]) {
       expect(adapterRequiresPro(id)).toBe(false);
     }
-    for (const id of ["figma", "flutter", "ios-swift", "zip", "mui"]) {
+    for (const id of ["flutter", "ios-swift", "zip", "mui"]) {
       expect(adapterRequiresPro(id)).toBe(true);
     }
   });

@@ -12,7 +12,7 @@ export function SiteJsonLd() {
           name: "ChromaBrew",
           url: siteUrl,
           description:
-            "Free color palette generator and design system tool: accessible palettes, semantic tokens, light and dark themes, and production-ready code from one color.",
+            "Free color palette generator and design system tool: accessible palettes, semantic tokens, light and dark themes, Figma variables and plugin, and production-ready code from one color.",
         }}
       />
       <JsonLd

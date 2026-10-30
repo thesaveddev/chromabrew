@@ -27,7 +27,17 @@ export const metadata: Metadata = {
     template: "%s · ChromaBrew",
   },
   description:
-    "Free browser-based color toolkit: palette generator, WCAG contrast checker, image color extraction, design tokens and Tailwind v4 or shadcn/ui exports. Free, no account required.",
+    "Free browser-based color toolkit: palette generator, WCAG contrast checker, image color extraction, design tokens, Figma variables and plugin, and Tailwind v4 or shadcn/ui exports. Free, no account required.",
+  keywords: [
+    "color palette generator",
+    "figma color palette generator",
+    "figma design system generator",
+    "figma variables",
+    "figma design tokens",
+    "figma plugin",
+    "design system generator",
+    "wcag contrast checker",
+  ],
   openGraph: {
     type: "website",
     siteName: "ChromaBrew",

@@ -14,23 +14,32 @@ import { JsonLd } from "@/components/site/json-ld";
 import { defaultOgImage } from "@/lib/og";
 
 export const metadata: Metadata = {
-  title: "Free Color Palette Generator, Design Tools & Website Audit",
+  title: "Free Color Palette Generator, Figma Plugin & Design Tools",
   description:
-    "Build better design systems and improve the websites you already have: free color palette generator, WCAG contrast checks, design tokens and dark mode — plus a free website audit. No sign-up.",
+    "Build better design systems and improve the websites you already have: free color palette generator, Figma variables and plugin, WCAG contrast checks, design tokens and dark mode — plus a free website audit. No sign-up.",
+  keywords: [
+    "color palette generator",
+    "figma color palette generator",
+    "figma plugin",
+    "figma variables",
+    "figma design tokens",
+    "design system generator",
+    "wcag contrast checker",
+  ],
   alternates: { canonical: "/" },
   openGraph: {
-    title: "Free Color Palette Generator & Design Tools · ChromaBrew",
+    title: "Free Color Palette Generator & Figma Plugin · ChromaBrew",
     description:
-      "Generate color palettes instantly or browse a million ready-made palettes. WCAG contrast checks, image color extraction, design tokens, and Tailwind or shadcn exports — free, no sign-up.",
+      "Generate color palettes instantly or browse a million ready-made palettes. WCAG contrast checks, image color extraction, design tokens, Figma variables and plugin, and Tailwind or shadcn exports — free, no sign-up.",
     url: "/",
     type: "website",
     images: [defaultOgImage],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Free Color Palette Generator & Design Tools · ChromaBrew",
+    title: "Free Color Palette Generator & Figma Plugin · ChromaBrew",
     description:
-      "Generate or browse color palettes, check contrast, extract image colors and export tokens — free, no sign-up.",
+      "Generate or browse color palettes, check contrast, extract image colors and export Figma variables and tokens — free, no sign-up.",
     images: [defaultOgImage.url],
   },
 };
@@ -50,7 +59,7 @@ const CAPABILITIES = [
   },
   {
     title: "Developer-ready exports",
-    body: "CSS variables, DTCG-style JSON, Tailwind v4 themes and shadcn/ui variables to paste in.",
+    body: "CSS variables, DTCG-style JSON, Tailwind v4 themes, shadcn/ui variables and Figma Tokens to paste in — plus a free Figma plugin for native variables.",
   },
 ] as const;
 

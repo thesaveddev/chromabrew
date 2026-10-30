@@ -44,6 +44,7 @@ export function coreSitemapUrls(): SitemapUrl[] {
   const hubs: { path: string; priority?: never }[] = [
     { path: "/" },
     { path: "/design-system" },
+    { path: "/figma" },
     { path: "/generate" },
     { path: "/tools" },
     { path: "/audit" },
