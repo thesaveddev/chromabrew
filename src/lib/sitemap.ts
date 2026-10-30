@@ -1,12 +1,14 @@
 /**
- * Sitemap builders for a million palette pages.
+ * Sitemap builders — the curated site only.
  *
  * One flat sitemap cannot hold a million URLs (50,000 per file, and a build
- * that inlines them all would never finish), so the sitemap is an index:
- * `/sitemap.xml` lists one `core.xml` plus one chunk per theme, each chunk
- * holding that theme's 20,000 minted palette URLs. Chunks are derived, never
- * stored — the same deterministic engine that renders the pages lists them,
- * so the sitemap and the site can never disagree about what exists.
+ * that inlines them all would never finish), so the sitemap is an index of
+ * chunk documents. The index advertises `core.xml` alone: hubs, the curated
+ * palettes, colors, brands, tools and dated posts. The minted palette chunks
+ * are derived, never stored, and never listed — a sitemap entry is a claim
+ * that a URL is worth a crawl, and a template-assembled tail is not. Those
+ * pages still render (and answer `noindex`) for anything already holding a
+ * link, so the index can shrink without the routes disappearing.
  */
 
 import { TOOLS } from "./tools";
@@ -25,9 +27,13 @@ export interface SitemapUrl {
 
 export const CORE_SITEMAP_NAME = "core";
 
-/** Chunk names: `core` plus one `palettes-<theme>` per theme. */
+/**
+ * Chunk names the index advertises: `core`, and nothing programmatic.
+ * The `palettes-<theme>` chunks still resolve under `/sitemaps/[name]` so a
+ * stale chunk URL keeps working — it just has no way in from here.
+ */
 export function sitemapChunkNames(): string[] {
-  return [CORE_SITEMAP_NAME, ...PALETTE_THEMES.map((theme) => `palettes-${theme.slug}`)];
+  return [CORE_SITEMAP_NAME];
 }
 
 /** Absolute URL of a chunk sitemap. */

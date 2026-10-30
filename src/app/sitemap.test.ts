@@ -15,33 +15,34 @@ import { parseMintedSlug } from "@/lib/palette-mint";
 import { siteUrl } from "@/lib/site-url";
 
 /**
- * The sitemap as an index plus derived chunks.
+ * The sitemap as an index of curated chunks.
  *
  * A million palette URLs cannot live in one document (50,000 per file, and a
- * build that inlines them would never finish), so `/sitemap.xml` only lists
- * chunk names while `/sitemaps/[name]` derives each chunk from the same mint
- * that renders the pages. These tests pin the shape that keeps the sitemap
- * and the site from disagreeing: chunk inventory, URL counts, and the
- * round-trip that every listed palette URL actually resolves.
+ * build that inlines them would never finish), so `/sitemap.xml` lists chunk
+ * names while `/sitemaps/[name]` derives each chunk from the same mint that
+ * renders the pages. These tests pin the shape that keeps the sitemap honest:
+ * the index advertises the curated core only, every core URL is a real
+ * non-minted route, and the minted chunks stay derivable without being
+ * offered to a crawler.
  */
 describe("sitemap index", () => {
-  it("lists the core chunk plus one chunk per theme", () => {
+  it("advertises the curated core chunk and nothing programmatic", () => {
     const names = sitemapChunkNames();
-    expect(names).toHaveLength(1 + PALETTE_THEMES.length);
-    expect(names[0]).toBe(CORE_SITEMAP_NAME);
-    expect(new Set(names).size).toBe(names.length);
+    expect(names).toEqual([CORE_SITEMAP_NAME]);
+    // Listing a minted chunk would hand a crawler a million template pages
+    // to sample — the tail stays reachable only by a URL already in hand.
     for (const theme of PALETTE_THEMES) {
-      expect(names).toContain(`palettes-${theme.slug}`);
+      expect(names).not.toContain(`palettes-${theme.slug}`);
     }
   });
 
-  it("renders a well-formed index pointing at the chunk routes", () => {
+  it("renders a well-formed index pointing at the core chunk only", () => {
     const xml = renderSitemapIndex(sitemapChunkNames());
     expect(xml.startsWith('<?xml version="1.0" encoding="UTF-8"?>')).toBe(true);
     expect(xml).toContain("<sitemapindex");
     expect(xml).toContain(`<loc>${siteUrl}/sitemaps/core.xml</loc>`);
-    expect(xml).toContain(`<loc>${siteUrl}/sitemaps/palettes-retro.xml</loc>`);
-    expect(xml.match(/<sitemap>/g)).toHaveLength(1 + PALETTE_THEMES.length);
+    expect(xml).not.toContain("/sitemaps/palettes-");
+    expect(xml.match(/<sitemap>/g)).toHaveLength(1);
   });
 
   it("keeps every chunk URL on the canonical origin", () => {
@@ -85,7 +86,9 @@ describe("core chunk", () => {
   });
 });
 
-describe("theme chunks", () => {
+// Served, never advertised: the chunk route still answers so a URL a crawler
+// already holds keeps resolving — and keeps showing the pages' noindex.
+describe("theme chunks (reachable, not listed)", () => {
   it("lists exactly the addressable minted URLs for a theme", () => {
     const urls = themeChunkUrls("retro");
     expect(urls).toHaveLength(MINTED_PER_THEME);

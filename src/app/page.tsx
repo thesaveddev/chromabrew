@@ -9,7 +9,10 @@ import { HeroPlayground } from "@/components/home/hero-playground";
 import { ScrollReveal } from "@/components/site/scroll-reveal";
 import { LinkButton } from "@/components/ui/primitives";
 import { PLANS } from "@/lib/entitlements";
+import { GALLERY_PALETTES, PALETTE_THEMES } from "@/lib/palettes";
+import { livePosts } from "@/lib/posts";
 import { siteUrl } from "@/lib/site-url";
+import { TOOLS } from "@/lib/tools";
 import { JsonLd } from "@/components/site/json-ld";
 import { defaultOgImage } from "@/lib/og";
 
@@ -143,10 +146,59 @@ export default function HomePage() {
             <p className="hero-enter mx-auto mt-4 max-w-xl text-lg leading-8 text-zinc-600 dark:text-zinc-400 lg:mx-0 [--hero-delay:140ms]">
               Palettes, WCAG contrast, tokens, and dark mode — ready to ship.
             </p>
-            <div className="hero-enter mt-7 flex justify-center lg:justify-start [--hero-delay:210ms]">
+            {/* Substantive before interactive: what this site actually
+                contains — the toolkit, the writing, the curated library —
+                read before any input is offered. Counts come from the same
+                registries the sitemap publishes, so they cannot drift. */}
+            <div className="hero-enter mx-auto mt-5 max-w-xl space-y-3 text-sm leading-6 text-zinc-600 dark:text-zinc-400 lg:mx-0 [--hero-delay:190ms]">
+              <p>
+                Type one color and ChromaBrew computes a 50–950 scale,
+                semantic tokens, light and dark themes, and every pair graded
+                against WCAG — then exports it as CSS variables, DTCG JSON,
+                Tailwind v4, shadcn/ui or Figma variables. It all runs in your
+                browser: no account, nothing uploaded.
+              </p>
+              <p>
+                The generator is the front door. Behind it sits the rest of
+                the work: {" "}
+                <Link
+                  href="/tools"
+                  className="font-medium text-zinc-900 underline underline-offset-4 hover:text-zinc-700 dark:text-zinc-100 dark:hover:text-zinc-300"
+                >
+                  {TOOLS.length} standalone tools
+                </Link>{" "}
+                for contrast ratios, color blindness, converters, gradients
+                and shade scales — each with a written intro, steps and FAQs;{" "}
+                <Link
+                  href="/blog"
+                  className="font-medium text-zinc-900 underline underline-offset-4 hover:text-zinc-700 dark:text-zinc-100 dark:hover:text-zinc-300"
+                >
+                  {livePosts().length} step-by-step guides
+                </Link>{" "}
+                on palette theory, WCAG math, dark mode and token handoff,
+                dated and edited as the standards change;{" "}
+                <Link
+                  href="/palettes"
+                  className="font-medium text-zinc-900 underline underline-offset-4 hover:text-zinc-700 dark:text-zinc-100 dark:hover:text-zinc-300"
+                >
+                  {GALLERY_PALETTES.length.toLocaleString("en-US")} curated
+                  palettes
+                </Link>{" "}
+                across {PALETTE_THEMES.length} themes; and a{" "}
+                <Link
+                  href="/audit"
+                  className="font-medium text-zinc-900 underline underline-offset-4 hover:text-zinc-700 dark:text-zinc-100 dark:hover:text-zinc-300"
+                >
+                  free website audit
+                </Link>{" "}
+                that renders your live page in a real browser and reports
+                measured accessibility failures.
+              </p>
+            </div>
+            <div className="hero-enter mt-7 flex justify-center lg:justify-start [--hero-delay:250ms]">
               <HeroColourForm />
             </div>
-            <p className="hero-enter mt-4 text-sm text-zinc-500 dark:text-zinc-400 [--hero-delay:280ms]">
+            <p className="hero-enter mt-4 text-sm text-zinc-500 dark:text-zinc-400 [--hero-delay:310ms]">
               Free, no account — <HeroAuditLink />.
             </p>
           </div>

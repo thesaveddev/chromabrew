@@ -42,6 +42,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const palette = resolvePalette(themeSlug, slug);
   const theme = themeBySlug(themeSlug);
   if (!palette || !theme) return {};
+  // Curated palettes are hand-written and indexable; minted ones are derived
+  // from the same seeded template, so hundreds of thousands of near-identical
+  // pages must stay out of the index — they are doorway-shaped content to a
+  // crawler and would earn the site a scaled-content problem it does not need.
+  // Follow stays on: each minted page still points readers at the theme hub,
+  // the curated neighbours and the generator.
+  const minted = palette.mintedIndex !== undefined;
   // The hex list is a bonus, not a right: when the pair overflows the SERP
   // truncation point, fall back to the prose alone rather than clamp mid-list.
   const withHex = `${palette.description} Hex values: ${palette.colors.join(", ")}.`;
@@ -49,6 +56,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: `${palette.name} Color Palette`,
     description: withHex.length <= 160 ? withHex : clampDescription(palette.description),
     alternates: { canonical: `/palettes/${themeSlug}/${slug}` },
+    ...(minted ? { robots: { index: false, follow: true } } : {}),
     openGraph: {
       title: `${palette.name} (${theme.name} Palette) · ChromaBrew`,
       description: palette.description,

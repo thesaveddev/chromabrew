@@ -11,10 +11,11 @@ import {
 } from "@/lib/sitemap";
 
 /**
- * One chunk sitemap per theme plus the core sitemap, derived on demand and
- * cached for a day. A 20,000-URL chunk renders in well under a second (the
- * same deterministic mint that serves the pages lists them), so crawlers get
- * fresh-enough documents without a million-file build.
+ * Chunk sitemaps, derived on demand and cached for a day. `core.xml` is the
+ * only one the index advertises; the per-theme minted chunks still answer so
+ * a URL a crawler already holds keeps resolving (and keeps showing those
+ * pages' `noindex`). A 20,000-URL chunk renders in well under a second — the
+ * same deterministic mint that serves the pages lists them.
  */
 export const revalidate = 86400;
 

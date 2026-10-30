@@ -1,5 +1,5 @@
 {
-  "name": "ChromaBrew — Design System Generator",
+  "name": "ChromaBrew — Color Scale & Design Token Generator",
   "api": "1.0.0",
   "main": "dist/code.js",
   "ui": "ui.html",

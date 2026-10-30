@@ -1,9 +1,12 @@
 import { renderSitemapIndex, sitemapChunkNames } from "@/lib/sitemap";
 
 /**
- * `/sitemap.xml` is an index, not a listing: one `core.xml` plus one chunk
- * per palette theme (20,000 minted URLs each). Chunks are derived on demand
- * by `/sitemaps/[name]`, so this document only enumerates their names.
+ * `/sitemap.xml` is an index, not a listing: it names the curated `core`
+ * document — hubs, curated palettes, colors, brands, tools and posts. The
+ * minted palette chunks are deliberately absent, because their pages carry
+ * `noindex` and a sitemap entry would invite a crawl of a million
+ * template-assembled pages. Chunks are still derived on demand by
+ * `/sitemaps/[name]`, so nothing already holding a chunk URL breaks.
  */
 export const revalidate = 86400;
 
